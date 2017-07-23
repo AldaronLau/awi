@@ -1,0 +1,11 @@
+[package]
+name = "window"
+version = "0.1.0"
+authors = ["Jeron Aldaron Lau <jeron.lau@plopgrizzly.tech>"]
+keywords = ["window", "graphics", "interface", "native", "ffi"]
+categories = ["gui", "os::unix-apis"]
+homepage = ""
+repository = "https://github.com/aldarons-tech/cargo-gsp"
+
+[dependencies]
+ami = "0.3.0"

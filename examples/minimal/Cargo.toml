@@ -1,0 +1,11 @@
+[package]
+name = "minimal"
+version = "0.1.0"
+authors = ["Jeron Aldaron Lau <jeron.lau@plopgrizzly.tech>"]
+build = "build.rs"
+
+[dependencies]
+window = { path = "../../" }
+
+[build-dependencies]
+res = { path = "/home/aldaron/aldarons_tech/res"}
