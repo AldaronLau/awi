@@ -5,6 +5,7 @@
 // Licensed under the MIT LICENSE
 
 use ami::void_pointer::*;
+use libc;
 
 #[repr(C)]
 struct XcbClientMessageEvent {
@@ -36,26 +37,24 @@ struct XcbGenericEvent {
 
 #[derive(Copy, Clone)]
 pub struct Dl {
-	pub dl_handle: VoidPointer,
-	pub dl_handl2: VoidPointer,
+	pub dl_handle: *mut libc::c_void,
+	pub dl_handl2: *mut libc::c_void,
 	xcb_send_event: unsafe extern "C" fn(c: VoidPointer, p: u8, d: u32,
 		m: u32, e: *const XcbClientMessageEvent) -> (),
 	xcb_poll_for_event: unsafe extern "C" fn(c: VoidPointer)
 		-> *mut XcbGenericEvent,
 	xcb_flush : unsafe extern "C" fn(c: VoidPointer) -> i32,
-	
 }
 
 pub type Connection = (VoidPointer, Dl);
 
 pub unsafe fn load_dl() -> Dl {
-	extern { fn dlopen(name: *const u8, flags: i32) -> VoidPointer; }
-
 	let xcb = b"libxcb.so.1\0";
 	let xcb_keysyms = b"libxkbcommon-x11.so.0\0";
 
-	let dl_handle = dlopen(&xcb[0], 1);
-	let dl_handl2 = dlopen(&xcb_keysyms[0], 1);
+	let dl_handle = libc::dlopen(&xcb[0] as *const _ as *const i8, 1);
+	let dl_handl2 = libc::dlopen(&xcb_keysyms[0] as *const _ as *const i8,
+		1);
 
 	Dl {
 		dl_handle: dl_handle,
@@ -66,13 +65,9 @@ pub unsafe fn load_dl() -> Dl {
 	}
 }
 
-unsafe fn dlsym<T>(lib: VoidPointer, name: &[u8]) -> T {
-	extern {
-		fn dlsym(handle: VoidPointer, symbol: *const u8) -> VoidPointer;
-	}
-
-	let function_ptr = dlsym(lib, &name[0]);
-	::std::mem::transmute_copy::<VoidPointer, T>(&function_ptr)
+unsafe fn dlsym<T>(lib: *mut libc::c_void, name: &[u8]) -> T {
+	let function_ptr = libc::dlsym(lib, &name[0] as *const _ as *const i8);
+	::std::mem::transmute_copy::<*mut libc::c_void, T>(&function_ptr)
 }
 
 unsafe fn intern_atom(connection: Connection, name: &[u8]) -> u32 {
@@ -132,13 +127,18 @@ pub unsafe fn change_property_title(connection: Connection, window: u32,
 		data: *const u8) -> u32
 		= dlsym(connection.1.dl_handle, b"xcb_change_property\0");
 
-	let atom2 = get_atom(connection, b"_NET_WM_NAME");
+	let atom1 = get_atom(connection, b"_NET_WM_NAME");
+	let atom2 = get_atom(connection, b"_NET_WM_VISIBLE_NAME");
+	let atom3 = get_atom(connection, b"_NET_WM_ICON_NAME");
+	let atom4 = get_atom(connection, b"_NET_WM_VISIBLE_ICON_NAME");
 	let atom = get_atom(connection, b"UTF8_STRING");
 	let len = title.len() as u32;
 	let ptr = &title[0];
 
+	xcb_change_property(connection.0, 0, window, atom1, atom, 8, len, ptr);
 	xcb_change_property(connection.0, 0, window, atom2, atom, 8, len, ptr);
-//	xcb_change_property(connection.0, 0, window, 37, atom, 8, len, ptr);
+	xcb_change_property(connection.0, 0, window, atom3, atom, 8, len, ptr);
+	xcb_change_property(connection.0, 0, window, atom4, atom, 8, len, ptr);
 }
 
 pub unsafe fn send_event(connection: Connection, window: u32, a: (u32,u32)) {
@@ -225,7 +225,7 @@ pub unsafe fn create_window(connection: Connection, window: u32,
 		::MWH as u16, 0, 1, visual, 2|2048, &mut value_list[0]);
 }
 
-pub unsafe fn connect(so: VoidPointer) -> VoidPointer {
+pub unsafe fn connect(so: *mut libc::c_void) -> VoidPointer {
 	let xcb_connect : unsafe extern "C" fn(displayname: VoidPointer,
 		s: VoidPointer) -> VoidPointer = dlsym(so, b"xcb_connect\0");
 
@@ -245,12 +245,11 @@ pub unsafe fn flush(connection: Connection) -> () {
 }
 
 pub unsafe fn disconnect(connection: Connection) -> () {
-	extern { fn dlclose(handle: VoidPointer) -> i32; }
 	let xcb_disconnect : unsafe extern "C" fn(c: VoidPointer) -> () =
 		dlsym(connection.1.dl_handle, b"xcb_disconnect\0");
 
 	xcb_disconnect(connection.0);
-	dlclose(connection.1.dl_handle);
+	libc::dlclose(connection.1.dl_handle);
 }
 
 pub unsafe fn poll_for_event(connection: Connection, state: VoidPointer)

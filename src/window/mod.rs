@@ -5,15 +5,14 @@
 // Licensed under the MIT LICENSE
 
 use WindowOps;
+use aci_png;
 
 #[macro_export] macro_rules! connect {
 	() => ( {
-		let icon = (0, 0, &[0u8][0..1]);
-
-		Window::new(
-			include!(concat!(env!("CARGO_MANIFEST_DIR"),
+		Window::new(include!(concat!(env!("CARGO_MANIFEST_DIR"),
 				"/target/res/src/name.rs")),
-			icon)
+			include_bytes!(concat!(env!("CARGO_MANIFEST_DIR"),
+				"/res/icon.png")))
 	} )
 }
 
@@ -28,7 +27,12 @@ impl Window {
 	/// Create a window, using `title` as the title, and `icon` as the
 	/// window icon.  The format of icon is as follows:
 	/// `(width, height, pixels)`.  You can load icons with aci.
-	pub fn new(title: &str, icon: (u32, u32, &[u8])) -> Window {
+	pub fn new(title: &str, icon: &'static [u8]) -> Window {
+		let icon = match aci_png::decode(icon) {
+			Ok(icon) => icon,
+			Err(err) => panic!("ERROR DECODING PNG {}", err),
+		};
+		let icon = (icon.0, icon.1, icon.2.as_slice());
 		let os_window = ::os_window::OSWindow::create(title, icon);
 
 		// Make the window visible.

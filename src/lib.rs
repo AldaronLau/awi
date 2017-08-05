@@ -4,10 +4,16 @@
 // Copyright 2017 (c) Jeron Lau
 // Licensed under the MIT LICENSE
 
-#![doc(html_logo_url = "http://at.plopgrizzly.tech/window/icon.png",
-       html_favicon_url = "http://at.plopgrizzly.tech/window/icon.png",
-       html_root_url = "http://at.plopgrizzly.tech/window/")]
+#![doc(
+	html_logo_url =
+		"https://rawgit.com/aldarons-tech/window/master/res/icon.png",
+	html_favicon_url =
+		"https://rawgit.com/aldarons-tech/window/master/res/symbol.svg",
+	html_root_url = "http://at.plopgrizzly.tech/window/"
+)]
 
+pub(crate) extern crate aci_png;
+pub(crate) extern crate libc;
 pub(crate) extern crate ami;
 
 pub(crate) mod input;

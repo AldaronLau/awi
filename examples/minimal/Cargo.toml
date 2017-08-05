@@ -3,9 +3,16 @@ name = "minimal"
 version = "0.1.0"
 authors = ["Jeron Aldaron Lau <jeron.lau@plopgrizzly.tech>"]
 build = "build.rs"
+homepage = "at.plopgrizzly.tech"
 
 [dependencies]
 window = { path = "../../" }
 
 [build-dependencies]
-res = { path = "/home/aldaron/aldarons_tech/res"}
+res = "0.2.0"
+
+[package.metadata.res]
+developer = "Aldaron's Tech"
+name = "%Minimal Window Example"
+comment = "%Window Minimal Example"
+description = "%An example program for Window."

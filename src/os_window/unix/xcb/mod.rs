@@ -20,7 +20,7 @@ pub struct XcbWindow {
 }
 
 impl ::WindowOps for XcbWindow {
-	fn create(title: &str, _: (u32, u32, &[u8])) -> Self {
+	fn create(title: &str, icon: (u32, u32, &[u8])) -> Self {
 		let xcb_dl = unsafe { ffi::load_dl() };
 		let native = NativeConnection::create(xcb_dl);
 
@@ -31,6 +31,7 @@ impl ::WindowOps for XcbWindow {
 		}
 
 		let native = native.title(title);
+		let native = native.icon(icon);
 
 		XcbWindow {
 			fullscreen: Property::create(native.connection(),

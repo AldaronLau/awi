@@ -71,6 +71,8 @@ impl Modifiers {
 				Key::Enter => self.enter(queue),
 				Key::Apostrophe => self.apostrophe(queue),
 				Key::Semicolon => self.semicolon(queue),
+				Key::EqualSign => self.equalsign(queue),
+				Key::Minus => self.minus(queue),
 				Key::Num1 => self.num1(queue),
 				Key::Num2 => self.num2(queue),
 				Key::Num3 => self.num3(queue),
@@ -129,7 +131,7 @@ impl Modifiers {
 
 	fn e(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::Msg(Msg::Emphasis(Emphasis::None)),
+			CTRL => return, // TODO: What does it do?
 			ALT => Input::Text('ə'),
 			ALT_SHIFT => Input::Text('€'),
 			_ => return,
@@ -250,7 +252,8 @@ impl Modifiers {
 
 	fn s(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::Msg(Msg::SaveAs), //⭳ TODO: FileSys Popup
+			CTRL => Input::Msg(Msg::Share), // 🔗 Share TODO: Popup
+			CTRL_SHIFT => Input::Msg(Msg::SaveCopy), //⭳ TODO: FileSys Popup
 			ALT => return, // TODO: What does it do?
 			_ => return,
 		})
@@ -268,7 +271,6 @@ impl Modifiers {
 	fn u(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
 			CTRL => Input::Msg(Msg::Emphasis(Emphasis::Underline)),//⎁
-			CTRL_SHIFT => Input::Msg(Msg::Emphasis(Emphasis::UnderlineDC)),//⎂
 			ALT => return, // TODO: What does it do?
 			_ => return,
 		})
@@ -339,10 +341,24 @@ impl Modifiers {
 		})
 	}
 
+	fn equalsign(&self, queue: &mut Vec<Input>) -> () {
+		queue.push(match self.held & 0b0000_1111 {
+			CTRL => Input::Msg(Msg::Emphasis(Emphasis::UnderlineX2)),
+			_ => return,
+		})
+	}
+
+	fn minus(&self, queue: &mut Vec<Input>) -> () {
+		queue.push(match self.held & 0b0000_1111 {
+			CTRL => Input::Msg(Msg::Emphasis(Emphasis::StrikeOut)),
+			_ => return,
+		})
+	}
+
 	#[allow(unreachable_code)]
 	fn num1(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::Msg(Msg::Emphasis(Emphasis::None)),
+			CTRL => return, // TODO: What does it do?
 			ALT => return, // TODO: Aldaron's OS / No OS: 🔈 MUTE 🔇
 			_ => return,
 		})
@@ -375,17 +391,19 @@ impl Modifiers {
 		})
 	}
 
+	#[allow(unreachable_code)]
 	fn num5(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::Msg(Msg::Emphasis(Emphasis::StrikeOut)),
+			CTRL => return, // TODO: What does it do?
 			ALT => return, // TODO: Aldaron's OS / No OS: ⏹ Stop
 			_ => return,
 		})
 	}
 
+	#[allow(unreachable_code)]
 	fn num6(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::Msg(Msg::Emphasis(Emphasis::Overline)),
+			CTRL => return, // TODO: What does it do?
 			ALT => return, // TODO: Aldaron's OS / No OS: ⏮ Track
 			_ => return,
 		})
@@ -393,7 +411,7 @@ impl Modifiers {
 
 	fn num7(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::Msg(Msg::Emphasis(Emphasis::UnderlineX2)),
+			CTRL => Input::Msg(Msg::Emphasis(Emphasis::Overline)),
 			ALT => return, // TODO: Aldaron's OS / No OS: ⏭ Track
 			_ => return,
 		})
@@ -401,25 +419,23 @@ impl Modifiers {
 
 	fn num8(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::Msg(Msg::Emphasis(Emphasis::InvertColor)),
+			CTRL => Input::Msg(Msg::Emphasis(Emphasis::UnderlineDC)),//⎂
 			ALT => return, // TODO: Brightness ☀ - 🔅
 			_ => return,
 		})
 	}
 
-	#[allow(unreachable_code)]
 	fn num9(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => return, // TODO: What does it do?
+			CTRL => Input::Msg(Msg::Emphasis(Emphasis::InvertColor)),
 			ALT => return, // TODO: Brightness ☀ + 🔆
 			_ => return,
 		})
 	}
 
-	#[allow(unreachable_code)]
 	fn num0(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => return, // TODO: What does it do?
+			CTRL => Input::Msg(Msg::Emphasis(Emphasis::None)),
 			ALT => return, // TODO: Toggle Monitor Config 🖵
 			_ => return,
 		})
