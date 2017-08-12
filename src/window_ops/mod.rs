@@ -6,7 +6,7 @@
 
 pub trait WindowOps {
 	// Create the window.
-	fn create(title: &str, icon: (u32, u32, &[u8])) -> Self;
+	fn new(title: &str, icon: &[u32]) -> Self;
 	// Show the window.
 	fn show(&self) -> ();
 	// Re-draw the window.

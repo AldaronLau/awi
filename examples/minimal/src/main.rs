@@ -6,12 +6,13 @@
 
 #[macro_use]
 extern crate window;
+extern crate aci_png;
 
 use window::{ Window, InputQueue };
 
 pub fn main() -> () {
 	let mut window = connect!();
-	let mut queue = InputQueue::create();
+	let mut queue = InputQueue::new();
 
 	'mainloop: loop {
 		window.update(&mut queue);

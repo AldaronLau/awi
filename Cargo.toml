@@ -8,6 +8,6 @@ homepage = ""
 repository = "https://github.com/aldarons-tech/cargo-gsp"
 
 [dependencies]
-aci_png = "^0.1"
-ami = "^0.3"
+aci_png = "^0.2"
+ami = "^0.4"
 libc = "^0.2"

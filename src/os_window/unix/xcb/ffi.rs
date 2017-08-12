@@ -4,7 +4,7 @@
 // Copyright 2017 (c) Jeron Lau
 // Licensed under the MIT LICENSE
 
-use ami::void_pointer::*;
+use ami::{ Void, NULL };
 use libc;
 
 #[repr(C)]
@@ -39,14 +39,14 @@ struct XcbGenericEvent {
 pub struct Dl {
 	pub dl_handle: *mut libc::c_void,
 	pub dl_handl2: *mut libc::c_void,
-	xcb_send_event: unsafe extern "C" fn(c: VoidPointer, p: u8, d: u32,
+	xcb_send_event: unsafe extern "C" fn(c: *mut Void, p: u8, d: u32,
 		m: u32, e: *const XcbClientMessageEvent) -> (),
-	xcb_poll_for_event: unsafe extern "C" fn(c: VoidPointer)
+	xcb_poll_for_event: unsafe extern "C" fn(c: *mut Void)
 		-> *mut XcbGenericEvent,
-	xcb_flush : unsafe extern "C" fn(c: VoidPointer) -> i32,
+	xcb_flush : unsafe extern "C" fn(c: *mut Void) -> i32,
 }
 
-pub type Connection = (VoidPointer, Dl);
+pub type Connection = (*mut Void, Dl);
 
 pub unsafe fn load_dl() -> Dl {
 	let xcb = b"libxcb.so.1\0";
@@ -71,7 +71,7 @@ unsafe fn dlsym<T>(lib: *mut libc::c_void, name: &[u8]) -> T {
 }
 
 unsafe fn intern_atom(connection: Connection, name: &[u8]) -> u32 {
-	let xcb_intern_atom : unsafe extern "C" fn(c: VoidPointer, e: u8,
+	let xcb_intern_atom : unsafe extern "C" fn(c: *mut Void, e: u8,
 		l: u16, n: *const u8) -> u32
 		= dlsym(connection.1.dl_handle, b"xcb_intern_atom\0");
 
@@ -89,11 +89,11 @@ unsafe fn intern_atom_reply(connection: Connection, atom: u32) -> u32 {
 	}
 
 	extern { fn free(this: *mut XcbInternAtomReply) -> (); }
-	let xcb_intern_atom_reply : unsafe extern "C" fn(c: VoidPointer,
-		cookie: u32, e: VoidPointer) -> *mut XcbInternAtomReply
+	let xcb_intern_atom_reply : unsafe extern "C" fn(c: *mut Void,
+		cookie: u32, e: *mut Void) -> *mut XcbInternAtomReply
 		= dlsym(connection.1.dl_handle, b"xcb_intern_atom_reply\0");
 
-	let reply = xcb_intern_atom_reply(connection.0, atom, NULL);
+	let reply = xcb_intern_atom_reply(connection.0, atom, NULL.as_mut_ptr());
 	let atom = (*reply).atom;
 
 	free(reply);
@@ -108,7 +108,7 @@ pub unsafe fn get_atom(connection: Connection, name: &[u8]) -> u32 {
 pub unsafe fn change_property(connection: Connection, window: u32, t: u32,
 	a: u32, data: &[u32])
 {
-	let xcb_change_property : unsafe extern "C" fn(c: VoidPointer, mode: u8,
+	let xcb_change_property : unsafe extern "C" fn(c: *mut Void, mode: u8,
 		window: u32, property: u32, t: u32, format: u8, data_len: u32,
 		data: *const u32) -> u32
 		= dlsym(connection.1.dl_handle, b"xcb_change_property\0");
@@ -122,7 +122,7 @@ pub unsafe fn change_property(connection: Connection, window: u32, t: u32,
 pub unsafe fn change_property_title(connection: Connection, window: u32,
 	title: &[u8])
 {
-	let xcb_change_property : unsafe extern "C" fn(c: VoidPointer, mode: u8,
+	let xcb_change_property : unsafe extern "C" fn(c: *mut Void, mode: u8,
 		window: u32, property: u32, t: u32, format: u8, data_len: u32,
 		data: *const u8) -> u32
 		= dlsym(connection.1.dl_handle, b"xcb_change_property\0");
@@ -157,7 +157,7 @@ pub unsafe fn send_event(connection: Connection, window: u32, a: (u32,u32)) {
 }
 
 pub unsafe fn map_window(connection: Connection, window: u32) {
-	let xcb_map_window : unsafe extern "C" fn(c: VoidPointer, w: u32) -> u32
+	let xcb_map_window : unsafe extern "C" fn(c: *mut Void, w: u32) -> u32
 		= dlsym(connection.1.dl_handle, b"xcb_map_window\0");
 
 	xcb_map_window(connection.0, window);
@@ -191,9 +191,9 @@ pub unsafe fn screen_root(connection: Connection) -> (u32, u32, u32) {
 		index: i32,
 	}
 
-	let xcb_get_setup : unsafe extern "C" fn(c: VoidPointer) -> VoidPointer
+	let xcb_get_setup : unsafe extern "C" fn(c: *mut Void) -> *mut Void
 		= dlsym(connection.1.dl_handle, b"xcb_get_setup\0");
-	let xcb_setup_roots_iterator : unsafe extern "C" fn(setup: VoidPointer)
+	let xcb_setup_roots_iterator : unsafe extern "C" fn(setup: *mut Void)
 		-> XcbScreenIterator
 		= dlsym(connection.1.dl_handle, b"xcb_setup_roots_iterator\0");
 
@@ -204,7 +204,7 @@ pub unsafe fn screen_root(connection: Connection) -> (u32, u32, u32) {
 }
 
 pub unsafe fn generate_id(connection: Connection) -> u32 {
-	let xcb_generate_id : unsafe extern "C" fn(c: VoidPointer) -> u32
+	let xcb_generate_id : unsafe extern "C" fn(c: *mut Void) -> u32
 		= dlsym(connection.1.dl_handle, b"xcb_generate_id\0");
 
 	xcb_generate_id(connection.0)
@@ -213,7 +213,7 @@ pub unsafe fn generate_id(connection: Connection) -> u32 {
 pub unsafe fn create_window(connection: Connection, window: u32,
 	rvb: (u32, u32, u32)) -> ()
 {
-	let xcb_create_window : unsafe extern "C" fn(c: VoidPointer, depth: u8,
+	let xcb_create_window : unsafe extern "C" fn(c: *mut Void, depth: u8,
 		id: u32, parent: u32, x: i16, y: i16, w: u16, h: u16,
 		border_width: u16, class: u16, visual: u32, vmask: u32,
 		vlist: *mut u32) -> u32
@@ -225,13 +225,13 @@ pub unsafe fn create_window(connection: Connection, window: u32,
 		::MWH as u16, 0, 1, visual, 2|2048, &mut value_list[0]);
 }
 
-pub unsafe fn connect(so: *mut libc::c_void) -> VoidPointer {
-	let xcb_connect : unsafe extern "C" fn(displayname: VoidPointer,
-		s: VoidPointer) -> VoidPointer = dlsym(so, b"xcb_connect\0");
+pub unsafe fn connect(so: *mut libc::c_void) -> *mut Void {
+	let xcb_connect : unsafe extern "C" fn(displayname: *mut Void,
+		s: *mut Void) -> *mut Void = dlsym(so, b"xcb_connect\0");
 
-	let connection = xcb_connect(NULL, NULL);
+	let connection = xcb_connect(NULL.as_mut_ptr(), NULL.as_mut_ptr());
 
-	if connection == NULL {
+	if connection.is_null() {
 		panic!("Couldn't connect to X Server.");
 	}
 
@@ -244,15 +244,22 @@ pub unsafe fn flush(connection: Connection) -> () {
 	xcb_flush(connection.0);
 }
 
+pub unsafe fn destroy_window(connection: Connection, window: u32) -> () {
+	let xcb_destroy_window : unsafe extern "C" fn(c: *mut Void, w: u32)->u32
+		= dlsym(connection.1.dl_handle, b"xcb_destroy_window\0");
+
+	xcb_destroy_window(connection.0, window);
+}
+
 pub unsafe fn disconnect(connection: Connection) -> () {
-	let xcb_disconnect : unsafe extern "C" fn(c: VoidPointer) -> () =
+	let xcb_disconnect : unsafe extern "C" fn(c: *mut Void) -> () =
 		dlsym(connection.1.dl_handle, b"xcb_disconnect\0");
 
 	xcb_disconnect(connection.0);
 	libc::dlclose(connection.1.dl_handle);
 }
 
-pub unsafe fn poll_for_event(connection: Connection, state: VoidPointer)
+pub unsafe fn poll_for_event(connection: Connection, state: *mut Void)
 	-> Option<(u8, u32, (i16, i16), (i16, i16), Option<String>)>
 {
 	use super::super::input::key;
@@ -309,32 +316,31 @@ pub unsafe fn poll_for_event(connection: Connection, state: VoidPointer)
 
 pub unsafe fn xkb_get_core_keyboard_device_id(connection: Connection) -> i32 {
 	let xkb_x11_get_core_keyboard_device_id : unsafe extern "C"
-		fn(c: VoidPointer) -> i32 = dlsym(connection.1.dl_handl2,
+		fn(c: *mut Void) -> i32 = dlsym(connection.1.dl_handl2,
 		b"xkb_x11_get_core_keyboard_device_id\0");
 
 	xkb_x11_get_core_keyboard_device_id(connection.0)
 }
 
-pub unsafe fn xkb_context_new(connection: Connection) -> VoidPointer {
+pub unsafe fn xkb_context_new(connection: Connection) -> *mut Void {
 	#[repr(C)]
 	enum ContextFlags { NoFlags = 0 }
 
-	let xkb_context_new : unsafe extern "C" fn(f: ContextFlags)
-		-> VoidPointer
+	let xkb_context_new : unsafe extern "C" fn(f: ContextFlags) -> *mut Void
 		= dlsym(connection.1.dl_handl2, b"xkb_context_new\0");
 
 	xkb_context_new(ContextFlags::NoFlags)
 }
 
 pub unsafe fn xkb_x11_keymap_new_from_device(connection: Connection,
-	xkbctx: VoidPointer, device_id: i32) -> VoidPointer
+	xkbctx: *mut Void, device_id: i32) -> *mut Void
 {
 	#[repr(C)]
 	enum CompileFlags { NoFlags = 0 }
 
 	let xkb_x11_keymap_new_from_device : unsafe extern "C"
-		fn(context: VoidPointer, connection: VoidPointer,
-			device_id: i32, flags: CompileFlags) -> VoidPointer
+		fn(context: *mut Void, connection: *mut Void, device_id: i32,
+			flags: CompileFlags) -> *mut Void
 		= dlsym(connection.1.dl_handl2,
 			b"xkb_x11_keymap_new_from_device\0");
 
@@ -343,17 +349,17 @@ pub unsafe fn xkb_x11_keymap_new_from_device(connection: Connection,
 }
 
 pub unsafe fn xkb_x11_state_new_from_device(connection: Connection,
-	keymap: VoidPointer, device_id: i32) -> VoidPointer
+	keymap: *mut Void, device_id: i32) -> *mut Void
 {
 	let xkb_x11_state_new_from_device : unsafe extern "C" fn(
-		keymap: VoidPointer, connection: VoidPointer, device_id: i32)
-		-> VoidPointer = dlsym(connection.1.dl_handl2,
+		keymap: *mut Void, connection: *mut Void, device_id: i32)
+		-> *mut Void = dlsym(connection.1.dl_handl2,
 			b"xkb_x11_state_new_from_device\0");
 
 	xkb_x11_state_new_from_device(keymap, connection.0, device_id)
 }
 
-unsafe fn xkb_state_update_key(connection: Connection, state: VoidPointer,
+unsafe fn xkb_state_update_key(connection: Connection, state: *mut Void,
 	keycode: u32, dn: bool)
 {
 	#[allow(dead_code)]
@@ -366,7 +372,7 @@ unsafe fn xkb_state_update_key(connection: Connection, state: VoidPointer,
 		Down,
 	}
 
-	let xkb_state_update_key : unsafe extern "C" fn(state: VoidPointer,
+	let xkb_state_update_key : unsafe extern "C" fn(state: *mut Void,
 		key: u32, direction: KeyDirection) -> StateComponent
 		= dlsym(connection.1.dl_handl2, b"xkb_state_update_key\0");
 
@@ -377,10 +383,10 @@ unsafe fn xkb_state_update_key(connection: Connection, state: VoidPointer,
 	});
 }
 
-unsafe fn xkb_state_key_get_utf8(connection: Connection, state: VoidPointer,
+unsafe fn xkb_state_key_get_utf8(connection: Connection, state: *mut Void,
 	key: u32) -> String
 {
-	let xkb_state_key_get_utf8 : unsafe extern "C" fn(state: VoidPointer,
+	let xkb_state_key_get_utf8 : unsafe extern "C" fn(state: *mut Void,
 		keycode: u32, buffer: *mut u8, size: usize) -> i32
 		= dlsym(connection.1.dl_handl2, b"xkb_state_key_get_utf8\0");
 
@@ -402,28 +408,28 @@ unsafe fn xkb_state_key_get_utf8(connection: Connection, state: VoidPointer,
 
 pub unsafe fn use_xkb_extension(connection: Connection) {
 	let xcb_xkb_use_extension : unsafe extern "C" fn(
-		connection: VoidPointer, major: u16, minor: u16) -> u32
+		connection: *mut Void, major: u16, minor: u16) -> u32
 		= dlsym(connection.1.dl_handl2, b"xcb_xkb_use_extension\0");
 
 	xcb_xkb_use_extension(connection.0, 1, 0);
 }
 
-pub unsafe fn xkb_state_unref(connection: Connection, state: VoidPointer) {
-	let xkb_state_unref : unsafe extern "C" fn(state: VoidPointer) -> ()
+pub unsafe fn xkb_state_unref(connection: Connection, state: *mut Void) {
+	let xkb_state_unref : unsafe extern "C" fn(state: *mut Void) -> ()
 		= dlsym(connection.1.dl_handl2, b"xkb_state_unref\0");
 
 	xkb_state_unref(state);
 }
 
-pub unsafe fn xkb_keymap_unref(connection: Connection, keymap: VoidPointer) {
-	let xkb_keymap_unref : unsafe extern "C" fn(state: VoidPointer) -> ()
+pub unsafe fn xkb_keymap_unref(connection: Connection, keymap: *mut Void) {
+	let xkb_keymap_unref : unsafe extern "C" fn(state: *mut Void) -> ()
 		= dlsym(connection.1.dl_handl2, b"xkb_keymap_unref\0");
 
 	xkb_keymap_unref(keymap);
 }
 
-pub unsafe fn xkb_context_unref(connection: Connection, context: VoidPointer) {
-	let xkb_context_unref : unsafe extern "C" fn(state: VoidPointer) -> ()
+pub unsafe fn xkb_context_unref(connection: Connection, context: *mut Void) {
+	let xkb_context_unref : unsafe extern "C" fn(state: *mut Void) -> ()
 		= dlsym(connection.1.dl_handl2, b"xkb_context_unref\0");
 
 	xkb_context_unref(context);

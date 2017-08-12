@@ -22,10 +22,7 @@ pub use input::joystick::Button;
 #[derive(PartialEq)]
 #[derive(Copy, Clone)]
 pub enum Input {
-	/// One of the following has happenned,
-	///
-	/// - The window has just been resized
-	/// - The window has just been created
+	/// The window has just been resized.
 	Resize,
 	/// The user has switched to this window (in focus).
 	Resume,
@@ -150,8 +147,9 @@ pub struct InputQueue {
 }
 
 impl InputQueue {
+	/// Get an empty InputQueue.
 	#[inline(always)]
-	pub fn create() -> InputQueue {
+	pub fn new() -> InputQueue {
 		let queue = Vec::new();
 		let mods = keyboard::modifiers::Modifiers::create();
 		let resized = false;

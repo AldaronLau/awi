@@ -4,7 +4,7 @@
 // Copyright 2017 (c) Jeron Lau
 // Licensed under the MIT LICENSE
 
-use ami::void_pointer::*;
+use ami::*;
 
 use Input;
 use Key;
@@ -37,7 +37,7 @@ pub enum Event {
 }
 
 impl Event {
-	pub fn create(connection: xcb::Connection, state: VoidPointer) -> Event{
+	pub fn create(connection: xcb::Connection, state: *mut Void) -> Event {
 		let event = unsafe { xcb::poll_for_event(connection, state) };
 
 		if let Some(e) = event {

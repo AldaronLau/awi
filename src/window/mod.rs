@@ -5,14 +5,18 @@
 // Licensed under the MIT LICENSE
 
 use WindowOps;
-use aci_png;
 
+/// Connect to a window.  This macro requires that aci_png be in scope, to load
+/// the window's icon.
 #[macro_export] macro_rules! connect {
 	() => ( {
 		Window::new(include!(concat!(env!("CARGO_MANIFEST_DIR"),
 				"/target/res/src/name.rs")),
-			include_bytes!(concat!(env!("CARGO_MANIFEST_DIR"),
-				"/res/icon.png")))
+			&aci_png::decode(
+				include_bytes!(concat!(
+					env!("CARGO_MANIFEST_DIR"),
+					"/res/icon.png")))
+				.unwrap())
 	} )
 }
 
@@ -27,13 +31,9 @@ impl Window {
 	/// Create a window, using `title` as the title, and `icon` as the
 	/// window icon.  The format of icon is as follows:
 	/// `(width, height, pixels)`.  You can load icons with aci.
-	pub fn new(title: &str, icon: &'static [u8]) -> Window {
-		let icon = match aci_png::decode(icon) {
-			Ok(icon) => icon,
-			Err(err) => panic!("ERROR DECODING PNG {}", err),
-		};
-		let icon = (icon.0, icon.1, icon.2.as_slice());
-		let os_window = ::os_window::OSWindow::create(title, icon);
+	pub fn new(title: &str, icon: &Vec<u32>) -> Window {
+		let os_window = ::os_window::OSWindow::new(title,
+			icon.as_slice());
 
 		// Make the window visible.
 		os_window.show();

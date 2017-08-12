@@ -20,9 +20,9 @@ pub struct XcbWindow {
 }
 
 impl ::WindowOps for XcbWindow {
-	fn create(title: &str, icon: (u32, u32, &[u8])) -> Self {
+	fn new(title: &str, icon: &[u32]) -> Self {
 		let xcb_dl = unsafe { ffi::load_dl() };
-		let native = NativeConnection::create(xcb_dl);
+		let native = NativeConnection::new(xcb_dl);
 
 		if native.failed() {
 			return XcbWindow {

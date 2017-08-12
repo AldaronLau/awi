@@ -4,14 +4,14 @@
 // Copyright 2017 (c) Jeron Lau
 // Licensed under the MIT LICENSE
 
-use ami::void_pointer::*;
+use ami::*;
 use super::ffi as xcb;
 
 pub struct Keyboard {
 	connection: xcb::Connection,
-	pub state: VoidPointer,
-	keymap: VoidPointer,
-	context: VoidPointer,
+	pub state: *mut Void,
+	keymap: *mut Void,
+	context: *mut Void,
 }
 
 impl Keyboard {
@@ -34,7 +34,12 @@ impl Keyboard {
 	}
 
 	pub fn null(connection: xcb::Connection) -> Keyboard {
-		Keyboard {connection, state: NULL, keymap: NULL, context: NULL}
+		Keyboard {
+			connection,
+			state: NULL.as_mut_ptr(),
+			keymap: NULL.as_mut_ptr(),
+			context: NULL.as_mut_ptr(),
+		}
 	}
 }
 

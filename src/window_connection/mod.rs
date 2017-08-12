@@ -4,11 +4,12 @@
 // Copyright 2017 (c) Jeron Lau
 // Licensed under the MIT LICENSE
 
-use ami::void_pointer::VoidPointer;
+use ami::Void;
 
 /// Connection is listed first, then window.
+#[derive(Clone)]
 pub enum WindowConnection {
-	Xcb(VoidPointer, u32),
+	Xcb(*mut Void, u32),
 	Wayland,
 	DirectFB,
 	Windows,
