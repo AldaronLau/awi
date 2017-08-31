@@ -1,8 +1,8 @@
-// lib/input/ffi/unix/joystick_async.rs
-// Graphical Software Packager
-// Copyright 2017 (c) Aldaron's Tech
-// Copyright 2017 (c) Jeron Lau
+// Aldaron's Window Interface
+// Copyright (c) 2017 Plop Grizzly, Jeron Lau <jeron.lau@plopgrizzly.com>
 // Licensed under the MIT LICENSE
+//
+// src/input/ffi/unix/joystick_async.rs
 
 extern {
 	fn fcntl(fd: i32, cmd: i32, v: i32) -> i32;

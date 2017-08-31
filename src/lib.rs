@@ -1,15 +1,18 @@
-// lib/mod.rs
-// Graphical Software Packager
-// Copyright 2017 (c) Aldaron's Tech
-// Copyright 2017 (c) Jeron Lau
+// Aldaron's Window Interface
+// Copyright (c) 2017 Plop Grizzly, Jeron Lau <jeron.lau@plopgrizzly.com>
 // Licensed under the MIT LICENSE
+//
+// src/lib.rs
+
+//! Aldaron's Window Interface is a library developed by Plop Grizzly for
+//! creating a window and handling it's input.
 
 #![doc(
-	html_logo_url =
-		"https://rawgit.com/aldarons-tech/window/master/res/icon.png",
-	html_favicon_url =
-		"https://rawgit.com/aldarons-tech/window/master/res/symbol.svg",
-	html_root_url = "http://at.plopgrizzly.tech/window/"
+	html_logo_url = "https://raw.githubusercontent.com/plopgrizzly\
+		/window/master/res/icon.png",
+	html_favicon_url = "https://raw.githubusercontent.com/plopgrizzly\
+		/window/master/res/symbol.png",
+	html_root_url = "http://plopgrizzly.com/window/"
 )]
 
 pub(crate) extern crate aci_png;

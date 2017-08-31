@@ -1,8 +1,8 @@
-// lib/os_window/windows/input/mod.rs
-// Graphical Software Packager
-// Copyright 2017 (c) Aldaron's Tech
-// Copyright 2017 (c) Jeron Lau
+// Aldaron's Window Interface
+// Copyright (c) 2017 Plop Grizzly, Jeron Lau <jeron.lau@plopgrizzly.com>
 // Licensed under the MIT LICENSE
+//
+// src/os_window/windows/input/mod.rs
 
 // pub fn english(physical_key: u16, scan_key: u16) -> Key {
 //	let physical_key = (physical_key as u32) | ( scan_key as u32 >> 16 );
