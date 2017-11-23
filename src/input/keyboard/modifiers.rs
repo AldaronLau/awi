@@ -4,11 +4,11 @@
 //
 // src/input/keyboard/modifiers.rs
 
+use afi_docf::{ Emphasis, Align };
+
 use Input;
 use Key;
 use Msg;
-use Emphasis;
-use Align;
 
 const NONE : u8 = 0b0000_0000;
 const SHIFT : u8 = 0b0000_0001;
@@ -34,8 +34,8 @@ impl Modifiers {
 				_ => return, // Ctrl,Shift,Alt shouldn't print.
 			},
 			Input::KeyPress(key) => match key {
-				Key::Ctrl(_) => self.held |= CTRL,
-				Key::Shift(_) => self.held |= SHIFT,
+				Key::LCtrl|Key::RCtrl => self.held |= CTRL,
+				Key::LShift|Key::RShift => self.held |= SHIFT,
 				Key::Alt => self.held |= ALT,
 				Key::Compose => if self.held & COMPOSE == 0 {
 					self.held |= COMPOSE
@@ -86,8 +86,8 @@ impl Modifiers {
 				_ => {},
 			},
 			Input::KeyRelease(key) => match key {
-				Key::Ctrl(_) => self.held &= !CTRL,
-				Key::Shift(_) => self.held &= !SHIFT,
+				Key::RCtrl|Key::LCtrl => self.held &= !CTRL,
+				Key::RShift|Key::LShift => self.held &= !SHIFT,
 				Key::Alt => self.held &= !ALT,
 				_ => {},
 			},
@@ -106,7 +106,7 @@ impl Modifiers {
 
 	fn b(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::Msg(Msg::Emphasis(Emphasis::Bold)),
+			CTRL => Input::ScEmphasis(Emphasis::Bold),
 			ALT => return, // TODO: What does it do?
 			_ => return,
 		})
@@ -165,7 +165,7 @@ impl Modifiers {
 
 	fn i(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::Msg(Msg::Emphasis(Emphasis::Italic)), // 𝘢
+			CTRL => Input::ScEmphasis(Emphasis::Italic), // 𝘢
 			CTRL_SHIFT => Input::Msg(Msg::Info), // 🛈
 			ALT => return, // TODO: What does it do?
 			_ => return,
@@ -192,7 +192,7 @@ impl Modifiers {
 
 	fn l(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::Msg(Msg::Align(Align::Left)),
+			CTRL => Input::ScAlign(Align::Left),
 			ALT => return, // TODO: What does it do?
 			_ => return,
 		})
@@ -270,7 +270,7 @@ impl Modifiers {
 	#[allow(unreachable_code)]
 	fn u(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::Msg(Msg::Emphasis(Emphasis::Underline)),//⎁
+			CTRL => Input::ScEmphasis(Emphasis::Underline),//⎁
 			ALT => return, // TODO: What does it do?
 			_ => return,
 		})
@@ -319,7 +319,7 @@ impl Modifiers {
 
 	fn enter(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::Msg(Msg::Align(Align::Justify)),
+			CTRL => Input::ScAlign(Align::Justified),
 			ALT => return, // TODO: What does it do?
 			_ => return,
 		})
@@ -327,7 +327,7 @@ impl Modifiers {
 
 	fn apostrophe(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::Msg(Msg::Align(Align::Right)),
+			CTRL => Input::ScAlign(Align::Right),
 			ALT => return, // TODO: What does it do?
 			_ => return,
 		})
@@ -335,7 +335,7 @@ impl Modifiers {
 
 	fn semicolon(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::Msg(Msg::Align(Align::Middle)),
+			CTRL => Input::ScAlign(Align::Centered),
 			ALT => Input::Text('°'),
 			_ => return,
 		})
@@ -343,14 +343,14 @@ impl Modifiers {
 
 	fn equalsign(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::Msg(Msg::Emphasis(Emphasis::UnderlineX2)),
+			CTRL => Input::ScEmphasis(Emphasis::UnderlineX2),
 			_ => return,
 		})
 	}
 
 	fn minus(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::Msg(Msg::Emphasis(Emphasis::StrikeOut)),
+			CTRL => Input::ScEmphasis(Emphasis::StrikeOut),
 			_ => return,
 		})
 	}
@@ -411,7 +411,7 @@ impl Modifiers {
 
 	fn num7(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::Msg(Msg::Emphasis(Emphasis::Overline)),
+			CTRL => Input::ScEmphasis(Emphasis::Overline),
 			ALT => return, // TODO: Aldaron's OS / No OS: ⏭ Track
 			_ => return,
 		})
@@ -419,7 +419,7 @@ impl Modifiers {
 
 	fn num8(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::Msg(Msg::Emphasis(Emphasis::UnderlineDC)),//⎂
+			CTRL => Input::ScEmphasis(Emphasis::UnderlineDC),//⎂
 			ALT => return, // TODO: Brightness ☀ - 🔅
 			_ => return,
 		})
@@ -427,7 +427,7 @@ impl Modifiers {
 
 	fn num9(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::Msg(Msg::Emphasis(Emphasis::InvertColor)),
+			CTRL => Input::ScEmphasis(Emphasis::InvertColor),
 			ALT => return, // TODO: Brightness ☀ + 🔆
 			_ => return,
 		})
@@ -435,7 +435,7 @@ impl Modifiers {
 
 	fn num0(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::Msg(Msg::Emphasis(Emphasis::None)),
+			CTRL => Input::ScEmphasis(Emphasis::None),
 			ALT => return, // TODO: Toggle Monitor Config 🖵
 			_ => return,
 		})

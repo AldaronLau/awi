@@ -36,9 +36,9 @@ impl Keyboard {
 	pub fn null(connection: xcb::Connection) -> Keyboard {
 		Keyboard {
 			connection,
-			state: NULL.as_mut_ptr(),
-			keymap: NULL.as_mut_ptr(),
-			context: NULL.as_mut_ptr(),
+			state: null_mut!(),
+			keymap: null_mut!(),
+			context: null_mut!(),
 		}
 	}
 }

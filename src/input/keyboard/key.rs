@@ -4,25 +4,33 @@
 //
 // src/input/keyboard/key.rs
 
-/// This enum represents a physical key on a keyboard.
+/// This enum represents a physical key on a keyboard.  There a 71 possible keys
 #[derive(PartialEq, Eq)]
 #[derive(Copy, Clone)]
+#[repr(u8)]
 pub enum Key {
 	// Note: These rows are not necessarily the rows these keys are found.
 	// Row1
-	Num1, Num2, Num3, Num4, Num5, Num6, Num7, Num8, Num9, Num0,
-		Minus, EqualSign, Backspace,
+	Num1 = 0u8, Num2 = 1, Num3 = 2, Num4 = 3, Num5 = 4, Num6 = 5, Num7 = 6,
+	Num8 = 7, Num9 = 8, Num0 = 9, Minus = 10, EqualSign = 11,
+	Backspace = 12,
 	// Row2
-	Tab, Q, W, E, R, T, Y, U, I, O, P, BracketOpen, BracketClose, BackSlash,
+	Tab = 13, Q = 14, W = 15, E = 16, R = 17, T = 18, Y = 19, U = 20,
+	I = 21, O = 22, P = 23, BracketOpen = 24, BracketClose = 25,
+	BackSlash = 26,
 	// Row3
-	Compose, A, S, D, F, G, H, J, K, L, Semicolon, Apostrophe, Enter,
+	Compose = 27, A = 28, S = 29, D = 30, F = 31, G = 32, H = 33, J = 34,
+	K = 35, L = 36, Semicolon = 37, Apostrophe = 38, Enter = 39,
 	// Row4
-	Shift(bool), Z, X, C, V, B, N, M, Comma, Period, Slash,
+	LShift = 40, Z = 41, X = 42, C = 43, V = 44, B = 45, N = 46,
+	M = 47, Comma = 48, Period = 49, Slash = 50, RShift = 51,
 	// Row5
-	Ctrl(bool), Alt, Space, Up, Down, Left, Right,
+	LCtrl = 52, Alt = 53, Space = 54, RCtrl = 55, Up = 56, Down = 57,
+	Left = 58, Right = 59,
 	// Ext ( May require 2 keys to be pressed on some platforms )
-	ExtBacktick, ExtDelete, ExtInsert, ExtNumLock, ExtPageUp, ExtPageDown,
-	ExtHome, ExtEnd, ExtAsterisk, ExtPlus, ExtAltGr
+	ExtBacktick = 64, ExtDelete = 65, ExtInsert = 66, ExtNumLock = 67,
+	ExtPageUp = 68, ExtPageDown = 69, ExtHome = 70, ExtEnd = 71,
+	ExtAsterisk = 72, ExtPlus = 73, ExtAltGr = 74
 }
 
 impl ::std::fmt::Display for Key {
@@ -71,8 +79,8 @@ impl ::std::fmt::Display for Key {
 			Semicolon => ";",
 			Apostrophe => "'",
 			Enter => "enter",
-			Shift(false) => "Left Shift",
-			Shift(true) => "Right Shift",
+			LShift => "Left Shift",
+			RShift => "Right Shift",
 			Z => "Z",
 			X => "X",
 			C => "C",
@@ -83,8 +91,8 @@ impl ::std::fmt::Display for Key {
 			Comma => ",",
 			Period => ".",
 			Slash => "/",
-			Ctrl(false) => "Left Ctrl",
-			Ctrl(true) => "Right Ctrl",
+			LCtrl => "Left Ctrl",
+			RCtrl => "Right Ctrl",
 			Alt => "Alt",
 			ExtAltGr => "AltGr",
 			Space => "space",
@@ -107,8 +115,8 @@ impl ::std::fmt::Display for Key {
 }
 
 impl Key {
-	// create a Key from keycode
-	pub(crate) fn create(physical_key: u32) -> Option<Key> {
+	// create a `Key` from keycode
+	pub(crate) fn new(physical_key: u32) -> Option<Key> {
 		use os_window::key;
 
 		Some( match physical_key {
@@ -144,10 +152,10 @@ impl Key {
 			key::P => Key::P,
 			key::BRACKET_OPEN => Key::BracketOpen,
 			key::BRACKET_CLOSE => Key::BracketClose,
-			key::LEFT_CTRL => Key::Ctrl(false),
-			key::RIGHT_CTRL => Key::Ctrl(true),
-			key::LEFT_SHIFT => Key::Shift(false),
-			key::RIGHT_SHIFT => Key::Shift(true),
+			key::LEFT_CTRL => Key::LCtrl,
+			key::RIGHT_CTRL => Key::RCtrl,
+			key::LEFT_SHIFT => Key::LShift,
+			key::RIGHT_SHIFT => Key::RShift,
 			key::LEFT_ALT => Key::Alt,
 			key::ext::ALT_GR => Key::ExtAltGr,
 			key::CAPS_LOCK => Key::Compose,

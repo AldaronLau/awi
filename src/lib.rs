@@ -15,9 +15,11 @@
 	html_root_url = "http://plopgrizzly.com/window/"
 )]
 
+pub(crate) extern crate afi;
+pub(crate) extern crate afi_docf;
 pub(crate) extern crate aci_png;
 pub(crate) extern crate libc;
-pub(crate) extern crate ami;
+#[macro_use] pub(crate) extern crate ami;
 
 pub(crate) mod input;
 pub(crate) mod os_window;
@@ -30,11 +32,13 @@ pub use input::Key;
 pub use input::Click;
 pub use input::Joystick;
 pub use input::Button;
-pub use input::InputQueue;
-pub use input::{ Msg, Emphasis, Align };
+pub use input::Msg;
 pub use window_connection::WindowConnection;
 pub use window::Window;
 pub use window_ops::WindowOps;
+pub use afi_docf::{ Emphasis, Align, FontColor };
+
+pub(crate) use input::keyboard::Keyboard;
 
 // Default Width and Height for a window.
 pub(crate) const MWW : u32 = 640;

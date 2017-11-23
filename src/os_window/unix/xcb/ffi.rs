@@ -4,7 +4,7 @@
 //
 // src/os_window/unix/xcb/ffi.rs
 
-use ami::{ Void, NULL };
+use ami::{ Void };
 use libc;
 
 #[repr(C)]
@@ -93,7 +93,7 @@ unsafe fn intern_atom_reply(connection: Connection, atom: u32) -> u32 {
 		cookie: u32, e: *mut Void) -> *mut XcbInternAtomReply
 		= dlsym(connection.1.dl_handle, b"xcb_intern_atom_reply\0");
 
-	let reply = xcb_intern_atom_reply(connection.0, atom, NULL.as_mut_ptr());
+	let reply = xcb_intern_atom_reply(connection.0, atom, null_mut!());
 	let atom = (*reply).atom;
 
 	free(reply);
@@ -229,7 +229,7 @@ pub unsafe fn connect(so: *mut libc::c_void) -> *mut Void {
 	let xcb_connect : unsafe extern "C" fn(displayname: *mut Void,
 		s: *mut Void) -> *mut Void = dlsym(so, b"xcb_connect\0");
 
-	let connection = xcb_connect(NULL.as_mut_ptr(), NULL.as_mut_ptr());
+	let connection = xcb_connect(null_mut!(), null_mut!());
 
 	if connection.is_null() {
 		panic!("Couldn't connect to X Server.");

@@ -6,7 +6,6 @@
 
 use ami::*;
 
-use Input;
 use Key;
 use input;
 use super::ffi as xcb;
@@ -53,8 +52,8 @@ impl Event {
 		}
 	}
 
-	pub fn poll(self, queue: &mut input::InputQueue, wh: &mut (u32, u32))
-		-> bool
+	pub fn poll(self, queue: &mut input::InputQueue, wh: &mut (u32, u32),
+		keyboard: &mut ::Keyboard) -> bool
 	{
 		let e : EventDetails = if let Event::Event(details) = self {
 			details
@@ -63,25 +62,15 @@ impl Event {
 		};
 
 		match e.id {
-			KEY_DOWN => if let Some(key) = Key::create(e.detail) {
-				if queue.len() == 0 {
-					queue.key_down(key);
-				} else {
-					let input2 = queue.last();
-
-					if let Input::KeyRelease(_) = input2 {
-						queue.pop();
-					} else {
-						queue.key_down(key);
-					}
-				}
+			KEY_DOWN => if let Some(key) = Key::new(e.detail) {
+				keyboard.press(key);
 			} else if e.detail == 9 {
 				queue.back();
 			} else if e.detail == 95 {
 				queue.fullscreen();
 			},
-			KEY_UP => if let Some(key) = Key::create(e.detail) {
-				queue.key_up(key);
+			KEY_UP => if let Some(key) = Key::new(e.detail) {
+				keyboard.release(key);
 			},
 			BUTTON_DOWN => match e.detail {
 				bt @ 1...3 => queue.button_down(*wh, e.xy,

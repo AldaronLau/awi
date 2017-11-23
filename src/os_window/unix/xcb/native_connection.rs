@@ -15,8 +15,8 @@ impl NativeConnection {
 		let xcb = xcb_dl.dl_handle;
 
 		if xcb.is_null() {
-			return NativeConnection((NULL.as_mut_ptr(), xcb_dl), 0,
-				keyboard::Keyboard::null((NULL.as_mut_ptr(), xcb_dl)));
+			return NativeConnection((null_mut!(), xcb_dl), 0,
+				keyboard::Keyboard::null((null_mut!(), xcb_dl)));
 		}
 
 		let connection = (unsafe { xcb::connect(xcb) }, xcb_dl);
@@ -76,6 +76,6 @@ impl Drop for NativeConnection {
 
 impl NativeConnection {
 	pub fn failed(&self) -> bool {
-		self .0 .0 == NULL.as_mut_ptr()
+		self .0 .0 .is_null()
 	}
 }

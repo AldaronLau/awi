@@ -49,12 +49,12 @@ impl ::WindowOps for UnixWindow {
 		}
 	}
 
-	fn poll_event(&self, input: &mut ::input::InputQueue, wh: &mut(u32,u32))
-		-> bool
+	fn poll_event(&self, input: &mut ::input::InputQueue, wh: &mut(u32,u32),
+		keyboard: &mut ::Keyboard) -> bool
 	{
 		let r = match *self {
 //			UnixWindow::Wayland(w) => w.poll_event(input, wh),
-			UnixWindow::Xcb(ref w) => w.poll_event(input, wh),
+			UnixWindow::Xcb(ref w) => w.poll_event(input, wh, keyboard),
 //			UnixWindow::DirectFb(ref w) => w.poll_event(input, wh),
 		};
 

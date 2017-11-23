@@ -1,13 +1,12 @@
 [package]
-name = "minimal"
+name = "minima"
 version = "0.1.0"
-authors = ["Jeron Aldaron Lau <jeron.lau@plopgrizzly.tech>"]
+authors = ["Jeron Aldaron Lau <jeron.lau@plopgrizzly.com>"]
 build = "build.rs"
-homepage = "at.plopgrizzly.tech"
 
 [dependencies]
-window = { path = "../../" }
-aci_png = "^0.2"
+awi = { path = "../../" }
+aci_png = "0.3.0"
 
 [build-dependencies]
 res = "0.2.0"

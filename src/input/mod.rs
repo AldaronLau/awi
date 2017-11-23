@@ -9,13 +9,11 @@ pub(crate) mod keyboard;
 mod joystick;
 mod ffi;
 
-pub use input::keyboard::key::Key;
-pub use input::keyboard::msg::Msg;
-pub use input::keyboard::msg::Align;
-pub use input::keyboard::msg::Emphasis;
-pub use input::cursor::Click;
-pub use input::joystick::Joystick;
-pub use input::joystick::Button;
+pub use self::keyboard::Key;
+pub use self::keyboard::msg::Msg;
+pub use self::cursor::Click;
+pub use self::joystick::Joystick;
+pub use self::joystick::Button;
 
 /// Input to the window, that's put into the input queue, when an event has
 /// occurred.
@@ -33,6 +31,11 @@ pub enum Input {
 	/// - A key has been pressed on a physical keyboard.
 	/// - A key has been pressed on an on-screen keyboard.
 	KeyPress(Key),
+	/// One of the following has happenned,
+	///
+	/// - A key is being held down on a physical keyboard.
+	/// - A key is being held down on an on-screen keyboard.
+	KeyHold(Key),
 	/// One of the following has happenned,
 	///
 	/// - A key has been released on a physical keyboard.
@@ -102,6 +105,37 @@ pub enum Input {
 	/// - One of the joystick's buttons has been released.
 	/// - An on-screen button has been released.
 	JoystickButtonUp(Button),
+	/// Keyboard Shortcut - Align
+	ScAlign(::afi_docf::Align),
+	/// Keyboard Shortcut - Emphasis
+	ScEmphasis(::afi_docf::Emphasis),
+	/// Keyboard Shortcut - Text Color
+	ScColor(::afi_docf::FontColor),
+}
+
+impl ::std::fmt::Display for Input {
+	fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result<> {
+		use Input::*;
+
+		match *self {
+			Resize => write!(f, "Resize"),
+			Resume => write!(f, "Resume"),
+			Pause => write!(f, "Pause"),
+			KeyPress(key) => write!(f, "Key Press {}", key),
+			KeyHold(key) => write!(f, "Key Hold {}", key),
+			KeyRelease(key) => write!(f, "Key Release {}", key),
+			Text(chr) => write!(f, "Text {}", chr),
+			Msg(msg) => write!(f, "Message {}", msg),
+			Cursor(xy) => write!(f, "Cursor {:?}", xy),
+			CursorPress(c, xy) => write!(f, "Cursor Press {} {:?}", c, xy),
+			CursorRelease(c, xy) => write!(f, "Cursor Release {} {:?}", c, xy),
+			ScrollUp(x,y) => write!(f, "Scroll Up ({}, {})",x,y),
+			ScrollDown(x,y) => write!(f, "Scroll Down ({}, {})",x,y),
+			ScrollLeft(x,y) => write!(f, "Scroll Left ({}, {})",x,y),
+			ScrollRight(x,y) => write!(f, "Scroll Right ({}, {})",x,y),
+			_ => write!(f, "FIXME: Unknown") // FIXME
+		}
+	}
 }
 
 pub enum ScrollWheel {
@@ -189,8 +223,13 @@ impl InputQueue {
 	}
 
 	#[inline(always)]
-	pub fn pop(&mut self) {
-		self.queue.pop();
+	pub fn is_empty(&self) -> bool {
+		self.queue.len() == 0
+	}
+
+	#[inline(always)]
+	pub fn pop(&mut self) -> Option<Input> {
+		self.queue.pop()
 	}
 
 	#[inline(always)]
@@ -218,6 +257,11 @@ impl InputQueue {
 		match key {
 			_ => self.input(Input::KeyPress(key)),
 		}
+	}
+
+	#[inline(always)]
+	pub fn key_hold(&mut self, key: Key) {
+		self.input(Input::KeyHold(key));
 	}
 
 	#[inline(always)]

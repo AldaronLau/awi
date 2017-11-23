@@ -6,41 +6,7 @@
 
 #[derive(PartialEq)]
 #[derive(Copy, Clone)]
-pub enum Align {
-	Left,
-	Middle,
-	Right,
-	Justify,
-}
-
-#[derive(PartialEq)]
-#[derive(Copy, Clone)]
-pub enum Emphasis {
-	/// Strikethrough
-	StrikeOut,
-	/// Overline
-	Overline,
-	/// Underline Continuous
-	Underline,
-	/// Underline Discontinuous
-	UnderlineDC,
-	/// Double Underline
-	UnderlineX2,
-	/// Invert Colors
-	InvertColor,
-	/// Bold
-	Bold,
-	/// Italic
-	Italic,
-	/// Regular
-	None,
-}
-
-#[derive(PartialEq)]
-#[derive(Copy, Clone)]
 pub enum Msg {
-	Align(Align),
-	Emphasis(Emphasis),
 	Select,
 	Copy,
 	Cancel,
@@ -76,8 +42,6 @@ impl ::std::fmt::Display for Msg {
 		use Msg::*;
 
 		match *self {
-			Align(_) => write!(f, "Align"),
-			Emphasis(_) => write!(f, "Emphasis"),
 			Select => write!(f, "Select"),
 			Copy => write!(f, "Copy"),
 			Cancel => write!(f, "Cancel"),

@@ -5,27 +5,26 @@
 // examples/minimal/src/main.rs
 
 #[macro_use]
-extern crate window;
+extern crate awi;
 extern crate aci_png;
 
-use window::{ Window, InputQueue };
+use awi::Window;
 
 pub fn main() -> () {
 	let mut window = connect!();
-	let mut queue = InputQueue::new();
 
 	'mainloop: loop {
-		window.update(&mut queue);
+		while let Some(input) = window.input() {
+			use awi::Input::*;
+			use awi::Msg::*;
 
-		for input in queue.iter() {
-			use window::Input::*;
-			use window::Msg::*;
-
-			match *input {
+			match input {
 				Msg(Quit) | Msg(Back) => break 'mainloop,
 	//			Input::Redraw => redraw(&mut context),
-				_ => {},
+				a => println!("{}", a),
 			}
 		}
+
+		window.update();
 	}
 }
