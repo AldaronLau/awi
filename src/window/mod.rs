@@ -83,11 +83,6 @@ impl Window {
 		input
 	}
 
-	/// Return true if `Window` has been resized on this frame.
-	pub fn get_resized(&self) -> bool {
-		self.input_queue.get_resized()
-	}
-
 	/// Poll for events.
 	fn get_events(&mut self) {
 		// Get window events, and update keyboard state.

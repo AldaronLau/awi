@@ -176,7 +176,6 @@ fn cursor_coordinates<T, U>(wh: (T, T), xy: (U, U)) -> Option<(f32, f32)>
 pub struct InputQueue {
 	queue: Vec<Input>,
 	mods: keyboard::modifiers::Modifiers,
-	resized: bool,
 	fullscreen: bool,
 }
 
@@ -186,23 +185,15 @@ impl InputQueue {
 	pub fn new() -> InputQueue {
 		let queue = Vec::new();
 		let mods = keyboard::modifiers::Modifiers::create();
-		let resized = false;
 		let fullscreen = false;
 
-		InputQueue { queue, mods, resized, fullscreen }
+		InputQueue { queue, mods, fullscreen }
 	}
 
 	/// Returns an iterator over the InputQueue.
 	#[inline(always)]
 	pub fn iter(&self) -> ::std::slice::Iter<Input> {
 		self.queue.iter()
-	}
-
-	/// Returns true if the InputQueue indicates that the window has been
-	/// resized, returns false otherwise.
-	#[inline(always)]
-	pub fn get_resized(&self) -> bool {
-		self.resized
 	}
 
 	#[inline(always)]
@@ -212,7 +203,6 @@ impl InputQueue {
 
 	#[inline(always)]
 	pub fn clear(&mut self) {
-		self.resized = false;
 		self.fullscreen = false;
 		self.queue.clear()
 	}
@@ -243,7 +233,6 @@ impl InputQueue {
 		if *wh != d {
 			*wh = d;
 			self.input(Input::Resize);
-			self.resized = true;
 		}
 	}
 
