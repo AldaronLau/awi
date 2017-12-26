@@ -41,10 +41,17 @@ impl NativeConnection {
 		self
 	}
 
-	pub fn icon(self, icon: &[u32]) -> Self {
+	pub fn icon(self, icon: (u32, u32, &[u32])) -> Self {
+		let mut ico = ::std::vec::Vec::new();
+
+		ico.push(icon.0);
+		ico.push(icon.1);
+		ico.extend(icon.2);
+
 		unsafe {
 			xcb::change_property(self.0, self.1, 6,
-				xcb::get_atom(self.0, b"_NET_WM_ICON"), icon);
+				xcb::get_atom(self.0, b"_NET_WM_ICON"),
+				ico.as_slice());
 		}
 
 		self

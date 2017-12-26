@@ -19,7 +19,7 @@ pub enum UnixWindow {
 }
 
 impl ::WindowOps for UnixWindow {
-	fn new(title: &str, icon: &[u32]) -> Self {
+	fn new(title: &str, icon: (u32, u32, &[u32])) -> Self {
 		let xcb = xcb::XcbWindow::new(title, icon);
 
 		if xcb.failed() {
