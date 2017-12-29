@@ -4,7 +4,7 @@
 //
 // src/os_window/windows/window_fullscreen.rs
 
-use ami::void_pointer::*;
+use super::types::*;
 
 #[repr(C)]
 #[derive(Copy, Clone)]
@@ -18,16 +18,16 @@ struct Rect {
 const WS_VISIBLE : u32 = 0x10000000;
 
 extern "system" {
-	fn GetWindowRect(hw: VoidPointer, out: *mut Rect) -> i32;
-	//	fn SetWindowLongPtrW(hw: VoidPointer, n_index: i32, new: usize) -> usize; // 64-bit
-	fn GetWindowLongW(hw: VoidPointer, n_index: i32) -> usize;
-	fn SetWindowLongW(hw: VoidPointer, n_index: i32, new: usize) -> usize;
-	fn SetWindowPos(hw: VoidPointer, insert_after: VoidPointer, x: i32,
+	fn GetWindowRect(hw: Hwnd, out: *mut Rect) -> i32;
+	//	fn SetWindowLongPtrW(hw: *const Void, n_index: i32, new: usize) -> usize; // 64-bit
+	fn GetWindowLongW(hw: Hwnd, n_index: i32) -> usize;
+	fn SetWindowLongW(hw: Hwnd, n_index: i32, new: usize) -> usize;
+	fn SetWindowPos(hw: Hwnd, insert_after: Hwnd, x: i32,
 		y: i32, w: i32, h: i32, flags: u32) -> i32;
 	fn GetSystemMetrics(index: i32) -> i32;
 }
 
-pub fn window_fullscreen(window: VoidPointer, state: &mut bool,
+pub fn window_fullscreen(window: Hwnd, state: &mut bool,
 	size: &mut (i32, i32, i32, i32), style: &mut usize)
 {
 	let flags = 0x0040 | 0x0020;
@@ -35,7 +35,7 @@ pub fn window_fullscreen(window: VoidPointer, state: &mut bool,
 	if *state {
 		unsafe {
 			SetWindowLongW(window, -16, *style);
-			SetWindowPos(window, !NULL - 1, size.0, size.1,
+			SetWindowPos(window, Hwnd::notopmost(), size.0, size.1,
 				size.2, size.3, flags);
 		}
 	} else {
@@ -49,7 +49,7 @@ pub fn window_fullscreen(window: VoidPointer, state: &mut bool,
 			GetWindowRect(window, &mut rc);
 
 			SetWindowLongW(window, -16, WS_VISIBLE as usize);
-			SetWindowPos(window, !NULL, 0, 0, w, h, flags);
+			SetWindowPos(window, Hwnd::topmost(), 0, 0, w, h, flags);
 		}
 
 		let sx = rc.left as i32;

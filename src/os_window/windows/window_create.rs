@@ -4,7 +4,8 @@
 //
 // src/os_window/windows/window_create.rs
 
-use ami::void_pointer::*;
+use ami::Void;
+use super::types::*;
 
 const WS_OVERLAPPEDWINDOW : u32 = 0x00C00000 | 0x00080000 | 0x00040000
 	| 0x00010000 | 0x00020000;
@@ -24,12 +25,12 @@ struct Rect {
 extern "system" {
 	fn CreateWindowExW(a: u32, class_name: *const [u8;80],
 		window_name: *const [u8;80], style: u32, x: i32, y: i32,
-		w: i32, h: i32, parent: VoidPointer, menu: VoidPointer,
-		hInstance: VoidPointer, param: VoidPointer) -> VoidPointer;
+		w: i32, h: i32, parent: *const Void, menu: *const Void,
+		hInstance: *const Void, param: *const Void) -> Hwnd;
 	fn AdjustWindowRect(a: *mut Rect, dwStyle: u32, bMenu: i32) -> i32;
 }
 
-pub fn window_create(connection: VoidPointer, size: (isize, isize), name: [u8; 80]) -> VoidPointer {
+pub fn window_create(connection: *const Void, size: (isize, isize), name: [u8; 80]) -> Hwnd {
 	let mut wr = Rect { left: 0, top: 0, right: size.0, bottom: size.1 };
 	unsafe {
 		AdjustWindowRect(&mut wr, WS_OVERLAPPEDWINDOW, 0)
@@ -44,12 +45,12 @@ pub fn window_create(connection: VoidPointer, size: (isize, isize), name: [u8; 8
 		0, 0,		// x/y coords
 		width as i32,	// width
 		height as i32,	// height
-		NULL,		// handle to parent
-		NULL,		// handle to menu
+		null!(),	// handle to parent
+		null!(),	// handle to menu
 		connection,	// hInstance
-		NULL)		// no extra parameters
+		null!())	// no extra parameters
 	};
-	if window == NULL {
+	if window == Hwnd::null() {
 		panic!("Couldn't Create a Window!");
 	}
 	window

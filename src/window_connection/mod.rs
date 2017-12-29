@@ -12,7 +12,7 @@ pub enum WindowConnection {
 	Xcb(*mut Void, u32),
 	Wayland,
 	DirectFB,
-	Windows,
+	Windows(*const Void),
 	Android,
 	IOS,
 	AldaronsOS,

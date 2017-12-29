@@ -4,14 +4,15 @@
 //
 // src/os_window/windows/connection_create.rs
 
-use ami::void_pointer::*;
+use ami::Void;
 
+#[link(name = "user32")]
 extern "system" {
-	fn GetModuleHandleW(a: VoidPointer) -> VoidPointer;
+	fn GetModuleHandleW(a: *const Void) -> *const Void;
 }
 
-pub fn connection_create() -> VoidPointer {
+pub fn connection_create() -> *const Void {
 	unsafe {
-		GetModuleHandleW(NULL)
+		GetModuleHandleW(null!())
 	}
 }

@@ -4,11 +4,11 @@
 //
 // src/os_window/windows/window_poll_event.rs
 
-use ami::void_pointer::*;
-use Input;
-use input::keyboard::{ english, FSC, ESC };
+use input;
+use ami::Void;
+// use input::keyboard::{ english, FSC, ESC }; TODO
 use Key;
-use super::{ convert_mouse_pos, should_resize };
+use super::types::*;
 
 static mut ADI_WNDPROCMSG : u8 = 0b0000_0000;
 
@@ -42,10 +42,10 @@ struct Point {
 
 #[repr(C)]
 struct Msg {
-	hwnd: VoidPointer,
+	hwnd: Hwnd,
 	message: u32,
-	w_param: VoidPointer,
-	l_param: VoidPointer,
+	w_param: Wparam,
+	l_param: Lparam,
 	time: u32,
 	pt: Point,
 }
@@ -60,20 +60,20 @@ struct Rect {
 }
 
 extern "system" {
-	fn PeekMessageW(lpMsg: *mut Msg, h_wnd: VoidPointer, msg_filter_min: u32,
+	fn PeekMessageW(lpMsg: *mut Msg, h_wnd: Hwnd, msg_filter_min: u32,
 		msg_filter_max: u32, remove_msg: u32) -> i32;
 	fn TranslateMessage(lpMsg: *const Msg) -> i32;
 	fn DispatchMessageW(lpMsg: *const Msg) -> usize;
 	fn GetCursorPos(point: *mut Point) -> i32;
-	fn ScreenToClient(h_wnd: VoidPointer, point: *mut Point) -> i32;
-	fn GetClientRect(h_wnd: VoidPointer, out: *mut Rect) -> i32;
+	fn ScreenToClient(h_wnd: Hwnd, point: *mut Point) -> i32;
+	fn GetClientRect(h_wnd: Hwnd, out: *mut Rect) -> i32;
 	fn PostQuitMessage(exit_code: i32) -> ();
-	fn DefWindowProcW(hw: VoidPointer, uMsg: u32, wParam: VoidPointer,
-		lParam: VoidPointer) -> isize;
+	fn DefWindowProcW(hw: Hwnd, uMsg: u32, wParam: *const Void,
+		lParam: *const Void) -> isize;
 }
 
-pub extern "C" fn wnd_proc(h_wnd: VoidPointer, u_msg: u32, w_param: VoidPointer,
-	l_param: VoidPointer) -> isize
+pub extern "C" fn wnd_proc(h_wnd: Hwnd, u_msg: u32, w_param: *const Void,
+	l_param: *const Void) -> isize
 {
 	match u_msg {
 		0x0007 => unsafe { ADI_WNDPROCMSG |= RESUMED },
@@ -94,8 +94,8 @@ pub extern "C" fn wnd_proc(h_wnd: VoidPointer, u_msg: u32, w_param: VoidPointer,
 	}
 }
 
-fn get_mouse(window: VoidPointer, wh: &(u32, u32), is_miw: &mut bool)
-	-> (f32, f32, bool)
+fn get_mouse(window: Hwnd, wh: &(u32, u32), is_miw: &mut bool)
+	-> (i16, i16, bool)
 {
 	let mut pos = Point { x: 0, y: 0 };
 	unsafe {
@@ -103,10 +103,8 @@ fn get_mouse(window: VoidPointer, wh: &(u32, u32), is_miw: &mut bool)
 		ScreenToClient(window, &mut pos);
 	}
 
-	let pos = convert_mouse_pos(wh, (pos.x as i16, pos.y as i16));
-
-	let miw = pos.0 >= -1.0 && pos.0 <= 1.0 && pos.1 >= -1.0
-		&& pos.1 <= 1.0;
+	let miw = pos.x >= 0 && pos.x <= (*wh).0 as isize && pos.y >= 0
+		&& pos.y <= (*wh).1 as isize;
 
 	let miw_changed = if *is_miw != miw {
 		*is_miw = miw;
@@ -114,13 +112,13 @@ fn get_mouse(window: VoidPointer, wh: &(u32, u32), is_miw: &mut bool)
 	} else {
 		false
 	};
-	(pos.0, pos.1, miw_changed)
+	(pos.x as i16, pos.y as i16, miw_changed)
 }
 
-pub fn window_poll_event(window: VoidPointer, input: &mut Vec<Input>,
-	miw: &mut bool, wh: &mut (u32, u32)) -> bool
+pub fn window_poll_event(window: Hwnd, queue: &mut input::InputQueue,
+	miw: &mut bool, wh: &mut (u32, u32), keyboard: &mut ::Keyboard) -> bool
 {
-	let mut msg = Msg { hwnd: NULL, message: 0, w_param: NULL, l_param: NULL,
+	let mut msg = Msg { hwnd: Hwnd::null(), message: 0, w_param: 0, l_param: 0,
 		time: 0, pt: Point { x: 0, y: 0 } };
 
 	if unsafe { ADI_WNDPROCMSG & RESIZED != 0 } {
@@ -133,73 +131,59 @@ pub fn window_poll_event(window: VoidPointer, input: &mut Vec<Input>,
 			(clia.right as u32, clia.bottom as u32)
 		};
 
-		if should_resize(wh, clia) {
-			input.push(Input::Resize);
-		}
+//		if should_resize(wh, clia) {
+			queue.resize(wh, clia);
+//		}
 		unsafe { ADI_WNDPROCMSG &= !RESIZED };
 		return true;
 	}
 	
 	if unsafe { ADI_WNDPROCMSG & PAUSED != 0 } {
-		input.push(Input::Pause);
+		queue.pause();
 		unsafe { ADI_WNDPROCMSG &= !PAUSED };
 		return true;
 	}
 	
 	if unsafe { ADI_WNDPROCMSG & RESUMED != 0 } {
-		input.push(Input::Resume);
+		queue.resume();
 		unsafe { ADI_WNDPROCMSG &= !RESUMED };
 		return true;
 	}
 
 	let (x, y, miw_changed) = get_mouse(window, wh, miw);
 	if miw_changed {
-		input.push(if *miw {
-			Input::EnterWindow
-		} else {
-			Input::LeaveWindow
-		});
+		if *miw == false {
+			queue.cursor_leave();
+		}
 		return true;
 	}
 
 	if unsafe {
-		PeekMessageW(&mut msg, NULL, 0, 0, 0x0001)
+		PeekMessageW(&mut msg, Hwnd::null(), 0, 0, 0x0001)
 	} == 0 { // no messages available
 		return false;
 	}
 	match msg.message {
-		WINDOW_CLOSE => {
-			input.push(Input::Back)
-		},
-		CURSOR_MOVE => {
-			input.push(Input::Cursor(x,y))
-		},
-		LBUTTON_DOWN => {
-			input.push(Input::LeftDown(x,y))
-		},
-		LBUTTON_UP => {
-			input.push(Input::LeftUp(x,y))
-		},
-		MBUTTON_DOWN => {
-			input.push(Input::MiddleDown(x,y))
-		},
-		MBUTTON_UP => {
-			input.push(Input::MiddleUp(x, y))
-		},
-		RBUTTON_DOWN => {
-			input.push(Input::RightDown(x, y))
-		},
-		RBUTTON_UP => {
-			input.push(Input::RightUp(x, y))
-		},
+		WINDOW_CLOSE => queue.back(),
+		CURSOR_MOVE => queue.cursor_move(*wh, (x, y)),
+		LBUTTON_DOWN => queue.button_down(*wh, (x, y), ::Click::Left),
+		LBUTTON_UP => queue.button_up(*wh, (x, y), ::Click::Left),
+		MBUTTON_DOWN => queue.button_down(*wh, (x, y), ::Click::Middle),
+		MBUTTON_UP => queue.button_up(*wh, (x, y), ::Click::Middle),
+		RBUTTON_DOWN => queue.button_down(*wh, (x, y), ::Click::Right),
+		RBUTTON_UP => queue.button_up(*wh, (x, y), ::Click::Right),
 		0x0100 | 0x0104 => {
-			let scan = ((msg.l_param
-				& 0b00000001_11111111_00000000_00000000) >> 16)
-					.as_int() as u16;
-			let chr = english(msg.w_param.as_int() as u16, scan);
+			// TODO
+//			let scan = ((msg.l_param
+//				& 0b00000001_11111111_00000000_00000000) >> 16)
+//					as u16;
 			if msg.l_param & 0b01000000_00000000_00000000_00000000
-				!= NULL
+				!= 0
 			{
+				// TODO
+				/*
+				let chr = english(msg.w_param as u16, scan);
+
 				match chr {
 					// These keys shouldn't repeat.
 					Key::Char(ESC) | Key::Char(FSC) |
@@ -208,32 +192,33 @@ pub fn window_poll_event(window: VoidPointer, input: &mut Vec<Input>,
 						Key::Ctrl(_) | Key::Alt(_)
 					=> { } // ignore
 					_ => input.push(Input::KeyRepeat(chr))
-				}
-			} else {
-				input.push(Input::KeyDown(chr))
+				}*/
+			} else if let Some(key) = Key::new(msg.w_param as u32) {
+				keyboard.press(key);
 			}
 		}
 		0x0101 | 0x0105 => {
-			let scan = ((msg.l_param
-				& 0b00000001_11111111_00000000_00000000) >> 16)
-					.as_int() as u16;
-			let chr = english(msg.w_param.as_int() as u16, scan);
-			input.push(Input::KeyUp(chr))
+			// TODO
+//			let scan = ((msg.l_param
+//				& 0b00000001_11111111_00000000_00000000) >> 16);
+//			let chr = english(msg.w_param as u16, scan);
+			
+			if let Some(key) = Key::new(msg.w_param as u32) {
+				keyboard.press(key);
+			}
 		}
 		SCROLL => {
-			let a = (((msg.w_param.as_int() as u32) >> 16) & 0xFFFF)
+			let a = (((msg.w_param as u32) >> 16) & 0xFFFF)
 				as i16;
 
 			if a > 0 {
-				let reps = a / 120;
-				for _ in 0..reps {
-					input.push(Input::ScrollUp(x, y))
-				}
+				queue.scroll(*wh, (x, y),
+					input::ScrollWheel::Up,
+					(a / 120) as usize);
 			} else {
-				let reps = a / -120;
-				for _ in 0..reps {
-					input.push(Input::ScrollDown(x, y))
-				}
+				queue.scroll(*wh, (x, y),
+					input::ScrollWheel::Down,
+					(a / -120) as usize);
 			}
 		}
 		// ignore all other messages

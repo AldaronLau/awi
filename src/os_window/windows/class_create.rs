@@ -4,9 +4,9 @@
 //
 // src/os_window/windows/class_create.rs
 
-use ami::void_pointer::*;
+use ami::Void;
 use super::{ string };
-use image::Image;
+use super::types::*;
 
 use std::mem;
 
@@ -14,30 +14,31 @@ use std::mem;
 struct WndClassEx {
 	cb_size: u32,
 	style: u32,
-	lpfn_wnd_proc: extern "C" fn(a: VoidPointer, b: u32, c: VoidPointer,
-		d: VoidPointer) -> isize,
+	lpfn_wnd_proc: extern "C" fn(a: Hwnd, b: u32, c: *const Void,
+		d: *const Void) -> isize,
 	cb_cls_extra: i32,
 	cb_wnd_extra: i32,
-	h_instance: VoidPointer,
-	h_icon: VoidPointer,
-	h_cursor: VoidPointer,
-	hbr_background: VoidPointer,
+	h_instance: *const Void,
+	h_icon: *const Void,
+	h_cursor: *const Void,
+	hbr_background: *const Void,
 	lpsz_menu_name: usize, // Char *
 	lpsz_class_name: *const [u8;80],
-	h_icon_sm: VoidPointer,
+	h_icon_sm: *const Void,
 }
 
+#[link(name = "gdi32")]
 extern "system" {
-	fn CreateIcon(hi: VoidPointer, w: i32, h: i32, planes: u8,
-		bitspixel: u8, and: *const u8, xor: *const u8) -> VoidPointer;
-	fn LoadCursorW(hi: VoidPointer, cursorName: usize) -> VoidPointer;
-	fn GetStockObject(fnObject: i32) -> VoidPointer;
+	fn CreateIcon(hi: *const Void, w: i32, h: i32, planes: u8,
+		bitspixel: u8, and: *const u32, xor: *const u32) -> *const Void;
+	fn LoadCursorW(hi: *const Void, cursorName: usize) -> *const Void;
+	fn GetStockObject(fnObject: i32) -> *const Void;
 	fn RegisterClassExW(a: *const WndClassEx) -> u16;
 }
 
-pub fn class_create(hi: VoidPointer, title: &str, icon: Image,
-	wnd_proc: extern "C" fn(a: VoidPointer, b: u32, c: VoidPointer,
-		d: VoidPointer) -> isize)
+pub fn class_create(hi: *const Void, title: &str, icon: (u32, u32, &[u32]),
+	wnd_proc: extern "C" fn(a: Hwnd, b: u32, c: *const Void,
+		d: *const Void) -> isize)
 	-> [u8; 80]
 {
 	let mut name : [u8; 80] = [0u8; 80];
@@ -47,30 +48,33 @@ pub fn class_create(hi: VoidPointer, title: &str, icon: Image,
 		name[i] = nam[i];
 	}
 
-	let width = icon.size.0 as i32;
-	let height = icon.size.1 as i32;
+	let (w, h, pixels) = icon;
 
-	let mut and : Vec<u8> = Vec::new();
-	let mut xor : Vec<u8> = Vec::new();
+	let mut and : Vec<u32> = Vec::new();
+	let mut xor : Vec<u32> = Vec::new();
 
-	let w = icon.size.0 as usize;
-	for i in 0usize..icon.size.0 as usize{
-		for j in 0usize..icon.size.1 as usize {
+	let w = w as usize;
+
+	for i in 0usize..w {
+		for j in 0usize..h as usize {
+			// TODO
 			// Xor
-			xor.push(icon.pixels[1 + 3 * (j + (w * i))]);
-			xor.push(icon.pixels[0 + 3 * (j + (w * i))]);
-			xor.push(icon.pixels[2 + 3 * (j + (w * i))]);
-			xor.push(0xFF);
+			xor.push(pixels[(j + (w * i))]);
+//			xor.push(pixels[1 + 3 * (j + (w * i))]);
+//			xor.push(pixels[0 + 3 * (j + (w * i))]);
+//			xor.push(pixels[2 + 3 * (j + (w * i))]);
+//			xor.push(0xFF);
 			// And
-			and.push(0xFF);
-			and.push(0xFF);
-			and.push(0xFF);
-			and.push(0xFF);
+			and.push(0xFF_FF_FF_FF);
+//			and.push(0xFF);
+//			and.push(0xFF);
+//			and.push(0xFF);
+//			and.push(0xFF);
 		}
 	}
 
 	let new_icon = unsafe {
-		CreateIcon(hi, width, height, 1, 32, &and[0], &xor[0])
+		CreateIcon(hi, w as i32, h as i32, 1, 32, &and[0], &xor[0])
 	};
 	
 	let window_class = WndClassEx {
@@ -81,7 +85,7 @@ pub fn class_create(hi: VoidPointer, title: &str, icon: Image,
 		cb_wnd_extra: 0,
 		h_instance: hi,
 		h_icon: new_icon,
-		h_cursor: unsafe { LoadCursorW(NULL, 32512) },
+		h_cursor: unsafe { LoadCursorW(null!(), 32512) },
 		hbr_background: unsafe { GetStockObject(0) },
 		lpsz_menu_name: 0,
 		lpsz_class_name: &name,

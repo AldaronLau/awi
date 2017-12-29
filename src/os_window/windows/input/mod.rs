@@ -82,7 +82,7 @@ pub mod key {
 		pub const NUM_PAD_9 : u32 = 105;
 		pub const NUM_PAD_0 : u32 = 96;
 		pub const NUM_PAD_MINUS : u32 = 109;
-		pub const NUM_PAD_ENTER : u32 = ;
+		pub const NUM_PAD_ENTER : u32 = 13; // TODO
 		pub const NUM_PAD_PERIOD : u32 = 110;
 		pub const NUM_PAD_ASTERISK : u32 = 106;
 		pub const NUM_PAD_PLUS : u32 = 107;
