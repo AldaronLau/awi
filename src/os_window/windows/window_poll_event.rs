@@ -34,6 +34,9 @@ const RBUTTON_DOWN: u32 = 0x0204;
 const RBUTTON_UP: u32 = 0x0205;
 const SCROLL: u32 = 0x020A;
 
+const LSHIFT : u32 = 16;
+const RSHIFT : u32 = 16 | (0b_0011_0110 << 16);
+
 #[repr(C)]
 struct Point {
 	x: isize, // long
@@ -115,6 +118,20 @@ fn get_mouse(window: Hwnd, wh: &(u32, u32), is_miw: &mut bool)
 	(pos.x as i16, pos.y as i16, miw_changed)
 }
 
+fn create_key_id(w: Wparam, l: Lparam) -> u32 {
+	const RCONTROL : u32 = 17 | (0b_1_0001_1101 << 16);
+	const RALT: u32 = 18 | (0b_1_0011_1000 << 16);
+
+	let scan = l & 0b00000001_11111111_00000000_00000000;
+	
+	match (w as u32) | ( scan as u32) {
+		d @ RSHIFT => d,
+		d @ RCONTROL => d,
+		d @ RALT => d,
+		_ => (w as u32),
+	}
+}
+
 pub fn window_poll_event(window: Hwnd, queue: &mut input::InputQueue,
 	miw: &mut bool, wh: &mut (u32, u32), keyboard: &mut ::Keyboard) -> bool
 {
@@ -173,38 +190,30 @@ pub fn window_poll_event(window: Hwnd, queue: &mut input::InputQueue,
 		RBUTTON_DOWN => queue.button_down(*wh, (x, y), ::Click::Right),
 		RBUTTON_UP => queue.button_up(*wh, (x, y), ::Click::Right),
 		0x0100 | 0x0104 => {
-			// TODO
-//			let scan = ((msg.l_param
-//				& 0b00000001_11111111_00000000_00000000) >> 16)
-//					as u16;
-			if msg.l_param & 0b01000000_00000000_00000000_00000000
-				!= 0
-			{
-				// TODO
-				/*
-				let chr = english(msg.w_param as u16, scan);
-
-				match chr {
-					// These keys shouldn't repeat.
-					Key::Char(ESC) | Key::Char(FSC) |
-						Key::Insert | Key::Compose |
-						Key::NumLock | Key::Shift(_) |
-						Key::Ctrl(_) | Key::Alt(_)
-					=> { } // ignore
-					_ => input.push(Input::KeyRepeat(chr))
-				}*/
-			} else if let Some(key) = Key::new(msg.w_param as u32) {
+			let detail = create_key_id(msg.w_param, msg.l_param);
+			
+			if let Some(key) = Key::new(detail) {
 				keyboard.press(key);
+			} else if detail == ::os_window::key::lib::ESCAPE {
+				queue.back();
 			}
 		}
 		0x0101 | 0x0105 => {
-			// TODO
-//			let scan = ((msg.l_param
-//				& 0b00000001_11111111_00000000_00000000) >> 16);
-//			let chr = english(msg.w_param as u16, scan);
-			
-			if let Some(key) = Key::new(msg.w_param as u32) {
-				keyboard.press(key);
+			let detail = create_key_id(msg.w_param, msg.l_param);
+
+			// A workaround for a bug in windows, when RSHIFT is
+			// released while LSHIFT is still pressed, there is no
+			// separate release event for LSHIFT.
+			if detail == RSHIFT {
+				keyboard.release(Key::LShift);
+			}
+			// And vice versa
+			if detail == LSHIFT {
+				keyboard.release(Key::RShift);
+			}
+
+			if let Some(key) = Key::new(detail) {
+				keyboard.release(key);
 			}
 		}
 		SCROLL => {
