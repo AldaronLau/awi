@@ -9,7 +9,7 @@ awi = { path = "../../" }
 aci_png = "^0.5"
 
 [build-dependencies]
-res = "0.2.0"
+res = "0.2.1"
 
 [package.metadata.res]
 developer = "Aldaron's Tech"

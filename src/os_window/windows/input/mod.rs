@@ -4,10 +4,6 @@
 //
 // src/os_window/windows/input/mod.rs
 
-// pub fn english(physical_key: u16, scan_key: u16) -> Key {
-//	let physical_key = (physical_key as u32) | ( scan_key as u32 >> 16 );
-// }
-
 pub mod key {
 	pub const A : u32 = 65;
 	pub const B : u32 = 66;
@@ -52,16 +48,16 @@ pub mod key {
 	pub const BRACKET_OPEN : u32 = 219;
 	pub const BRACKET_CLOSE : u32 = 221;
 	pub const ENTER : u32 = 13;
-	pub const LEFT_CTRL : u32 = 17 | (0b_0000_0000 >> 16);
-	pub const RIGHT_CTRL : u32 = 17 | (0b_1000_11101 >> 16);
+	pub const LEFT_CTRL : u32 = 17;
+	pub const RIGHT_CTRL : u32 = 17 | (0b_1_0001_1101 << 16);
 	pub const SEMICOLON : u32 = 186;
 	pub const APOSTROPHE : u32 = 222;
-	pub const LEFT_SHIFT : u32 = 16 | (0b_0000_0000 >> 16);
-	pub const RIGHT_SHIFT : u32 = 16 | (0b_0011_0110 >> 16);
+	pub const LEFT_SHIFT : u32 = 16;
+	pub const RIGHT_SHIFT : u32 = 16 | (0b_0011_0110 << 16);
 	pub const BACKSLASH : u32 = 220;
 	pub const COMMA : u32 = 188;
 	pub const PERIOD : u32 = 190;
-	pub const LEFT_ALT : u32 = 18 | (0b0_0000_0000 >> 16);
+	pub const LEFT_ALT : u32 = 18;
 	pub const CAPS_LOCK : u32 = 20;
 	pub const SPACE : u32 = 32;
 	pub const SLASH : u32 = 111;
@@ -82,14 +78,14 @@ pub mod key {
 		pub const NUM_PAD_9 : u32 = 105;
 		pub const NUM_PAD_0 : u32 = 96;
 		pub const NUM_PAD_MINUS : u32 = 109;
-		pub const NUM_PAD_ENTER : u32 = ;
+		pub const NUM_PAD_ENTER : u32 = 13;
 		pub const NUM_PAD_PERIOD : u32 = 110;
 		pub const NUM_PAD_ASTERISK : u32 = 106;
 		pub const NUM_PAD_PLUS : u32 = 107;
 		pub const NUM_PAD_SLASH : u32 = 191;
 		pub const BACKTICK : u32 = 192;
 		pub const NUMLOCK : u32 = 144;
-		pub const ALT_GR : u32 = 18 | (0b1_0011_1000 >> 16);
+		pub const ALT_GR : u32 = 18 | (0b_1_0011_1000 << 16);
 		pub const FULLSCREEN : u32 = 122;
 		pub const HOME : u32 = 36;
 		pub const END : u32 = 35;

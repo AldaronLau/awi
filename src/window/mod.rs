@@ -5,6 +5,7 @@
 // src/window/mod.rs
 
 use afi;
+
 use WindowOps;
 
 /// Connect to a window.  This macro requires that aci_png be in scope, to load
@@ -57,7 +58,7 @@ impl Window {
 	}
 
 	/// Toggle whether the window is fullscreen.
-	pub fn fullscreen(&self) {
+	pub fn fullscreen(&mut self) {
 		self.os_window.fullscreen();
 	}
 

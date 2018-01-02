@@ -4,6 +4,8 @@
 //
 // src/os_window/windows/mod.rs
 
+mod types;
+mod input;
 mod class_create;
 mod connection_create;
 mod string; // for UTF-16 conversions
@@ -11,15 +13,13 @@ mod window_create;
 mod window_fullscreen;
 mod window_poll_event;
 
-use ami::void_pointer::*;
-use Input;
-use image::Image;
-use super::{ convert_mouse_pos, should_resize };
+use ami::Void;
+use input::InputQueue;
+use self::types::*;
 
-const MWW : isize = super::MWW as isize;
-const MWH : isize = super::MWH as isize;
+pub use self::input::key;
 
-struct Connection { native: VoidPointer }
+struct Connection { native: *mut Void }
 impl Connection {
 	fn create() -> Connection {
 		Connection { native: connection_create::connection_create() }
@@ -27,9 +27,10 @@ impl Connection {
 }
 struct Class { name: [u8; 80] }
 impl Class {
-	fn create(connection: &Connection, name: &str, image: Image, wnd_proc:
-		extern "C" fn(a: VoidPointer, b: u32, c: VoidPointer,
-			d: VoidPointer) -> isize)
+	fn create(connection: &Connection, name: &str,
+		image: (u32, u32, &[u32]), wnd_proc: extern "C" fn(
+			a: Hwnd, b: u32, c: *const Void, d: *const Void)
+			-> Lresult)
 		-> Class
 	{
 		Class {
@@ -38,7 +39,7 @@ impl Class {
 		}
 	}
 }
-struct Window { native: VoidPointer }
+struct Window { native: Hwnd }
 impl Window {
 	fn create(connection: &Connection, size: (isize, isize), class: Class) -> Window {
 		let c = connection.native;
@@ -48,7 +49,7 @@ impl Window {
 	}
 }
 
-pub struct NativeWindow {
+pub struct WindowsWindow {
 	window: Window,
 	connection: Connection,
 	miw: bool, // Mouse In Window
@@ -56,17 +57,21 @@ pub struct NativeWindow {
 	fullscreen: bool,
 	restore_style: usize,
 }
-impl NativeWindow {
-	pub fn create(title: &str, icon: &'static [u8]) -> NativeWindow {
+impl ::WindowOps for WindowsWindow {
+	pub fn new(title: &str, icon: (u32, u32, &[u32])) -> WindowsWindow {
 		let connection = Connection::create();
-		let class = Class::create(&connection, title, Image::load(icon),
+		let class = Class::create(&connection, title, icon,
 			window_poll_event::wnd_proc);
-		let window = Window::create(&connection, (MWW, MWH), class);
+		let window = Window::create(&connection,
+			(::MWW as isize, ::MWH as isize), class);
 
-		NativeWindow { connection: connection, window: window, miw: true,
+		WindowsWindow { connection: connection, window: window, miw: true,
 			restore_size: (0, 0, 0, 0),
 			fullscreen: false, restore_style: 0,
 		}
+	}
+	
+	pub fn show(&self) -> () {
 	}
 
 	pub fn fullscreen(&mut self) {
@@ -75,23 +80,21 @@ impl NativeWindow {
 			&mut self.restore_style);
 	}
 
-	pub fn poll_event(&mut self, input: &mut Vec<Input>, wh: &mut (u32, u32))
-		-> bool
+	pub fn poll_event(&mut self, input: &mut InputQueue, wh: &mut (u32, u32),
+		keyboard: &mut ::Keyboard) -> bool
 	{
 		let miw = &mut self.miw;
 		let window = self.window.native;
 
-		window_poll_event::window_poll_event(window, input, miw, wh)
+		window_poll_event::window_poll_event(window, input, miw, wh,
+			keyboard)
 	}
 
 	pub fn update(&self) {
 	}
 
-	pub fn get_window(&self) -> VoidPointer {
-		self.window.native
-	}
-
-	pub fn get_connection(&self) -> VoidPointer {
-		self.connection.native
+	pub fn get_connection(&self) -> ::WindowConnection {
+		::WindowConnection::Windows(self.connection.native,
+			self.window.native.to_ptr())
 	}
 }
