@@ -58,7 +58,7 @@ pub struct WindowsWindow {
 	restore_style: usize,
 }
 impl ::WindowOps for WindowsWindow {
-	pub fn new(title: &str, icon: (u32, u32, &[u32])) -> WindowsWindow {
+	fn new(title: &str, icon: (u32, u32, &[u32])) -> WindowsWindow {
 		let connection = Connection::create();
 		let class = Class::create(&connection, title, icon,
 			window_poll_event::wnd_proc);
@@ -71,16 +71,16 @@ impl ::WindowOps for WindowsWindow {
 		}
 	}
 	
-	pub fn show(&self) -> () {
+	fn show(&self) -> () {
 	}
 
-	pub fn fullscreen(&mut self) {
+	fn fullscreen(&mut self) {
 		window_fullscreen::window_fullscreen(self.window.native,
 			&mut self.fullscreen, &mut self.restore_size,
 			&mut self.restore_style);
 	}
 
-	pub fn poll_event(&mut self, input: &mut InputQueue, wh: &mut (u32, u32),
+	fn poll_event(&mut self, input: &mut InputQueue, wh: &mut (u32, u32),
 		keyboard: &mut ::Keyboard) -> bool
 	{
 		let miw = &mut self.miw;
@@ -90,10 +90,10 @@ impl ::WindowOps for WindowsWindow {
 			keyboard)
 	}
 
-	pub fn update(&self) {
+	fn update(&self) {
 	}
 
-	pub fn get_connection(&self) -> ::WindowConnection {
+	fn get_connection(&self) -> ::WindowConnection {
 		::WindowConnection::Windows(self.connection.native,
 			self.window.native.to_ptr())
 	}

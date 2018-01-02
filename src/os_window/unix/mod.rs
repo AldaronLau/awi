@@ -49,8 +49,8 @@ impl ::WindowOps for UnixWindow {
 		}
 	}
 
-	fn poll_event(&self, input: &mut ::input::InputQueue, wh: &mut(u32,u32),
-		keyboard: &mut ::Keyboard) -> bool
+	fn poll_event(&mut self, input: &mut ::input::InputQueue,
+		wh: &mut(u32,u32), keyboard: &mut ::Keyboard) -> bool
 	{
 		let r = match *self {
 //			UnixWindow::Wayland(w) => w.poll_event(input, wh),
@@ -61,7 +61,7 @@ impl ::WindowOps for UnixWindow {
 		r
 	}
 
-	fn fullscreen(&self) -> () {
+	fn fullscreen(&mut self) -> () {
 		match *self {
 //			UnixWindow::Wayland(w) => w.fullscreen(),
 			UnixWindow::Xcb(ref w) => w.fullscreen(),

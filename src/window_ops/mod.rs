@@ -12,10 +12,10 @@ pub trait WindowOps {
 	// Re-draw the window.
 	fn update(&self) -> ();
 	// Poll for events, returns true if there's more.  Adds 1+ to input.
-	fn poll_event(&self, input: &mut ::input::InputQueue, wh: &mut(u32,u32),
-		keyboard: &mut ::Keyboard) -> bool;
+	fn poll_event(&mut self, input: &mut ::input::InputQueue,
+		wh: &mut(u32,u32), keyboard: &mut ::Keyboard) -> bool;
 	// Toggle fullscreen.
-	fn fullscreen(&self) -> ();
+	fn fullscreen(&mut self) -> ();
 	// Get connection details
 	fn get_connection(&self) -> ::WindowConnection;
 }

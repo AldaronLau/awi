@@ -52,8 +52,8 @@ impl ::WindowOps for XcbWindow {
 		self.native.update()
 	}
 
-	fn poll_event(&self, input: &mut ::input::InputQueue, wh: &mut(u32,u32),
-		keyboard: &mut ::input::keyboard::Keyboard)
+	fn poll_event(&mut self, input: &mut ::input::InputQueue,
+		wh: &mut(u32,u32), keyboard: &mut ::input::keyboard::Keyboard)
 		-> bool
 	{
 		let connection = self.native.connection();
@@ -63,7 +63,7 @@ impl ::WindowOps for XcbWindow {
 			keyboard)
 	}
 
-	fn fullscreen(&self) -> () {
+	fn fullscreen(&mut self) -> () {
 		self.fullscreen.apply(self.native.connection(), self.native.1)
 	}
 
