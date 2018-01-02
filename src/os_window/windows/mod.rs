@@ -19,7 +19,7 @@ use self::types::*;
 
 pub use self::input::key;
 
-struct Connection { native: *const Void }
+struct Connection { native: *mut Void }
 impl Connection {
 	fn create() -> Connection {
 		Connection { native: connection_create::connection_create() }
@@ -93,11 +93,8 @@ impl WindowsWindow {
 	pub fn update(&self) {
 	}
 
-	pub fn get_window(&self) -> Hwnd {
-		self.window.native
-	}
-
 	pub fn get_connection(&self) -> ::WindowConnection {
-		::WindowConnection::Windows(self.connection.native)
+		::WindowConnection::Windows(self.connection.native,
+			self.window.native.to_ptr())
 	}
 }

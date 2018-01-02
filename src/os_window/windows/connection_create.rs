@@ -8,10 +8,10 @@ use ami::Void;
 
 #[link(name = "user32")]
 extern "system" {
-	fn GetModuleHandleW(a: *const Void) -> *const Void;
+	fn GetModuleHandleW(a: *const Void) -> *mut Void;
 }
 
-pub fn connection_create() -> *const Void {
+pub fn connection_create() -> *mut Void {
 	unsafe {
 		GetModuleHandleW(null!())
 	}

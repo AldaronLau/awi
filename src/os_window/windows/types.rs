@@ -37,10 +37,12 @@ pub type Lresult = LongPtr;
 	pub bottom: Long,
 }
 
+#[allow(dead_code)]
 impl Hwnd {
 	pub fn null() -> Hwnd { Hwnd(null_mut!()) }
 	pub fn bottom() -> Hwnd { unsafe { Hwnd(null_mut!().offset(1)) } }
 	pub fn notopmost() -> Hwnd { unsafe { Hwnd(null_mut!().offset(-2)) } }
 	pub fn top() -> Hwnd { Hwnd(null_mut!()) }
 	pub fn topmost() -> Hwnd { unsafe { Hwnd(null_mut!().offset(-1)) } }
+	pub fn to_ptr(&self) -> *mut Void { self.0 }
 }
