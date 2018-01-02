@@ -6,28 +6,41 @@
 
 use ami::Void;
 
-#[cfg(target_pointer_width = "32")]
-type LongPtr = isize;
 #[cfg(target_pointer_width = "64")]
 type LongPtr = i64;
+#[cfg(target_pointer_width = "32")]
+type LongPtr = i32;
 
 #[cfg(target_pointer_width = "32")]
 type UintPtr = u32;
 #[cfg(target_pointer_width = "64")]
 type UintPtr = u64;
 
-type Pvoid = *const Void;
+// Long is always 32 bits on Windows.
+pub type Long = i32;
+pub type Bool = i32;
+
+type Pvoid = *mut Void;
 type Handle = Pvoid;
 
 pub type Lparam = LongPtr;
 pub type Wparam = UintPtr;
 
+pub type Lresult = LongPtr;
+
 #[repr(C)] #[derive(Copy, Clone, PartialEq)] pub struct Hwnd(Handle);
 
+#[repr(C)] #[derive(Copy, Clone)] pub struct Rect {
+	pub left: Long,
+	pub top: Long,
+	pub right: Long,
+	pub bottom: Long,
+}
+
 impl Hwnd {
-	pub fn null() -> Hwnd { Hwnd(null!()) }
-	pub fn bottom() -> Hwnd { unsafe { Hwnd(null!().offset(1)) } }
-	pub fn notopmost() -> Hwnd { unsafe { Hwnd(null!().offset(-2)) } }
-	pub fn top() -> Hwnd { Hwnd(null!()) }
-	pub fn topmost() -> Hwnd { unsafe { Hwnd(null!().offset(-1)) } }
+	pub fn null() -> Hwnd { Hwnd(null_mut!()) }
+	pub fn bottom() -> Hwnd { unsafe { Hwnd(null_mut!().offset(1)) } }
+	pub fn notopmost() -> Hwnd { unsafe { Hwnd(null_mut!().offset(-2)) } }
+	pub fn top() -> Hwnd { Hwnd(null_mut!()) }
+	pub fn topmost() -> Hwnd { unsafe { Hwnd(null_mut!().offset(-1)) } }
 }

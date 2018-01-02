@@ -15,7 +15,7 @@ struct WndClassEx {
 	cb_size: u32,
 	style: u32,
 	lpfn_wnd_proc: extern "C" fn(a: Hwnd, b: u32, c: *const Void,
-		d: *const Void) -> isize,
+		d: *const Void) -> Lresult,
 	cb_cls_extra: i32,
 	cb_wnd_extra: i32,
 	h_instance: *const Void,
@@ -38,7 +38,7 @@ extern "system" {
 
 pub fn class_create(hi: *const Void, title: &str, icon: (u32, u32, &[u32]),
 	wnd_proc: extern "C" fn(a: Hwnd, b: u32, c: *const Void,
-		d: *const Void) -> isize)
+		d: *const Void) -> Lresult)
 	-> [u8; 80]
 {
 	let mut name : [u8; 80] = [0u8; 80];

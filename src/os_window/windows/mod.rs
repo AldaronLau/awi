@@ -30,7 +30,7 @@ impl Class {
 	fn create(connection: &Connection, name: &str,
 		image: (u32, u32, &[u32]), wnd_proc: extern "C" fn(
 			a: Hwnd, b: u32, c: *const Void, d: *const Void)
-			-> isize)
+			-> Lresult)
 		-> Class
 	{
 		Class {
