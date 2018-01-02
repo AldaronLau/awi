@@ -54,7 +54,7 @@ impl ::WindowOps for UnixWindow {
 	{
 		let r = match *self {
 //			UnixWindow::Wayland(w) => w.poll_event(input, wh),
-			UnixWindow::Xcb(ref w) => w.poll_event(input, wh, keyboard),
+			UnixWindow::Xcb(ref mut w) => w.poll_event(input, wh, keyboard),
 //			UnixWindow::DirectFb(ref w) => w.poll_event(input, wh),
 		};
 
@@ -64,7 +64,7 @@ impl ::WindowOps for UnixWindow {
 	fn fullscreen(&mut self) -> () {
 		match *self {
 //			UnixWindow::Wayland(w) => w.fullscreen(),
-			UnixWindow::Xcb(ref w) => w.fullscreen(),
+			UnixWindow::Xcb(ref mut w) => w.fullscreen(),
 //			UnixWindow::DirectFb(ref w) => w.fullscreen(),
 		}
 	}
