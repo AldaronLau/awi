@@ -6,7 +6,7 @@ build = "build.rs"
 
 [dependencies]
 awi = { path = "../../" }
-aci_png = "0.3.0"
+aci_png = "^0.5"
 
 [build-dependencies]
 res = "0.2.0"

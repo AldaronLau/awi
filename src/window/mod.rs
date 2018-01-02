@@ -68,7 +68,7 @@ impl Window {
 	}
 
 	/// Get the width and height of the window, as a tuple.
-	pub fn get_dimensions(&self) -> (u32, u32) {
+	pub fn wh(&self) -> (u32, u32) {
 		self.dimensions
 	}
 
