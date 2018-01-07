@@ -54,22 +54,15 @@ pub fn class_create(hi: *const Void, title: &str, icon: (u32, u32, &[u32]),
 	let mut xor : Vec<u32> = Vec::new();
 
 	let w = w as usize;
+	let h = h as usize;
 
 	for i in 0usize..w {
-		for j in 0usize..h as usize {
+		for j in 0usize..h {
 			// TODO
 			// Xor
-			xor.push(pixels[(j + (w * i))]);
-//			xor.push(pixels[1 + 3 * (j + (w * i))]);
-//			xor.push(pixels[0 + 3 * (j + (w * i))]);
-//			xor.push(pixels[2 + 3 * (j + (w * i))]);
-//			xor.push(0xFF);
+			xor.push(pixels[(j + (h * i))]);
 			// And
 			and.push(0xFF_FF_FF_FF);
-//			and.push(0xFF);
-//			and.push(0xFF);
-//			and.push(0xFF);
-//			and.push(0xFF);
 		}
 	}
 
