@@ -1,10 +1,34 @@
-<img src="res/icon.png" alt="Window" width="100%">
+# Aldaron's Window Interface (awi 0.1.0)
 
-Aldaron's Window Interface (awi) is a crate that creates and iterfaces with a
-window. It is best used with cargo-gsp.
+[Aldaron's Window Interface (awi)](http://plopgrizzly.com/awi) is a library
+developed by [Plop Grizzly](http://plopgrizzly.com) for creating a window and
+handling it's input.
 
-## Links
-* [Website](http://at.plopgrizzly.tech/awi/)
-* [Cargo](https://crates.io/crates/awi/)
-* [Documentation](http://at.plopgrizzly.tech/docs/awi/)
-* [Tutorial](http://at.plopgrizzly.tech/demos/awi)
+[Cargo](https://crates.io/crates/awi) /
+[Documentation](https://docs.rs/awi)
+
+## Features
+**awi**'s current features:
+* Create a window
+* Poll the window's input
+* Get the window's native handle
+
+**awi**'s planned features:
+* Blit a texture onto the window
+
+## Support
+**awi**'s current support:
+* XCB
+* Windows
+
+**awi**'s planned support:
+* Arduino and Raspberry Pi (no os)
+* Nintendo Switch
+* Wayland
+* Android
+
+# Contributing
+
+If you'd like to help implement functions for unsupported platforms, fix bugs,
+improve the API or improve the Documentation, then contact me at
+jeron.lau@plopgrizzly.com. I'll appreciate any help.
