@@ -7,13 +7,10 @@
 //! Aldaron's Window Interface is a library developed by Plop Grizzly for
 //! creating a window and handling it's input.
 
-#![doc(
-	html_logo_url = "https://raw.githubusercontent.com/plopgrizzly\
-		/window/master/res/icon.png",
-	html_favicon_url = "https://raw.githubusercontent.com/plopgrizzly\
-		/window/master/res/symbol.png",
-	html_root_url = "http://plopgrizzly.com/window/"
-)]
+#![warn(missing_docs)]
+#![doc(html_logo_url = "http://plopgrizzly.com/awi/icon.png",
+	html_favicon_url = "http://plopgrizzly.com/awi/icon.svg",
+	html_root_url = "http://plopgrizzly.com/awi/")]
 
 pub(crate) extern crate afi;
 pub(crate) extern crate afi_docf;

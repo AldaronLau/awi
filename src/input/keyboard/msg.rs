@@ -4,6 +4,7 @@
 //
 // src/input/keyboard/msg.rs
 
+/// A Keyboard Shortcut
 #[derive(PartialEq)]
 #[derive(Copy, Clone)]
 pub enum Msg {

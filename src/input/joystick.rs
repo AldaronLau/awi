@@ -8,13 +8,19 @@ use std::fmt;
 
 use Input;
 
+/// A Joystick Button
 #[derive(PartialEq)]
 #[derive(Copy, Clone)]
 pub enum Button {
+	/// A (missile) Button
 	A,
+	/// B ( trigger ) Button
 	B,
+	/// C ( x / right ) Button
 	C,
+	/// D ( y / back ) Button
 	D,
+	/// Extended Button
 	E(usize),
 }
 
@@ -36,6 +42,7 @@ const VIRTUAL_AXIS_MOVE : usize = 0;
 const VIRTUAL_AXIS_POV : usize = 2;
 const VIRTUAL_AXIS_THROTTLE : usize = 4;
 
+/// A USB Joystick Controller.
 pub struct Joystick {
 	joystick: NativeJoystick,
 	oldstate: (Vec<f32>, Vec<bool>),
@@ -44,7 +51,8 @@ pub struct Joystick {
 }
 
 impl Joystick {
-	pub fn create() -> Joystick {
+	/// Connect to a Joystick.
+	pub fn new() -> Joystick {
 		let joystick = NativeJoystick::create();
 		let (n_axis, n_buttons, is_out) = joystick.map();
 
@@ -75,6 +83,7 @@ impl Joystick {
 		}
 	}
 
+	/// Poll Joystick Input
 	pub fn update(&mut self, input: &mut Vec<Input>) -> () {
 		if self.not_plugged_in() {
 			return

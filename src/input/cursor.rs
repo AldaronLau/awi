@@ -4,12 +4,17 @@
 //
 // src/input/cursor.rs
 
+/// A Mouse Click or Touch (for touchscreens)
 #[derive(PartialEq)]
 #[derive(Copy, Clone)]
 pub enum Click {
+	/// Left Click
 	Left,
+	/// Middle Click
 	Middle,
+	/// Right Click (or CTRL-Click)
 	Right,
+	/// Touch (on a touchscreen)
 	Touch,
 }
 
