@@ -4,33 +4,160 @@
 //
 // src/input/keyboard/key.rs
 
-/// This enum represents a physical key on a keyboard.  There a 71 possible keys
+/// This enum represents a physical key on a keyboard.  There a 75 possible keys
 #[derive(PartialEq, Eq)]
 #[derive(Copy, Clone)]
 #[repr(u8)]
 pub enum Key {
 	// Note: These rows are not necessarily the rows these keys are found.
 	// Row1
-	Num1 = 0u8, Num2 = 1, Num3 = 2, Num4 = 3, Num5 = 4, Num6 = 5, Num7 = 6,
-	Num8 = 7, Num9 = 8, Num0 = 9, Minus = 10, EqualSign = 11,
+	/// 1
+	Num1 = 0u8,
+	/// 2
+	Num2 = 1,
+	/// 3
+	Num3 = 2,
+	/// 4
+	Num4 = 3,
+	/// 5
+	Num5 = 4,
+	/// 6
+	Num6 = 5,
+	/// 7
+	Num7 = 6,
+	/// 8
+	Num8 = 7,
+	/// 9
+	Num9 = 8,
+	/// 0
+	Num0 = 9,
+	/// \-
+	Minus = 10,
+	/// \=
+	EqualSign = 11,
+	/// Backspace
 	Backspace = 12,
 	// Row2
-	Tab = 13, Q = 14, W = 15, E = 16, R = 17, T = 18, Y = 19, U = 20,
-	I = 21, O = 22, P = 23, BracketOpen = 24, BracketClose = 25,
+	/// Tab
+	Tab = 13,
+	/// Q
+	Q = 14,
+	/// W
+	W = 15,
+	/// E
+	E = 16,
+	/// R
+	R = 17,
+	/// T
+	T = 18,
+	/// Y
+	Y = 19,
+	/// U
+	U = 20,
+	/// I
+	I = 21,
+	/// O
+	O = 22,
+	/// P
+	P = 23,
+	/// {
+	BracketOpen = 24,
+	/// }
+	BracketClose = 25,
+	/// Backslash
 	BackSlash = 26,
 	// Row3
-	Compose = 27, A = 28, S = 29, D = 30, F = 31, G = 32, H = 33, J = 34,
-	K = 35, L = 36, Semicolon = 37, Apostrophe = 38, Enter = 39,
+	/// Compose (CAPS LOCK)
+	Compose = 27,
+	/// A
+	A = 28,
+	/// S
+	S = 29,
+	/// D
+	D = 30,
+	/// F
+	F = 31,
+	/// G
+	G = 32,
+	/// H
+	H = 33,
+	/// J
+	J = 34,
+	/// K
+	K = 35,
+	/// L
+	L = 36,
+	/// ;
+	Semicolon = 37,
+	/// '
+	Apostrophe = 38,
+	/// Enter
+	Enter = 39,
 	// Row4
-	LShift = 40, Z = 41, X = 42, C = 43, V = 44, B = 45, N = 46,
-	M = 47, Comma = 48, Period = 49, Slash = 50, RShift = 51,
+	/// Left Shift
+	LShift = 40,
+	/// Z
+	Z = 41,
+	/// X
+	X = 42,
+	/// C
+	C = 43,
+	/// V
+	V = 44,
+	/// B
+	B = 45,
+	/// N
+	N = 46,
+	/// M
+	M = 47,
+	/// ,
+	Comma = 48,
+	/// .
+	Period = 49,
+	/// /
+	Slash = 50,
+	/// Right Shift
+	RShift = 51,
 	// Row5
-	LCtrl = 52, Alt = 53, Space = 54, RCtrl = 55, Up = 56, Down = 57,
-	Left = 58, Right = 59,
+	/// Left CTRL
+	LCtrl = 52,
+	/// Alt (Left)
+	Alt = 53,
+	/// Space
+	Space = 54,
+	/// Right Control
+	RCtrl = 55,
+	/// Up Arrow Key
+	Up = 56,
+	/// Down Arrow Key
+	Down = 57,
+	/// Left Arrow Key
+	Left = 58,
+	/// Right Arrow Key
+	Right = 59,
 	// Ext ( May require 2 keys to be pressed on some platforms )
-	ExtBacktick = 64, ExtDelete = 65, ExtInsert = 66, ExtNumLock = 67,
-	ExtPageUp = 68, ExtPageDown = 69, ExtHome = 70, ExtEnd = 71,
-	ExtAsterisk = 72, ExtPlus = 73, ExtAltGr = 74
+	/// `
+	ExtBacktick = 64,
+	/// Delete
+	ExtDelete = 65,
+	/// Insert
+	ExtInsert = 66,
+	/// NumLock
+	ExtNumLock = 67,
+	/// Page Up
+	ExtPageUp = 68,
+	/// Page Down
+	ExtPageDown = 69,
+	/// Home
+	ExtHome = 70,
+	/// End
+	ExtEnd = 71,
+	/// \*
+	ExtAsterisk = 72,
+	/// \+
+	ExtPlus = 73,
+	/// AltGr (Right Alt)
+	ExtAltGr = 74
 }
 
 impl ::std::fmt::Display for Key {
