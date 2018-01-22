@@ -6,14 +6,10 @@
 
 pub(crate) mod cursor;
 pub(crate) mod keyboard;
-mod joystick;
-mod ffi;
 
 pub use self::keyboard::Key;
 pub use self::keyboard::msg::Msg;
 pub use self::cursor::Click;
-pub use self::joystick::Joystick;
-pub use self::joystick::Button;
 
 /// Input to the window, that's put into the input queue, when an event has
 /// occurred.
@@ -78,33 +74,6 @@ pub enum Input {
 	/// - The mouse wheel has been scrolled right.
 	/// - The touchpad has been used to scroll right.
 	ScrollRight(f32,f32),
-	/// One of the following has happenned,
-	///
-	/// - The joystick has moved to a different position.
-	/// - The C-pad has moved.
-	/// - The on-screen joystick 1 has moved.
-	JoystickMove(f32, f32),
-	/// One of the following has happenned,
-	///
-	/// - The joystick's POV hat has moved.
-	/// - The POV-Joystick has moved.
-	/// - The on-screen joystick 2 has moved.
-	JoystickPov(f32, f32),
-	/// One of the following has happenned,
-	///
-	/// - The joystick's throttle has moved.
-	/// - The on-screen throttle has moved.
-	JoystickThrottle(f32),
-	/// One of the following has happenned,
-	///
-	/// - One of the joystick's buttons has been pressed.
-	/// - An on-screen button has been pressed.
-	JoystickButtonDown(Button),
-	/// One of the following has happenned,
-	///
-	/// - One of the joystick's buttons has been released.
-	/// - An on-screen button has been released.
-	JoystickButtonUp(Button),
 	/// Keyboard Shortcut - Align
 	ScAlign(::afi_docf::Align),
 	/// Keyboard Shortcut - Emphasis

@@ -12,6 +12,7 @@
 	html_favicon_url = "http://plopgrizzly.com/awi/icon.svg",
 	html_root_url = "http://plopgrizzly.com/awi/")]
 
+pub(crate) extern crate stick;
 pub(crate) extern crate afi;
 pub(crate) extern crate afi_docf;
 pub(crate) extern crate aci_png;
@@ -27,13 +28,13 @@ pub(crate) mod window_ops;
 pub use input::Input;
 pub use input::Key;
 pub use input::Click;
-pub use input::Joystick;
-pub use input::Button;
 pub use input::Msg;
 pub use window_connection::WindowConnection;
 pub use window::Window;
 pub use window_ops::WindowOps;
 pub use afi_docf::{ Emphasis, Align, FontColor };
+pub use stick::Joystick;
+pub use stick::Button;
 
 pub(crate) use input::keyboard::Keyboard;
 
