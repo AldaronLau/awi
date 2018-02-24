@@ -8,20 +8,6 @@ use afi;
 
 use WindowOps;
 
-/// Connect to a window.  This macro requires that aci_png be in scope, to load
-/// the window's icon.
-#[macro_export] macro_rules! connect {
-	() => ( {
-		Window::new(include!(concat!(env!("CARGO_MANIFEST_DIR"),
-				"/target/res/src/name.rs")),
-			aci_png::decode(
-				include_bytes!(concat!(
-					env!("CARGO_MANIFEST_DIR"),
-					"/res/icon.png")))
-				.unwrap())
-	} )
-}
-
 /// A window on Windows, Android, IOS, Wayland, XWindows, Direct to Display,
 /// Aldaron's OS, Arduino, Nintendo Switch, A Web Page, or No OS.
 pub struct Window {

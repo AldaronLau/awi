@@ -4,7 +4,7 @@
 //
 // src/os_window/unix/xcb/poll_event.rs
 
-use ami::*;
+use libc::c_void;
 
 use Key;
 use input;
@@ -36,7 +36,7 @@ pub enum Event {
 }
 
 impl Event {
-	pub fn create(connection: xcb::Connection, state: *mut Void) -> Event {
+	pub fn create(connection: xcb::Connection, state: *mut c_void) -> Event{
 		let event = unsafe { xcb::poll_for_event(connection, state) };
 
 		if let Some(e) = event {

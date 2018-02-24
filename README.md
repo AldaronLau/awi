@@ -1,4 +1,4 @@
-# Aldaron's Window Interface (awi 0.1.1)
+# Aldaron's Window Interface (awi 0.2.0)
 
 [Aldaron's Window Interface (awi)](http://plopgrizzly.com/awi) is a library
 developed by [Plop Grizzly](http://plopgrizzly.com) for creating a window and
@@ -22,10 +22,11 @@ handling it's input.
 * Windows
 
 **awi**'s planned support:
-* Arduino and Raspberry Pi (no os)
+* Raspberry Pi ("no" os)
 * Nintendo Switch
 * Wayland
 * Android
+* Mac OS
 
 # Contributing
 

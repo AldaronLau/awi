@@ -1,10 +1,12 @@
 // Aldaron's Window Interface
-// Copyright (c) 2017 Jeron Aldaron Lau <jeron.lau@plopgrizzly.com>
+// Copyright (c) 2017-2018 Jeron Aldaron Lau <jeron.lau@plopgrizzly.com>
 // Licensed under the MIT LICENSE
 //
 // src/os_window/unix/xcb/native_connection.rs
 
-use ami::*;
+use std::ptr::null_mut;
+use libc::c_void;
+
 use super::ffi as xcb;
 use super::keyboard;
 
@@ -15,8 +17,8 @@ impl NativeConnection {
 		let xcb = xcb_dl.dl_handle;
 
 		if xcb.is_null() {
-			return NativeConnection((null_mut!(), xcb_dl), 0,
-				keyboard::Keyboard::null((null_mut!(), xcb_dl)));
+			return NativeConnection((null_mut(), xcb_dl), 0,
+				keyboard::Keyboard::null((null_mut(), xcb_dl)));
 		}
 
 		let connection = (unsafe { xcb::connect(xcb) }, xcb_dl);
@@ -69,7 +71,7 @@ impl NativeConnection {
 		self.0
 	}
 
-	pub fn keyboard_state(&self) -> *mut Void {
+	pub fn keyboard_state(&self) -> *mut c_void {
 		self.2.state
 	}
 }

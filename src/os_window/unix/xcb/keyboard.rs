@@ -4,14 +4,16 @@
 //
 // src/os_window/unix/xcb/keyboard.rs
 
-use ami::*;
+use std::ptr::null_mut;
+use libc::c_void;
+
 use super::ffi as xcb;
 
 pub struct Keyboard {
 	connection: xcb::Connection,
-	pub state: *mut Void,
-	keymap: *mut Void,
-	context: *mut Void,
+	pub state: *mut c_void,
+	keymap: *mut c_void,
+	context: *mut c_void,
 }
 
 impl Keyboard {
@@ -36,9 +38,9 @@ impl Keyboard {
 	pub fn null(connection: xcb::Connection) -> Keyboard {
 		Keyboard {
 			connection,
-			state: null_mut!(),
-			keymap: null_mut!(),
-			context: null_mut!(),
+			state: null_mut(),
+			keymap: null_mut(),
+			context: null_mut(),
 		}
 	}
 }

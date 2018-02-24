@@ -15,9 +15,7 @@
 pub(crate) extern crate stick;
 pub(crate) extern crate afi;
 pub(crate) extern crate afi_docf;
-pub(crate) extern crate aci_png;
 pub(crate) extern crate libc;
-#[macro_use] pub(crate) extern crate ami;
 
 pub(crate) mod input;
 pub(crate) mod os_window;
@@ -33,8 +31,8 @@ pub use window_connection::WindowConnection;
 pub use window::Window;
 pub use window_ops::WindowOps;
 pub use afi_docf::{ Emphasis, Align, FontColor };
-pub use stick::Joystick;
-pub use stick::Button;
+// TODO
+pub use stick::{ ControllerManager, Button };
 
 pub(crate) use input::keyboard::Keyboard;
 

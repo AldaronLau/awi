@@ -4,19 +4,19 @@
 //
 // src/window_connection/mod.rs
 
-use ami::Void;
+use libc::c_void;
 
 /// Connection is listed first, then window.
 #[derive(Clone)]
 pub enum WindowConnection {
 	/// XCB Window Handles
-	Xcb(*mut Void, u32),
+	Xcb(*mut c_void, u32),
 	/// Wayland Window Handles
 	Wayland,
 	/// DirectFB Window Handles
 	DirectFB,
 	/// Windows Window Handles
-	Windows(*mut Void, *mut Void),
+	Windows(*mut c_void, *mut c_void),
 	/// Android Window Handles
 	Android,
 	/// IOS Window Handles

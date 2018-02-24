@@ -17,7 +17,7 @@
 
 [package]
 name = "awi"
-version = "0.1.1"
+version = "0.2.0"
 authors = [
 	"Jeron Aldaron Lau <jeron.lau@plopgrizzly.com>"
 ]
@@ -37,7 +37,7 @@ description = """
     creating a window and handling it's input.
 """
 keywords = ["window", "graphics", "interface", "native", "ffi"]
-categories = ["gui", "os::unix-apis"]
+categories = ["gui"] # TODO: more, better categories
 
 ################################################################################
 
@@ -49,11 +49,9 @@ exclude = [
 ################################################################################
 
 [dependencies]
-aci_png = "^0.5.1"
 afi = "^0.3.1"
 afi_docf = "^0.0"
-ami = "^0.5"
 libc = "^0.2"
-stick = "^0.1"
+stick = "^0.3"
 
 ################################################################################
