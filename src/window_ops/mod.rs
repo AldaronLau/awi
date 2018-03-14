@@ -7,7 +7,7 @@
 /// Native window operations for implementing new platforms.
 pub trait WindowOps {
 	/// Create the window.
-	fn new(title: &str, icon: (u32, u32, &[u32])) -> Self;
+	fn new(title: &str, icon: (u32, u32, &[u32]), v: Option<i32>) -> Self;
 	/// Show the window.
 	fn show(&self) -> ();
 	/// Re-draw the window.

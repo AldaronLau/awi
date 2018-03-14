@@ -13,7 +13,7 @@ use super::keyboard;
 pub struct NativeConnection(pub xcb::Connection, pub u32, keyboard::Keyboard);
 
 impl NativeConnection {
-	pub fn new(xcb_dl: xcb::Dl) -> Self {
+	pub fn new(xcb_dl: xcb::Dl, visual: Option<i32>) -> Self {
 		let xcb = xcb_dl.dl_handle;
 
 		if xcb.is_null() {
@@ -23,8 +23,13 @@ impl NativeConnection {
 
 		let connection = (unsafe { xcb::connect(xcb) }, xcb_dl);
 		let window = unsafe {
+			let mut screen = xcb::screen_root(connection);
 			let window = xcb::generate_id(connection);
-			let screen = xcb::screen_root(connection);
+
+			if let Some(v) = visual {
+				println!("setting visual....");
+				screen.1 = ::std::mem::transmute(v);
+			}
 
 			xcb::create_window(connection, window, screen);
 
@@ -60,7 +65,6 @@ impl NativeConnection {
 	}
 
 	pub fn update(&self) -> () {
-		unsafe { xcb::flush(self.0) }
 	}
 
 	pub fn show(&self) -> () {

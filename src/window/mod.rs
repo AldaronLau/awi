@@ -20,12 +20,17 @@ pub struct Window {
 impl Window {
 	/// Create a window, using `title` as the title, and `icon` as the
 	/// window icon.  The format of icon is as follows:
-	/// `(width, height, pixels)`.  You can load icons with aci.
-	pub fn new(title: &str, mut icon: afi::Graphic) -> Window {
+	/// `(width, height, pixels)`.  You can load icons with aci.  `v` should
+	/// be either `None` or `Some(visual_id from EGL)`.
+	pub fn new(title: &str, icon: &afi::Graphic, v: Option<i32>)
+		-> Window
+	{
+		let mut icon = (*icon).clone();
+
 		icon.bgra();
 
 		let os_window = ::os_window::OSWindow::new(title,
-			icon.as_slice());
+			icon.as_slice(), v);
 		let dimensions = (::MWW, ::MWH); // Width & Height
 		let input_queue = ::input::InputQueue::new();
 		let keyboard = ::Keyboard::new();

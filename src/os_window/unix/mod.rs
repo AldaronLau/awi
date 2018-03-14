@@ -19,8 +19,8 @@ pub enum UnixWindow {
 }
 
 impl ::WindowOps for UnixWindow {
-	fn new(title: &str, icon: (u32, u32, &[u32])) -> Self {
-		let xcb = xcb::XcbWindow::new(title, icon);
+	fn new(title: &str, icon: (u32, u32, &[u32]), v: Option<i32>) -> Self {
+		let xcb = xcb::XcbWindow::new(title, icon, v);
 
 		if xcb.failed() {
 			println!("WARNING: Either XCB is uninstalled or no X.");
