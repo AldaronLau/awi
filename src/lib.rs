@@ -1,8 +1,6 @@
-// Aldaron's Window Interface
-// Copyright (c) 2017 Jeron Aldaron Lau <jeron.lau@plopgrizzly.com>
+// lib.rs -- Aldaron's Window Interface
+// Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
 // Licensed under the MIT LICENSE
-//
-// src/lib.rs
 
 //! Aldaron's Window Interface is a library developed by Plop Grizzly for
 //! creating a window and handling it's input.

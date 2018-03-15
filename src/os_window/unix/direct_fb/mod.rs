@@ -1,8 +1,6 @@
-// Aldaron's Window Interface
-// Copyright (c) 2017 Jeron Aldaron Lau <jeron.lau@plopgrizzly.com>
+// os_window/unix/direct_fb/mod.rs -- Aldaron's Window Interface
+// Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
 // Licensed under the MIT LICENSE
-//
-// src/os_window/unix/direct_fb/mod.rs
 
 use Input;
 

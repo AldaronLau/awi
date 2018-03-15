@@ -1,8 +1,6 @@
-// Aldaron's Window Interface
-// Copyright (c) 2017 Jeron Aldaron Lau <jeron.lau@plopgrizzly.com>
+// window_connection.rs -- Aldaron's Window Interface
+// Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
 // Licensed under the MIT LICENSE
-//
-// src/window_connection/mod.rs
 
 use libc::c_void;
 

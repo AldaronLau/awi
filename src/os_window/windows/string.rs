@@ -1,8 +1,6 @@
-// Aldaron's Window Interface
-// Copyright (c) 2017 Jeron Aldaron Lau <jeron.lau@plopgrizzly.com>
+// os_window/windows/string.rs -- Aldaron's Window Interface
+// Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
 // Licensed under the MIT LICENSE
-//
-// src/os_window/windows/string.rs
 
 // Windows uses UTF-16
 pub fn native(what: &str) -> Vec<u8> {

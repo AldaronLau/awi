@@ -1,8 +1,8 @@
-# Aldaron's Window Interface (awi 0.2.0)
+# Aldaron's Window Interface 0.3.0
 
 [Aldaron's Window Interface (awi)](http://plopgrizzly.com/awi) is a library
-developed by [Plop Grizzly](http://plopgrizzly.com) for creating a window and
-handling it's input.
+developed by [Plop Grizzly](http://plopgrizzly.com).  It handles creating a
+window and handling it's input.
 
 [Cargo](https://crates.io/crates/awi) /
 [Documentation](https://docs.rs/awi)
@@ -29,7 +29,6 @@ handling it's input.
 * Mac OS
 
 # Contributing
-
 If you'd like to help implement functions for unsupported platforms, fix bugs,
 improve the API or improve the Documentation, then contact me at
 jeron.lau@plopgrizzly.com. I'll appreciate any help.

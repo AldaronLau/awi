@@ -1,20 +1,14 @@
-# Copyright (c) 2017-2018 Jeron Aldaron Lau <jeron.lau@plopgrizzly.com>
+# Cargo.toml -- Aldaron's Window Interface
+# Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
+# Licensed under the MIT LICENSE
 
 [package]
 name = "minima"
 version = "0.1.0"
-authors = ["Jeron Aldaron Lau <jeron.lau@plopgrizzly.com>"]
-build = "build.rs"
+authors = [
+	"Jeron A. Lau <jeron.lau@plopgrizzly.com>"
+]
 
 [dependencies]
 awi = { path = "../../" }
-aci_png = "^0.5"
-
-[build-dependencies]
-res = "0.2.1"
-
-[package.metadata.res]
-developer = "Aldaron's Tech"
-name = "%Minimal Window Example"
-comment = "%Window Minimal Example"
-description = "%An example program for Window."
+aci_png = "^0.5.2"

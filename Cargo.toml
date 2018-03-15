@@ -1,57 +1,41 @@
-# Aldaron's Window Interface                                                   #
-# Copyright (c) 2017-2018 Jeron Aldaron Lau <jeron.lau@plopgrizzly.com>        #
-# Licensed under the MIT LICENSE                                               #
-#                             _        _                                       #
-#                            /@\——————/@\                                      #
-# .———  .                   |   o    o   |     .————      .            .       #
-# |   | |  .———   .———   .——.     []     .——.  |      .——    ———: ———: | .   . #
-# |   | |  |   |  |   |  \   \   <##>   /   /  |      |   |    /    /  | |   | #
-# |———  |  |   |  |   |   |   ¯        ¯   |   |   -- |   |   /    /   |  \ /  #
-# |     |  |   |  |———    |                |   |    | |   |  /    /    |   |   #
-# |     |   ———   |       |                |    ————  |   | :——— :———  |   |   #
-#                 |        \              /                              __/   #
-#                           ¯————————————¯                                     #
-# Cargo.toml                                                                   #
-
-################################################################################
+# Cargo.toml -- Aldaron's Window Interface
+# Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
+# Licensed under the MIT LICENSE
+#                             _        _
+#                            /@\——————/@\
+# .———  .                   |   o    o   |     .————      .            .
+# |   | |  .———   .———   .——.     []     .——.  |      .——    ———: ———: | .   .
+# |   | |  |   |  |   |  \   \   <##>   /   /  |      |   |    /    /  | |   |
+# |———  |  |   |  |   |   |   ¯        ¯   |   |   -- |   |   /    /   |  \ /
+# |     |  |   |  |———    |                |   |    | |   |  /    /    |   |
+# |     |   ———   |       |                |    ————  |   | :——— :———  |   |
+#                 |        \              /                              __/
+#                           ¯————————————¯
 
 [package]
 name = "awi"
-version = "0.2.0"
+version = "0.3.0"
 authors = [
-	"Jeron Aldaron Lau <jeron.lau@plopgrizzly.com>"
+	"Jeron A. Lau <jeron.lau@plopgrizzly.com>"
 ]
-
-################################################################################
 
 license = "MIT"
 documentation = "https://docs.rs/awi"
 homepage = "http://plopgrizzly.com/awi"
 repository = "https://github.com/plopgrizzly/awi"
 
-################################################################################
-
 readme = "README.md"
-description = """
-    Aldaron's Window Interface is a library developed by Plop Grizzly for
-    creating a window and handling it's input.
-"""
+description = "Create a window and handle it's input."
 keywords = ["window", "graphics", "interface", "native", "ffi"]
-categories = ["gui"] # TODO: more, better categories
-
-################################################################################
+categories = ["gui", "hardware-support", "os", "rendering"]
 
 exclude = [
 	"examples/*", "CODE_OF_CONDUCT.md", "CONTRIBUTING.md", ".gitignore",
 	"_config.yml", "ISSUE_TEMPLATE.md", "icon.png", "icon.ico"
 ]
 
-################################################################################
-
 [dependencies]
 afi = "^0.3.2"
 afi_docf = "^0.0"
 libc = "^0.2"
 stick = "^0.3"
-
-################################################################################

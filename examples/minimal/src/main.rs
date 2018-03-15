@@ -1,17 +1,18 @@
-// Aldaron's Window Interface
-// Copyright (c) 2017 Jeron Aldaron Lau <jeron.lau@plopgrizzly.com>
+// main.rs -- Aldaron's Window Interface
+// Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
 // Licensed under the MIT LICENSE
-//
-// examples/minimal/src/main.rs
 
-#[macro_use]
 extern crate awi;
 extern crate aci_png;
 
 use awi::Window;
 
 pub fn main() -> () {
-	let mut window = connect!();
+	let mut window = Window::new(
+		"awi example",
+		&aci_png::decode(include_bytes!("../res/icon.png")).unwrap(),
+		None
+	);
 
 	'mainloop: loop {
 		while let Some(input) = window.input() {
