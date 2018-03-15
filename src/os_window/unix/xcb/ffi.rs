@@ -164,9 +164,6 @@ pub unsafe fn map_window(connection: Connection, window: u32) {
 
 	xcb_map_window(connection.0, window);
 	xcb_flush(connection.0);
-
-	println!("LOG: xcb_map_window");
-	println!("LOG: xcb_flush()");
 }
 
 pub unsafe fn screen_root(connection: Connection) -> (u32, u32, u32) {
@@ -204,9 +201,7 @@ pub unsafe fn screen_root(connection: Connection) -> (u32, u32, u32) {
 		= dlsym(connection.1.dl_handle, b"xcb_setup_roots_iterator\0");
 
 	let setup = xcb_get_setup(connection.0);
-	println!("LOG: xcb_get_setup");
 	let screen = xcb_setup_roots_iterator(setup).data;
-	println!("LOG: xcb_setup_roots_iterator");
 
 	((*screen).root, (*screen).root_visual, (*screen).black_pixel)
 }
@@ -214,8 +209,6 @@ pub unsafe fn screen_root(connection: Connection) -> (u32, u32, u32) {
 pub unsafe fn generate_id(connection: Connection) -> u32 {
 	let xcb_generate_id : unsafe extern "C" fn(c: *mut c_void) -> u32
 		= dlsym(connection.1.dl_handle, b"xcb_generate_id\0");
-
-	println!("LOG: xcb_generate_id");
 
 	xcb_generate_id(connection.0)
 }
@@ -232,9 +225,7 @@ pub unsafe fn create_window(connection: Connection, window: u32,
 	let (root, visual, black) = rvb;
 	let mut value_list = [black, 0b01000100000000001101111];
 	xcb_create_window(connection.0, 0, window, root, 0, 0, ::MWW as u16,
-		::MWH as u16, 10, 1, visual, 0/*2|2048*/, ::std::ptr::null_mut()/*&mut value_list[0]*/);
-
-	println!("LOG: xcb_create_window");
+		::MWH as u16, 10, 1, visual, 2|2048, &mut value_list[0]);
 }
 
 pub unsafe fn connect(so: *mut c_void) -> *mut c_void {
@@ -242,8 +233,6 @@ pub unsafe fn connect(so: *mut c_void) -> *mut c_void {
 		s: *mut c_void) -> *mut c_void = dlsym(so, b"xcb_connect\0");
 
 	let connection = xcb_connect(null_mut(), null_mut());
-
-	println!("LOG: xcb_connect(null, null)");
 
 	if connection.is_null() {
 		panic!("Couldn't connect to X Server.");
