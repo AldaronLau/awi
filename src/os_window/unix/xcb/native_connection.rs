@@ -25,7 +25,6 @@ impl NativeConnection {
 			let window = xcb::generate_id(connection);
 
 			if let Some(v) = visual {
-				println!("setting visual....");
 				screen.1 = ::std::mem::transmute(v);
 			}
 
