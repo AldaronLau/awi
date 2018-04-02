@@ -13,6 +13,7 @@ pub struct Window {
 	input_queue: ::input::InputQueue,
 	dimensions: (u32, u32),
 	keyboard: ::Keyboard,
+	reset: bool,
 }
 
 impl Window {
@@ -32,18 +33,14 @@ impl Window {
 		let dimensions = (::MWW, ::MWH); // Width & Height
 		let input_queue = ::input::InputQueue::new();
 		let keyboard = ::Keyboard::new();
+		let reset = false;
 
 		// Make the window visible.
 		os_window.show();
 		// Update the window.
 		os_window.update();
 
-		Window { os_window, dimensions, input_queue, keyboard }
-	}
-
-	/// Redraw the window, and get any new user input.
-	pub fn update(&mut self) -> () {
-		self.os_window.update();
+		Window { os_window, dimensions, input_queue, keyboard, reset }
 	}
 
 	/// Toggle whether the window is fullscreen.
@@ -62,15 +59,24 @@ impl Window {
 		self.dimensions
 	}
 
-	/// Get input, if there's any.
-	pub fn input(&mut self) -> Option<::Input> {
-		let input = self.input_queue.pop();
-
-		if input == None {
-			self.get_events();
+	/// Poll window input, return `None` when finished.  After returning
+	/// `None`, the next call will update the window.
+	pub fn update(&mut self) -> Option<::Input> {
+		// First, update & get events
+		// Next, cycle them
+		// Then, Return None when through event loop.
+		if let Some(input) = self.input_queue.pop() {
+			return Some(input);
+		} else if self.reset {
+			self.reset = false;
+			return None;
 		}
 
-		input
+		self.reset = true;
+		self.os_window.update();
+		self.get_events();
+
+		self.update()
 	}
 
 	/// Poll for events.

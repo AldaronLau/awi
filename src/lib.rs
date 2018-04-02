@@ -10,7 +10,6 @@
 	html_favicon_url = "http://plopgrizzly.com/awi/icon.svg",
 	html_root_url = "http://plopgrizzly.com/awi/")]
 
-pub(crate) extern crate stick;
 pub(crate) extern crate afi;
 pub(crate) extern crate afi_docf;
 pub(crate) extern crate libc;
@@ -29,8 +28,6 @@ pub use window_connection::WindowConnection;
 pub use window::Window;
 pub use window_ops::WindowOps;
 pub use afi_docf::{ Emphasis, Align, FontColor };
-// TODO
-pub use stick::{ ControllerManager, Button };
 
 pub(crate) use input::keyboard::Keyboard;
 
