@@ -2,7 +2,8 @@
 // Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
 // Licensed under the MIT LICENSE
 
-use ami::Void;
+use libc::c_void;
+use std::ptr::null_mut;
 
 #[cfg(target_pointer_width = "64")]
 type LongPtr = i64;
@@ -18,7 +19,7 @@ type UintPtr = u64;
 pub type Long = i32;
 pub type Bool = i32;
 
-type Pvoid = *mut Void;
+type Pvoid = *mut c_void;
 type Handle = Pvoid;
 
 pub type Lparam = LongPtr;
@@ -37,10 +38,10 @@ pub type Lresult = LongPtr;
 
 #[allow(dead_code)]
 impl Hwnd {
-	pub fn null() -> Hwnd { Hwnd(null_mut!()) }
-	pub fn bottom() -> Hwnd { unsafe { Hwnd(null_mut!().offset(1)) } }
-	pub fn notopmost() -> Hwnd { unsafe { Hwnd(null_mut!().offset(-2)) } }
-	pub fn top() -> Hwnd { Hwnd(null_mut!()) }
-	pub fn topmost() -> Hwnd { unsafe { Hwnd(null_mut!().offset(-1)) } }
-	pub fn to_ptr(&self) -> *mut Void { self.0 }
+	pub fn null() -> Hwnd { Hwnd(null_mut()) }
+	pub fn bottom() -> Hwnd { unsafe { Hwnd((null_mut() as *mut c_void).offset(1)) } }
+	pub fn notopmost() -> Hwnd { unsafe { Hwnd((null_mut() as *mut c_void).offset(-2)) } }
+	pub fn top() -> Hwnd { Hwnd(null_mut()) }
+	pub fn topmost() -> Hwnd { unsafe { Hwnd((null_mut() as *mut c_void).offset(-1)) } }
+	pub fn to_ptr(&self) -> *mut c_void { self.0 }
 }

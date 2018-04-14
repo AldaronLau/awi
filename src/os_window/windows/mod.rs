@@ -11,13 +11,13 @@ mod window_create;
 mod window_fullscreen;
 mod window_poll_event;
 
-use ami::Void;
 use input::InputQueue;
 use self::types::*;
+use libc::c_void;
 
 pub use self::input::key;
 
-struct Connection { native: *mut Void }
+struct Connection { native: *mut c_void }
 impl Connection {
 	fn create() -> Connection {
 		Connection { native: connection_create::connection_create() }
@@ -27,7 +27,7 @@ struct Class { name: [u8; 80] }
 impl Class {
 	fn create(connection: &Connection, name: &str,
 		image: (u32, u32, &[u32]), wnd_proc: extern "C" fn(
-			a: Hwnd, b: u32, c: *const Void, d: *const Void)
+			a: Hwnd, b: u32, c: *const c_void, d: *const c_void)
 			-> Lresult)
 		-> Class
 	{
@@ -56,7 +56,9 @@ pub struct WindowsWindow {
 	restore_style: usize,
 }
 impl ::WindowOps for WindowsWindow {
-	fn new(title: &str, icon: (u32, u32, &[u32])) -> WindowsWindow {
+	fn new(title: &str, icon: (u32, u32, &[u32]), _v: Option<i32>)
+		-> WindowsWindow
+	{
 		let connection = Connection::create();
 		let class = Class::create(&connection, title, icon,
 			window_poll_event::wnd_proc);

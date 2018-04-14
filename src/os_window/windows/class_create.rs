@@ -2,9 +2,10 @@
 // Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
 // Licensed under the MIT LICENSE
 
-use ami::Void;
+use libc::c_void;
 use super::{ string };
 use super::types::*;
+use std::ptr::null;
 
 use std::mem;
 
@@ -12,31 +13,32 @@ use std::mem;
 struct WndClassEx {
 	cb_size: u32,
 	style: u32,
-	lpfn_wnd_proc: extern "C" fn(a: Hwnd, b: u32, c: *const Void,
-		d: *const Void) -> Lresult,
+	lpfn_wnd_proc: extern "C" fn(a: Hwnd, b: u32, c: *const c_void,
+		d: *const c_void) -> Lresult,
 	cb_cls_extra: i32,
 	cb_wnd_extra: i32,
-	h_instance: *const Void,
-	h_icon: *const Void,
-	h_cursor: *const Void,
-	hbr_background: *const Void,
+	h_instance: *const c_void,
+	h_icon: *const c_void,
+	h_cursor: *const c_void,
+	hbr_background: *const c_void,
 	lpsz_menu_name: usize, // Char *
 	lpsz_class_name: *const [u8;80],
-	h_icon_sm: *const Void,
+	h_icon_sm: *const c_void,
 }
 
 #[link(name = "gdi32")]
 extern "system" {
-	fn CreateIcon(hi: *const Void, w: i32, h: i32, planes: u8,
-		bitspixel: u8, and: *const u32, xor: *const u32) -> *const Void;
-	fn LoadCursorW(hi: *const Void, cursorName: usize) -> *const Void;
-	fn GetStockObject(fnObject: i32) -> *const Void;
+	fn CreateIcon(hi: *const c_void, w: i32, h: i32, planes: u8,
+		bitspixel: u8, and: *const u32, xor: *const u32)
+		-> *const c_void;
+	fn LoadCursorW(hi: *const c_void, cursorName: usize) -> *const c_void;
+	fn GetStockObject(fnObject: i32) -> *const c_void;
 	fn RegisterClassExW(a: *const WndClassEx) -> u16;
 }
 
-pub fn class_create(hi: *const Void, title: &str, icon: (u32, u32, &[u32]),
-	wnd_proc: extern "C" fn(a: Hwnd, b: u32, c: *const Void,
-		d: *const Void) -> Lresult)
+pub fn class_create(hi: *const c_void, title: &str, icon: (u32, u32, &[u32]),
+	wnd_proc: extern "C" fn(a: Hwnd, b: u32, c: *const c_void,
+		d: *const c_void) -> Lresult)
 	-> [u8; 80]
 {
 	let mut name : [u8; 80] = [0u8; 80];
@@ -76,7 +78,7 @@ pub fn class_create(hi: *const Void, title: &str, icon: (u32, u32, &[u32]),
 		cb_wnd_extra: 0,
 		h_instance: hi,
 		h_icon: new_icon,
-		h_cursor: unsafe { LoadCursorW(null!(), 32512) },
+		h_cursor: unsafe { LoadCursorW(null(), 32512) },
 		hbr_background: unsafe { GetStockObject(0) },
 		lpsz_menu_name: 0,
 		lpsz_class_name: &name,

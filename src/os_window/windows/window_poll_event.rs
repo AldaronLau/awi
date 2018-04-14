@@ -3,7 +3,7 @@
 // Licensed under the MIT LICENSE
 
 use input;
-use ami::Void;
+use libc::c_void;
 // use input::keyboard::{ english, FSC, ESC }; TODO
 use Key;
 use super::types::*;
@@ -62,12 +62,12 @@ extern "system" {
 	fn GetCursorPos(point: *mut Point) -> Bool;
 	fn ScreenToClient(h_wnd: Hwnd, point: *mut Point) -> Bool;
 	fn PostQuitMessage(exit_code: i32) -> ();
-	fn DefWindowProcW(hw: Hwnd, uMsg: u32, wParam: *const Void,
-		lParam: *const Void) -> Lresult;
+	fn DefWindowProcW(hw: Hwnd, uMsg: u32, wParam: *const c_void,
+		lParam: *const c_void) -> Lresult;
 }
 
-pub extern "C" fn wnd_proc(h_wnd: Hwnd, u_msg: u32, w_param: *const Void,
-	l_param: *const Void) -> Lresult
+pub extern "C" fn wnd_proc(h_wnd: Hwnd, u_msg: u32, w_param: *const c_void,
+	l_param: *const c_void) -> Lresult
 {
 	match u_msg {
 		0x0007 => unsafe { ADI_WNDPROCMSG |= RESUMED },
@@ -79,7 +79,7 @@ pub extern "C" fn wnd_proc(h_wnd: Hwnd, u_msg: u32, w_param: *const Void,
 		0x0005 => {
 			unsafe { ADI_WNDPROCMSG |= RESIZED };
 
-			let i = unsafe { ::std::mem::transmute::<*const Void, usize>(l_param) };
+			let i = unsafe { ::std::mem::transmute::<*const c_void, usize>(l_param) };
 			let h = (i & 0xFFFF_0000) / 0x1_0000;
 			let w = i & 0x0000_FFFF;
 
