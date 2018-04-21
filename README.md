@@ -1,4 +1,4 @@
-# Aldaron's Window Interface 0.4
+# Aldaron's Window Interface 0.5
 
 [Aldaron's Window Interface (awi)](http://plopgrizzly.com/awi) is a library
 developed by [Plop Grizzly](http://plopgrizzly.com).  It handles creating a

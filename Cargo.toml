@@ -14,7 +14,7 @@
 
 [package]
 name = "awi"
-version = "0.4.0"
+version = "0.5.0"
 authors = [
 	"Jeron A. Lau <jeron.lau@plopgrizzly.com>"
 ]
@@ -35,6 +35,6 @@ exclude = [
 ]
 
 [dependencies]
-afi = "^0.4"
+afi = "^0.5"
 afi_docf = "^0.0"
 libc = "^0.2"
