@@ -10,8 +10,8 @@
 	html_favicon_url = "http://plopgrizzly.com/awi/icon.svg",
 	html_root_url = "http://plopgrizzly.com/awi/")]
 
-pub(crate) extern crate afi;
-pub(crate) extern crate afi_docf;
+pub extern crate afi;
+pub extern crate afi_docf;
 pub(crate) extern crate libc;
 
 pub(crate) mod input;
