@@ -5,8 +5,6 @@
 use afi_docf::{ Emphasis, Align };
 
 use Input;
-use Key;
-use Msg;
 
 const NONE : u8 = 0b0000_0000;
 const SHIFT : u8 = 0b0000_0001;
@@ -31,64 +29,78 @@ impl Modifiers {
 				NONE | SHIFT => {},
 				_ => return, // Ctrl,Shift,Alt shouldn't print.
 			},
-			Input::KeyPress(key) => match key {
-				Key::LCtrl|Key::RCtrl => self.held |= CTRL,
-				Key::LShift|Key::RShift => self.held |= SHIFT,
-				Key::Alt => self.held |= ALT,
-				Key::Compose => if self.held & COMPOSE == 0 {
-					self.held |= COMPOSE
+			Input::LCtrl(state) | Input::RCtrl(state) => {
+				if state.is_some() {
+					self.held |= CTRL
 				} else {
-					self.held &= !COMPOSE
-				},
-				Key::A => self.a(queue),
-				Key::B => self.b(queue),
-				Key::C => self.c(queue),
-				Key::D => self.d(queue),
-				Key::E => self.e(queue),
-				Key::F => self.f(queue),
-				Key::G => self.g(queue),
-				Key::H => self.h(queue),
-				Key::I => self.i(queue),
-				Key::J => self.j(queue),
-				Key::K => self.k(queue),
-				Key::L => self.l(queue),
-				Key::M => self.m(queue),
-				Key::N => self.n(queue),
-				Key::O => self.o(queue),
-				Key::P => self.p(queue),
-				Key::Q => self.q(queue),
-				Key::R => self.r(queue),
-				Key::S => self.s(queue),
-				Key::T => self.t(queue),
-				Key::U => self.u(queue),
-				Key::V => self.v(queue),
-				Key::W => self.w(queue),
-				Key::X => self.x(queue),
-				Key::Y => self.y(queue),
-				Key::Z => self.z(queue),
-				Key::Enter => self.enter(queue),
-				Key::Apostrophe => self.apostrophe(queue),
-				Key::Semicolon => self.semicolon(queue),
-				Key::EqualSign => self.equalsign(queue),
-				Key::Minus => self.minus(queue),
-				Key::Num1 => self.num1(queue),
-				Key::Num2 => self.num2(queue),
-				Key::Num3 => self.num3(queue),
-				Key::Num4 => self.num4(queue),
-				Key::Num5 => self.num5(queue),
-				Key::Num6 => self.num6(queue),
-				Key::Num7 => self.num7(queue),
-				Key::Num8 => self.num8(queue),
-				Key::Num9 => self.num9(queue),
-				Key::Num0 => self.num0(queue),
-				_ => {},
+					self.held &= !CTRL
+				}
 			},
-			Input::KeyRelease(key) => match key {
-				Key::RCtrl|Key::LCtrl => self.held &= !CTRL,
-				Key::RShift|Key::LShift => self.held &= !SHIFT,
-				Key::Alt => self.held &= !ALT,
-				_ => {},
+			Input::LShift(state) | Input::RShift(state) => {
+				if state.is_some() {
+					self.held |= SHIFT
+				} else {
+					self.held &= !SHIFT
+				}
 			},
+			Input::Alt(state) => {
+				if state.is_some() {
+					self.held |= ALT
+				} else {
+					self.held &= !ALT
+				}
+			},
+			Input::Compose(state) => {
+				// Toggle compose state.
+				if state.is_some() {
+					if self.held & COMPOSE == 0 {
+						self.held |= COMPOSE
+					} else {
+						self.held &= !COMPOSE
+					}
+				}
+			},
+			Input::A(state) => if state.is_some() { self.a(queue) },
+			Input::B(state) => if state.is_some() { self.b(queue) },
+			Input::C(state) => if state.is_some() { self.c(queue) },
+			Input::D(state) => if state.is_some() { self.d(queue) },
+			Input::E(state) => if state.is_some() { self.e(queue) },
+			Input::F(state) => if state.is_some() { self.f(queue) },
+			Input::G(state) => if state.is_some() { self.g(queue) },
+			Input::H(state) => if state.is_some() { self.h(queue) },
+			Input::I(state) => if state.is_some() { self.i(queue) },
+			Input::J(state) => if state.is_some() { self.j(queue) },
+			Input::K(state) => if state.is_some() { self.k(queue) },
+			Input::L(state) => if state.is_some() { self.l(queue) },
+			Input::M(state) => if state.is_some() { self.m(queue) },
+			Input::N(state) => if state.is_some() { self.n(queue) },
+			Input::O(state) => if state.is_some() { self.o(queue) },
+			Input::P(state) => if state.is_some() { self.p(queue) },
+			Input::Q(state) => if state.is_some() { self.q(queue) },
+			Input::R(state) => if state.is_some() { self.r(queue) },
+			Input::S(state) => if state.is_some() { self.s(queue) },
+			Input::T(state) => if state.is_some() { self.t(queue) },
+			Input::U(state) => if state.is_some() { self.u(queue) },
+			Input::V(state) => if state.is_some() { self.v(queue) },
+			Input::W(state) => if state.is_some() { self.w(queue) },
+			Input::X(state) => if state.is_some() { self.x(queue) },
+			Input::Y(state) => if state.is_some() { self.y(queue) },
+			Input::Z(state) => if state.is_some() { self.z(queue) },
+			Input::Enter(state) => if state.is_some() { self.enter(queue) },
+			Input::Apostrophe(state) => if state.is_some() { self.apostrophe(queue) },
+			Input::Semicolon(state) => if state.is_some() { self.semicolon(queue) },
+			Input::EqualSign(state) => if state.is_some() { self.equalsign(queue) },
+			Input::Minus(state) => if state.is_some() { self.minus(queue) },
+			Input::Num1(state) => if state.is_some() { self.num1(queue) },
+			Input::Num2(state) => if state.is_some() { self.num2(queue) },
+			Input::Num3(state) => if state.is_some() { self.num3(queue) },
+			Input::Num4(state) => if state.is_some() { self.num4(queue) },
+			Input::Num5(state) => if state.is_some() { self.num5(queue) },
+			Input::Num6(state) => if state.is_some() { self.num6(queue) },
+			Input::Num7(state) => if state.is_some() { self.num7(queue) },
+			Input::Num8(state) => if state.is_some() { self.num8(queue) },
+			Input::Num9(state) => if state.is_some() { self.num9(queue) },
+			Input::Num0(state) => if state.is_some() { self.num0(queue) },
 			_ => {},
 		}
 		queue.push(input)
@@ -96,15 +108,16 @@ impl Modifiers {
 
 	fn a(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::Msg(Msg::Select),
+			CTRL => Input::Select,
 			ALT => return, // TODO: Aldaron's OS: To App Screen
 			_ => return,
 		})
 	}
 
+	#[allow(unreachable_code)]
 	fn b(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::ScEmphasis(Emphasis::Bold),
+			CTRL => return, // TODO: What does it do?
 			ALT => return, // TODO: What does it do?
 			_ => return,
 		})
@@ -112,15 +125,15 @@ impl Modifiers {
 
 	fn c(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::Msg(Msg::Copy),
-			ALT => Input::Msg(Msg::Cancel),
+			CTRL => Input::Copy,
+			ALT => Input::Cancel,
 			_ => return,
 		})
 	}
 
 	fn d(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::Msg(Msg::Delete),
+			CTRL => Input::Delete,
 			ALT => Input::Text('δ'),
 			ALT_SHIFT => Input::Text('Δ'),
 			_ => return,
@@ -138,7 +151,7 @@ impl Modifiers {
 
 	fn f(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::Msg(Msg::Find),
+			CTRL => Input::Find,
 			ALT => return, // TODO: What does it do?
 			_ => return,
 		})
@@ -155,7 +168,7 @@ impl Modifiers {
 
 	fn h(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::Msg(Msg::Help),
+			CTRL => Input::Help,
 			ALT => return, // TODO: What does it do?
 			_ => return,
 		})
@@ -163,8 +176,8 @@ impl Modifiers {
 
 	fn i(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::ScEmphasis(Emphasis::Italic), // 𝘢
-			CTRL_SHIFT => Input::Msg(Msg::Info), // 🛈
+			CTRL => Input::Emphasis(Emphasis::Italic), // 𝘢
+			CTRL_SHIFT => Input::Info, // 🛈
 			ALT => return, // TODO: What does it do?
 			_ => return,
 		})
@@ -190,7 +203,7 @@ impl Modifiers {
 
 	fn l(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::ScAlign(Align::Left),
+			CTRL => Input::Align(Align::Left),
 			ALT => return, // TODO: What does it do?
 			_ => return,
 		})
@@ -208,7 +221,7 @@ impl Modifiers {
 	#[allow(unreachable_code)]
 	fn n(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::Msg(Msg::Quit), // TODO: New Session.
+			CTRL => Input::Quit, // TODO: New Session.
 			ALT => return, // TODO: What does it do?
 			_ => return,
 		})
@@ -225,7 +238,7 @@ impl Modifiers {
 
 	fn p(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::Msg(Msg::Print),
+			CTRL => Input::Print,
 			ALT => return, // TODO: What does it do?
 			_ => return,
 		})
@@ -233,7 +246,7 @@ impl Modifiers {
 
 	fn q(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::Msg(Msg::Quit),
+			CTRL => Input::Quit,
 			ALT => return, // TODO: What does it do?
 			_ => return,
 		})
@@ -250,8 +263,8 @@ impl Modifiers {
 
 	fn s(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::Msg(Msg::Share), // 🔗 Share TODO: Popup
-			CTRL_SHIFT => Input::Msg(Msg::SaveCopy), //⭳ TODO: FileSys Popup
+			CTRL => Input::Share, // 🔗 Share TODO: Popup
+			CTRL_SHIFT => Input::SaveCopy, //⭳ TODO: FileSys Popup
 			ALT => return, // TODO: What does it do?
 			_ => return,
 		})
@@ -259,7 +272,7 @@ impl Modifiers {
 
 	fn t(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::Msg(Msg::Open(None)),
+			CTRL => Input::Open(None),
 			ALT => return, // TODO: What does it do?
 			_ => return,
 		})
@@ -268,7 +281,7 @@ impl Modifiers {
 	#[allow(unreachable_code)]
 	fn u(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::ScEmphasis(Emphasis::Underline),//⎁
+			CTRL => Input::Emphasis(Emphasis::Underline),//⎁
 			ALT => return, // TODO: What does it do?
 			_ => return,
 		})
@@ -276,7 +289,7 @@ impl Modifiers {
 
 	fn v(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::Msg(Msg::Paste),
+			CTRL => Input::Paste,
 			ALT => return, // TODO: What does it do?
 			_ => return,
 		})
@@ -284,7 +297,7 @@ impl Modifiers {
 
 	fn w(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::Msg(Msg::Close),
+			CTRL => Input::Close,
 			ALT => return, // TODO: What does it do?
 			_ => return,
 		})
@@ -292,7 +305,7 @@ impl Modifiers {
 
 	fn x(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::Msg(Msg::Cut),
+			CTRL => Input::Cut,
 			ALT => Input::Text('×'),
 			_ => return,
 		})
@@ -300,7 +313,7 @@ impl Modifiers {
 
 	fn y(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::Msg(Msg::Redo),
+			CTRL => Input::Redo,
 			ALT => return, // TODO: What does it do?
 			_ => return,
 		})
@@ -308,8 +321,8 @@ impl Modifiers {
 
 	fn z(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::Msg(Msg::Undo),
-			CTRL_SHIFT => Input::Msg(Msg::Redo),
+			CTRL => Input::Undo,
+			CTRL_SHIFT => Input::Redo,
 			ALT => Input::Text('÷'),
 			_ => return,
 		})
@@ -317,7 +330,7 @@ impl Modifiers {
 
 	fn enter(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::ScAlign(Align::Justified),
+			CTRL => Input::Align(Align::Justified),
 			ALT => return, // TODO: What does it do?
 			_ => return,
 		})
@@ -325,7 +338,7 @@ impl Modifiers {
 
 	fn apostrophe(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::ScAlign(Align::Right),
+			CTRL => Input::Align(Align::Right),
 			ALT => return, // TODO: What does it do?
 			_ => return,
 		})
@@ -333,7 +346,7 @@ impl Modifiers {
 
 	fn semicolon(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::ScAlign(Align::Centered),
+			CTRL => Input::Align(Align::Centered),
 			ALT => Input::Text('°'),
 			_ => return,
 		})
@@ -341,14 +354,14 @@ impl Modifiers {
 
 	fn equalsign(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::ScEmphasis(Emphasis::UnderlineX2),
+			CTRL => Input::Emphasis(Emphasis::UnderlineX2),
 			_ => return,
 		})
 	}
 
 	fn minus(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::ScEmphasis(Emphasis::StrikeOut),
+			CTRL => Input::Emphasis(Emphasis::StrikeOut),
 			_ => return,
 		})
 	}
@@ -398,10 +411,9 @@ impl Modifiers {
 		})
 	}
 
-	#[allow(unreachable_code)]
 	fn num6(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => return, // TODO: What does it do?
+			CTRL => Input::Emphasis(Emphasis::UnderlineDC),//⎂,
 			ALT => return, // TODO: Aldaron's OS / No OS: ⏮ Track
 			_ => return,
 		})
@@ -409,7 +421,7 @@ impl Modifiers {
 
 	fn num7(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::ScEmphasis(Emphasis::Overline),
+			CTRL => Input::Emphasis(Emphasis::Overline),
 			ALT => return, // TODO: Aldaron's OS / No OS: ⏭ Track
 			_ => return,
 		})
@@ -417,7 +429,7 @@ impl Modifiers {
 
 	fn num8(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::ScEmphasis(Emphasis::UnderlineDC),//⎂
+			CTRL => Input::Emphasis(Emphasis::Bold),
 			ALT => return, // TODO: Brightness ☀ - 🔅
 			_ => return,
 		})
@@ -425,7 +437,7 @@ impl Modifiers {
 
 	fn num9(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::ScEmphasis(Emphasis::InvertColor),
+			CTRL => Input::Emphasis(Emphasis::InvertColor),
 			ALT => return, // TODO: Brightness ☀ + 🔆
 			_ => return,
 		})
@@ -433,7 +445,7 @@ impl Modifiers {
 
 	fn num0(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::ScEmphasis(Emphasis::None),
+			CTRL => Input::Emphasis(Emphasis::None),
 			ALT => return, // TODO: Toggle Monitor Config 🖵
 			_ => return,
 		})

@@ -21,9 +21,6 @@ pub(crate) mod window;
 pub(crate) mod window_ops;
 
 pub use input::Input;
-pub use input::Key;
-pub use input::Click;
-pub use input::Msg;
 pub use window_connection::WindowConnection;
 pub use window::Window;
 pub use window_ops::WindowOps;

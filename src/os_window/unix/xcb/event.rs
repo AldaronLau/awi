@@ -4,7 +4,6 @@
 
 use libc::c_void;
 
-use Key;
 use input;
 use super::ffi as xcb;
 
@@ -60,27 +59,31 @@ impl Event {
 		};
 
 		match e.id {
-			KEY_DOWN => if let Some(key) = Key::new(e.detail) {
+			KEY_DOWN => if let Some(key) = input::key(e.detail) {
 				keyboard.press(key);
 			} else if e.detail == 9 {
 				queue.back();
 			} else if e.detail == 95 {
 				queue.fullscreen();
 			},
-			KEY_UP => if let Some(key) = Key::new(e.detail) {
+			KEY_UP => if let Some(key) = input::key(e.detail) {
 				keyboard.release(key);
 			},
 			BUTTON_DOWN => match e.detail {
-				bt @ 1...3 => queue.button_down(*wh, e.xy,
-					mouse_button(bt)),
-				sc @ 4...7 => queue.scroll(*wh, e.xy,
-					scroll_wheel(sc), 1),
+				1 => queue.left_button_press(*wh, e.xy),
+				2 => queue.middle_button_press(*wh, e.xy),
+				3 => queue.right_button_press(*wh, e.xy),
+				4 => queue.scroll(*wh, e.xy, (0.0, -1.0)),
+				5 => queue.scroll(*wh, e.xy, (0.0, 1.0)),
+				6 => queue.scroll(*wh, e.xy, (-1.0, 0.0)),
+				7 => queue.scroll(*wh, e.xy, (1.0, 0.0)),
 				uc => panic!("awi: Unknown Click {}!", uc)
 			},
 			BUTTON_UP => match e.detail {
-				bt @ 1...3 => queue.button_up(*wh, e.xy,
-					mouse_button(bt)),
-				_ => {}
+				1 => queue.left_button_release(*wh, e.xy),
+				2 => queue.middle_button_release(*wh, e.xy),
+				3 => queue.right_button_release(*wh, e.xy),
+				_ => {},
 			},
 			CURSOR_MOVE => queue.cursor_move(*wh, e.xy),
 			CURSOR_LEAVE => queue.cursor_leave(),
@@ -97,24 +100,5 @@ impl Event {
 		}
 
 		true
-	}
-}
-
-fn scroll_wheel(button: u32) -> input::ScrollWheel {
-	match button {
-		4 => input::ScrollWheel::Up,
-		5 => input::ScrollWheel::Down,
-		6 => input::ScrollWheel::Left,
-		7 => input::ScrollWheel::Right,
-		_ => unreachable!(),
-	}
-}
-
-fn mouse_button(button: u32) -> ::Click {
-	match button {
-		1 => ::Click::Left,
-		2 => ::Click::Middle,
-		3 => ::Click::Right,
-		_ => unreachable!(),
 	}
 }

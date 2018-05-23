@@ -2,17 +2,11 @@
 // Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
 // Licensed under the MIT LICENSE
 
-pub(crate) mod cursor;
 pub(crate) mod keyboard;
-
-pub use self::keyboard::Key;
-pub use self::keyboard::msg::Msg;
-pub use self::cursor::Click;
 
 /// Input to the window, that's put into the input queue, when an event has
 /// occurred.
-#[derive(PartialEq)]
-#[derive(Copy, Clone)]
+#[derive(PartialEq, Copy, Clone)]
 pub enum Input {
 	/// The window has just been resized.
 	Resize,
@@ -20,96 +14,417 @@ pub enum Input {
 	Resume,
 	/// The user has switched to a different window (out of focus).
 	Pause,
-	/// One of the following has happenned,
-	///
-	/// - A key has been pressed on a physical keyboard.
-	/// - A key has been pressed on an on-screen keyboard.
-	KeyPress(Key),
-	/// One of the following has happenned,
-	///
-	/// - A key is being held down on a physical keyboard.
-	/// - A key is being held down on an on-screen keyboard.
-	KeyHold(Key),
-	/// One of the following has happenned,
-	///
-	/// - A key has been released on a physical keyboard.
-	/// - A key has been released on an on-screen keyboard.
-	KeyRelease(Key),
 	/// The user has inputted text.
 	Text(char),
-	/// One of the following has happenned,
-	///
-	/// - A keyboard shortcut has been used.
-	/// - A graphical shortcut has been used.
-	Msg(Msg),
-	/// `Cursor(x, y)`: One of the following has happenned,
-	///
-	/// - The user moves the cursor with the mouse.
-	/// - The user moves the cursor with the touchpad.
-	/// - The last place that the user touched the touchscreen changes.
-	Cursor(Option<(f32,f32)>),
-	/// `CursorPress(click, x, y)`: A mouse button has been pressed.
-	CursorPress(Click, (f32,f32)),
-	/// `CursorRelease(click, x, y)`: A mouse button has been released.
-	CursorRelease(Click, Option<(f32,f32)>),
-	/// One of the following has happenned,
-	///
-	/// - The mouse wheel has been scrolled up.
-	/// - The touchpad has been used to scroll up.
-	ScrollUp(f32,f32),
-	/// One of the following has happenned,
-	///
-	/// - The mouse wheel has been scrolled down.
-	/// - The touchpad has been used to scroll down.
-	ScrollDown(f32,f32),
-	/// One of the following has happenned,
-	///
-	/// - The mouse wheel has been scrolled left.
-	/// - The touchpad has been used to scroll left.
-	ScrollLeft(f32,f32),
-	/// One of the following has happenned,
-	///
-	/// - The mouse wheel has been scrolled right.
-	/// - The touchpad has been used to scroll right.
-	ScrollRight(f32,f32),
 	/// Keyboard Shortcut - Align
-	ScAlign(::afi_docf::Align),
+	///
+	/// * (CTRL-L) `Align::Left`
+	/// * (CTRL-;) `Align::Centered`
+	/// * (CTRL-') `Align::Right`
+	/// * (CTRL-ENTER) `Align::Justified`
+	Align(::afi_docf::Align),
 	/// Keyboard Shortcut - Emphasis
-	ScEmphasis(::afi_docf::Emphasis),
+	///
+	/// * (CTRL-6) `Emphasis::UnderlineDC`
+	/// * (CTRL-7) `Emphasis::Overline`
+	/// * (CTRL-8) `Emphasis::Bold`
+	/// * (CTRL-9) `Emphasis::InvertColor`
+	/// * (CTRL-0) `Emphasis::None`
+	/// * (CTRL-MINUS) `Emphasis::StrikeOut`
+	/// * (CTRL-EQUALS) `Emphasis::UnderlineX2`
+	/// * (CTRL-U) `Emphasis::Underline`
+	/// * (CTRL-I) `Emphasis::Italic`
+	Emphasis(::afi_docf::Emphasis),
 	/// Keyboard Shortcut - Text Color
-	ScColor(::afi_docf::FontColor),
+	Color(::afi_docf::FontColor),
+	/// Keyboard Shortcut - Select All (CTRL-A)
+	Select,
+	/// Keyboard Shortcut - Copy (CTRL-C)
+	Copy,
+	/// Keyboard Shortcut - Cancel (ALT-C)
+	Cancel,
+	/// Keyboard Shortcut - Delete (SHIFT-BACKSPACE)
+	Delete,
+	/// Keyboard Shortcut - Find (CTRL-F)
+	Find,
+	/// Keyboard Shortcut - Help
+	Help,
+	/// Keyboard Shortcut - Info
+	Info,
+	/// Request to exit the current screen - Back key / (Esc)
+	Back,
+	/// Request to exit the app - 'X' button on app's window / (Ctrl-Q)
+	Quit,
+	/// Keyboard Shortcut - Close (Ctrl-W)
+	Close,
+	/// Keyboard Shortcut - Open (Ctrl-O)
+	Open(Option<&'static str>),
+	/// Keyboard Shortcut - Share (Ctrl-S)
+	Share,
+	/// Keyboard Shortcut - Save Copy (Ctrl-Shift-S)
+	SaveCopy,
+	/// Keyboard Shortcut - Undo (Ctrl-Z)
+	Undo,
+	/// Keyboard Shortcut - Redo (Ctrl-Shift-Z or Ctrl-Y)
+	Redo,
+	/// Keyboard Shortcut - Cut (Ctrl-X)
+	Cut,
+	/// Keyboard Shortcut - Paste (Ctrl-V)
+	Paste,
+	/// Keyboard Shortcut - Print (Ctrl-P)
+	Print,
+	/// Cursor moved
+	Cursor(Option<(f32,f32)>),
+	/// Left Click (Some(Just Clicked) = Pressed, Cursor XY)
+	LeftButton(Option<bool>, Option<(f32, f32)>),
+	/// Middle Click (or SHIFT-Click) (Some(Just Clicked) = Pressed, Cursor XY)
+	MiddleButton(Option<bool>, Option<(f32, f32)>),
+	/// Right Click (or CTRL-Click) (Some(Just Clicked) = Pressed, Cursor XY)
+	RightButton(Option<bool>, Option<(f32, f32)>),
+	/// Touch (on a touchscreen) (Some(Just Clicked) = Pressed, Cursor XY)
+	Touch(Option<bool>, Option<(f32, f32)>),
+	/// Touchpad / Mousewheel scroll (x, y) - (-1, -1) is up / left, (1, 1)
+	/// is down / right (Scroll XY, Cursor XY)
+	Scroll((f32, f32), Option<(f32, f32)>),
+	// Note: These rows are not necessarily the rows these keys are found.
+	// Row1
+	/// 1
+	Num1(Option<bool>),
+	/// 2
+	Num2(Option<bool>),
+	/// 3
+	Num3(Option<bool>),
+	/// 4
+	Num4(Option<bool>),
+	/// 5
+	Num5(Option<bool>),
+	/// 6
+	Num6(Option<bool>),
+	/// 7
+	Num7(Option<bool>),
+	/// 8
+	Num8(Option<bool>),
+	/// 9
+	Num9(Option<bool>),
+	/// 0
+	Num0(Option<bool>),
+	/// \-
+	Minus(Option<bool>),
+	/// \=
+	EqualSign(Option<bool>),
+	/// Backspace
+	Backspace(Option<bool>),
+	// Row2
+	/// Tab
+	Tab(Option<bool>),
+	/// Q
+	Q(Option<bool>), // = 14,
+	/// W
+	W(Option<bool>), // = 15,
+	/// E
+	E(Option<bool>), // = 16,
+	/// R
+	R(Option<bool>), // = 17,
+	/// T
+	T(Option<bool>), // = 18,
+	/// Y
+	Y(Option<bool>), // = 19,
+	/// U
+	U(Option<bool>), // = 20,
+	/// I
+	I(Option<bool>), // = 21,
+	/// O
+	O(Option<bool>), // = 22,
+	/// P
+	P(Option<bool>), // = 23,
+	/// {
+	BracketOpen(Option<bool>), // = 24,
+	/// }
+	BracketClose(Option<bool>), // = 25,
+	/// Backslash
+	Backslash(Option<bool>), // = 26,
+	// Row3
+	/// Compose (CAPS LOCK)
+	Compose(Option<bool>), // = 27,
+	/// A
+	A(Option<bool>), // = 28,
+	/// S
+	S(Option<bool>), // = 29,
+	/// D
+	D(Option<bool>), // = 30,
+	/// F
+	F(Option<bool>), // = 31,
+	/// G
+	G(Option<bool>), // = 32,
+	/// H
+	H(Option<bool>), // = 33,
+	/// J
+	J(Option<bool>), // = 34,
+	/// K
+	K(Option<bool>), // = 35,
+	/// L
+	L(Option<bool>), // = 36,
+	/// ;
+	Semicolon(Option<bool>), // = 37,
+	/// '
+	Apostrophe(Option<bool>), // = 38,
+	/// Enter
+	Enter(Option<bool>), // = 39,
+	// Row4
+	/// Left Shift
+	LShift(Option<bool>), // = 40,
+	/// Z
+	Z(Option<bool>), // = 41,
+	/// X
+	X(Option<bool>), // = 42,
+	/// C
+	C(Option<bool>), // = 43,
+	/// V
+	V(Option<bool>), // = 44,
+	/// B
+	B(Option<bool>), // = 45,
+	/// N
+	N(Option<bool>), // = 46,
+	/// M
+	M(Option<bool>), // = 47,
+	/// ,
+	Comma(Option<bool>), // = 48,
+	/// .
+	Period(Option<bool>), // = 49,
+	/// /
+	Slash(Option<bool>), // = 50,
+	/// Right Shift
+	RShift(Option<bool>), // = 51,
+	// Row5
+	/// Left CTRL
+	LCtrl(Option<bool>), // = 52,
+	/// Alt (Left)
+	Alt(Option<bool>), // = 53,
+	/// Space
+	Space(Option<bool>), // = 54,
+	/// Right Control
+	RCtrl(Option<bool>), // = 55,
+	/// Up Arrow Key
+	Up(Option<bool>), // = 56,
+	/// Down Arrow Key
+	Down(Option<bool>), // = 57,
+	/// Left Arrow Key
+	Left(Option<bool>), // = 58,
+	/// Right Arrow Key
+	Right(Option<bool>), // = 59,
+	// Ext ( May require 2 keys to be pressed on some platforms )
+	/// `
+	ExtBacktick(Option<bool>), // = 64,
+	/// Delete
+	ExtDelete(Option<bool>), // = 65,
+	/// Insert
+	ExtInsert(Option<bool>), // = 66,
+	/// NumLock
+	ExtNumLock(Option<bool>), // = 67,
+	/// Page Up
+	ExtPageUp(Option<bool>), // = 68,
+	/// Page Down
+	ExtPageDown(Option<bool>), // = 69,
+	/// Home
+	ExtHome(Option<bool>), // = 70,
+	/// End
+	ExtEnd(Option<bool>), // = 71,
+	/// \*
+	ExtAsterisk(Option<bool>), // = 72,
+	/// \+
+	ExtPlus(Option<bool>), // = 73,
+	/// AltGr (Right Alt)
+	ExtAltGr(Option<bool>), // = 74
 }
+
+use self::Input::*;
 
 impl ::std::fmt::Display for Input {
 	fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result<> {
-		use Input::*;
-
-		match *self {
+		// TODO: Write in language of the user.
+		match self {
 			Resize => write!(f, "Resize"),
 			Resume => write!(f, "Resume"),
 			Pause => write!(f, "Pause"),
-			KeyPress(key) => write!(f, "Key Press {}", key),
-			KeyHold(key) => write!(f, "Key Hold {}", key),
-			KeyRelease(key) => write!(f, "Key Release {}", key),
 			Text(chr) => write!(f, "Text {}", chr),
-			Msg(msg) => write!(f, "Message {}", msg),
+			Select => write!(f, "Select"),
+			Copy => write!(f, "Copy"),
+			Cancel => write!(f, "Cancel"),
+			Delete => write!(f, "Delete"),
+			Find => write!(f, "Find"),
+			Help => write!(f, "Help"),
+			Info => write!(f, "Info"),
+			Back => write!(f, "Back"),
+			Quit => write!(f, "Quit"),
+			Close => write!(f, "Close"),
+			Open(_) => write!(f, "Open..."),
+			Share => write!(f, "Share..."),
+			SaveCopy => write!(f, "Save A Copy..."),
+			Undo => write!(f, "Undo"),
+			Redo => write!(f, "Redo"),
+			Cut => write!(f, "Cut"),
+			Paste => write!(f, "Paste"),
+			Print => write!(f, "Print"),
 			Cursor(xy) => write!(f, "Cursor {:?}", xy),
-			CursorPress(c, xy) => write!(f, "Cursor Press {} {:?}", c, xy),
-			CursorRelease(c, xy) => write!(f, "Cursor Release {} {:?}", c, xy),
-			ScrollUp(x,y) => write!(f, "Scroll Up ({}, {})",x,y),
-			ScrollDown(x,y) => write!(f, "Scroll Down ({}, {})",x,y),
-			ScrollLeft(x,y) => write!(f, "Scroll Left ({}, {})",x,y),
-			ScrollRight(x,y) => write!(f, "Scroll Right ({}, {})",x,y),
+			LeftButton(state, xy) => write!(f, "Left Click {:?} {:?}", state, xy),
+			MiddleButton(state, xy) => write!(f, "Middle Click {:?} {:?}", state, xy),
+			RightButton(state, xy) => write!(f, "Right Click {:?} {:?}", state, xy),
+			Touch(state, xy) => write!(f, "Touch {:?} {:?}", state, xy),
+			Scroll(sxy, xy) => write!(f, "Scroll {:?} {:?}",sxy,xy),
+			Num1(state) => write!(f, "1 {:?}", state),
+			Num2(state) => write!(f, "2 {:?}", state),
+			Num3(state) => write!(f, "3 {:?}", state),
+			Num4(state) => write!(f, "4 {:?}", state),
+			Num5(state) => write!(f, "5 {:?}", state),
+			Num6(state) => write!(f, "6 {:?}", state),
+			Num7(state) => write!(f, "7 {:?}", state),
+			Num8(state) => write!(f, "8 {:?}", state),
+			Num9(state) => write!(f, "9 {:?}", state),
+			Num0(state) => write!(f, "0 {:?}", state),
+			Minus(state) => write!(f, "- {:?}", state),
+			EqualSign(state) => write!(f, "= {:?}", state),
+			Backspace(state) => write!(f, "Backspace {:?}", state),
+			Tab(state) => write!(f, "tab {:?}", state),
+			Q(state) => write!(f, "Q {:?}", state),
+			W(state) => write!(f, "W {:?}", state),
+			E(state) => write!(f, "E {:?}", state),
+			R(state) => write!(f, "R {:?}", state),
+			T(state) => write!(f, "T {:?}", state),
+			Y(state) => write!(f, "Y {:?}", state),
+			U(state) => write!(f, "U {:?}", state),
+			I(state) => write!(f, "I {:?}", state),
+			O(state) => write!(f, "O {:?}", state),
+			P(state) => write!(f, "P {:?}", state),
+			BracketOpen(state) => write!(f, "[ {:?}", state),
+			BracketClose(state) => write!(f, "] {:?}", state),
+			Backslash(state) => write!(f, "\\ {:?}", state),
+			Compose(state) => write!(f, "Compose {:?}", state),
+			A(state) => write!(f, "A {:?}", state),
+			S(state) => write!(f, "S {:?}", state),
+			D(state) => write!(f, "D {:?}", state),
+			F(state) => write!(f, "F {:?}", state),
+			G(state) => write!(f, "G {:?}", state),
+			H(state) => write!(f, "H {:?}", state),
+			J(state) => write!(f, "J {:?}", state),
+			K(state) => write!(f, "K {:?}", state),
+			L(state) => write!(f, "L {:?}", state),
+			Semicolon(state) => write!(f, "; {:?}", state),
+			Apostrophe(state) => write!(f, "' {:?}", state),
+			Enter(state) => write!(f, "enter {:?}", state),
+			LShift(state) => write!(f, "Left Shift {:?}", state),
+			RShift(state) => write!(f, "Right Shift {:?}", state),
+			Z(state) => write!(f, "Z {:?}", state),
+			X(state) => write!(f, "X {:?}", state),
+			C(state) => write!(f, "C {:?}", state),
+			V(state) => write!(f, "V {:?}", state),
+			B(state) => write!(f, "B {:?}", state),
+			N(state) => write!(f, "N {:?}", state),
+			M(state) => write!(f, "M {:?}", state),
+			Comma(state) => write!(f, ", {:?}", state),
+			Period(state) => write!(f, ". {:?}", state),
+			Slash(state) => write!(f, "/ {:?}", state),
+			LCtrl(state) => write!(f, "Left Ctrl {:?}", state),
+			RCtrl(state) => write!(f, "Right Ctrl {:?}", state),
+			Alt(state) => write!(f, "Alt {:?}", state),
+			ExtAltGr(state) => write!(f, "AltGr {:?}", state),
+			Space(state) => write!(f, "space {:?}", state),
+			Up(state) => write!(f, "Up {:?}", state),
+			Down(state) => write!(f, "Down {:?}", state),
+			Left(state) => write!(f, "Left {:?}", state),
+			Right(state) => write!(f, "Right {:?}", state),
+			ExtBacktick(state) => write!(f, "` {:?}", state),
+			ExtDelete(state) => write!(f, "Delete {:?}", state),
+			ExtInsert(state) => write!(f, "Insert {:?}", state),
+			ExtNumLock(state) => write!(f, "NumLock {:?}", state),
+			ExtPageUp(state) => write!(f, "PageUp {:?}", state),
+			ExtPageDown(state) => write!(f, "PageDown {:?}", state),
+			ExtHome(state) => write!(f, "Home {:?}", state),
+			ExtEnd(state) => write!(f, "End {:?}", state),
+			ExtAsterisk(state) => write!(f, "* {:?}", state),
+			ExtPlus(state) => write!(f, "+ {:?}", state),
 			_ => write!(f, "FIXME: Unknown") // FIXME
 		}
 	}
 }
 
-pub enum ScrollWheel {
-	Up,
-	Down,
-	Left,
-	Right,
+// create a `Key` from keycode
+pub(crate) fn key(physical_key: u32) -> Option<u8> {
+	use os_window::key;
+
+	Some( match physical_key {
+		key::ext::BACKTICK => keyboard::EXT_BACKTICK,
+		key::ext::NUM_PAD_PLUS => keyboard::EXT_PLUS,
+		key::ext::NUM_PAD_ASTERISK => keyboard::EXT_ASTERISK,
+		key::SLASH | key::ext::NUM_PAD_SLASH => keyboard::SLASH,
+		key::ENTER | key::ext::NUM_PAD_ENTER => keyboard::ENTER,
+		key::NUM_1 | key::ext::NUM_PAD_1 => keyboard::NUM1,
+		key::NUM_2 | key::ext::NUM_PAD_2 => keyboard::NUM2,
+		key::NUM_3 | key::ext::NUM_PAD_3 => keyboard::NUM3,
+		key::NUM_4 | key::ext::NUM_PAD_4 => keyboard::NUM4,
+		key::NUM_5 | key::ext::NUM_PAD_5 => keyboard::NUM5,
+		key::NUM_6 | key::ext::NUM_PAD_6 => keyboard::NUM6,
+		key::NUM_7 | key::ext::NUM_PAD_7 => keyboard::NUM7,
+		key::NUM_8 | key::ext::NUM_PAD_8 => keyboard::NUM8,
+		key::NUM_9 | key::ext::NUM_PAD_9 => keyboard::NUM9,
+		key::NUM_0 | key::ext::NUM_PAD_0 => keyboard::NUM0,
+		key::PERIOD | key::ext::NUM_PAD_PERIOD => keyboard::PERIOD,
+		key::MINUS | key::ext::NUM_PAD_MINUS => keyboard::MINUS,
+		key::EQUAL_SIGN => keyboard::EQUAL_SIGN,
+		key::BACKSPACE => keyboard::BACKSPACE,
+		key::TAB => keyboard::TAB,
+		key::Q => keyboard::Q,
+		key::W => keyboard::W,
+		key::E => keyboard::E,
+		key::R => keyboard::R,
+		key::T => keyboard::T,
+		key::Y => keyboard::Y,
+		key::U => keyboard::U,
+		key::I => keyboard::I,
+		key::O => keyboard::O,
+		key::P => keyboard::P,
+		key::BRACKET_OPEN => keyboard::BRACKET_OPEN,
+		key::BRACKET_CLOSE => keyboard::BRACKET_CLOSE,
+		key::LEFT_CTRL => keyboard::LCTRL,
+		key::RIGHT_CTRL => keyboard::RCTRL,
+		key::LEFT_SHIFT => keyboard::LSHIFT,
+		key::RIGHT_SHIFT => keyboard::RSHIFT,
+		key::LEFT_ALT => keyboard::ALT,
+		key::ext::ALT_GR => keyboard::EXT_ALT_GR,
+		key::CAPS_LOCK => keyboard::COMPOSE,
+		key::A => keyboard::A,
+		key::S => keyboard::S,
+		key::D => keyboard::D,
+		key::F => keyboard::F,
+		key::G => keyboard::G,
+		key::H => keyboard::H,
+		key::J => keyboard::J,
+		key::K => keyboard::K,
+		key::L => keyboard::L,
+		key::SEMICOLON => keyboard::SEMICOLON,
+		key::APOSTROPHE => keyboard::APOSTROPHE,
+		key::BACKSLASH => keyboard::BACKSLASH,
+		key::Z => keyboard::Z,
+		key::X => keyboard::X,
+		key::C => keyboard::C,
+		key::V => keyboard::V,
+		key::B => keyboard::B,
+		key::N => keyboard::N,
+		key::M => keyboard::M,
+		key::COMMA => keyboard::COMMA,
+		key::SPACE => keyboard::SPACE,
+		key::ext::NUMLOCK => keyboard::EXT_NUM_LOCK,
+		key::ext::HOME => keyboard::EXT_HOME,
+		key::ext::END => keyboard::EXT_END,
+		key::ext::PAGE_UP => keyboard::EXT_PAGE_UP,
+		key::ext::PAGE_DOWN => keyboard::EXT_PAGE_DOWN,
+		key::ext::INSERT => keyboard::EXT_INSERT,
+		key::ext::DELETE => keyboard::EXT_DELETE,
+		key::UP => keyboard::UP,
+		key::LEFT => keyboard::LEFT,
+		key::RIGHT => keyboard::RIGHT,
+		key::DOWN => keyboard::DOWN,
+		_ => return None,
+	} )
 }
 
 trait CoordToFloat {
@@ -208,57 +523,146 @@ impl InputQueue {
 		self.fullscreen = true
 	}
 
-	#[inline(always)]
-	pub fn key_down(&mut self, key: Key) {
-		match key {
-			_ => self.input(Input::KeyPress(key)),
-		}
-	}
-
-	#[inline(always)]
-	pub fn key_hold(&mut self, key: Key) {
-		self.input(Input::KeyHold(key));
-	}
-
-	#[inline(always)]
-	pub fn key_up(&mut self, key: Key) {
-		self.input(Input::KeyRelease(key));
+	pub fn key(&mut self, key: u8, state: Option<bool>) {
+		self.input(match key {
+			keyboard::NUM1 => Input::Num1(state),
+			keyboard::NUM2 => Input::Num2(state),
+			keyboard::NUM3 => Input::Num3(state),
+			keyboard::NUM4 => Input::Num4(state),
+			keyboard::NUM5 => Input::Num5(state),
+			keyboard::NUM6 => Input::Num6(state),
+			keyboard::NUM7 => Input::Num7(state),
+			keyboard::NUM8 => Input::Num8(state),
+			keyboard::NUM9 => Input::Num9(state),
+			keyboard::NUM0 => Input::Num0(state),
+			keyboard::MINUS => Input::Minus(state),
+			keyboard::EQUAL_SIGN => Input::EqualSign(state),
+			keyboard::BACKSPACE => Input::Backspace(state),
+			keyboard::TAB => Input::Tab(state),
+			keyboard::Q => Input::Q(state),
+			keyboard::W => Input::W(state),
+			keyboard::E => Input::E(state),
+			keyboard::R => Input::R(state),
+			keyboard::T => Input::T(state),
+			keyboard::Y => Input::Y(state),
+			keyboard::U => Input::U(state),
+			keyboard::I => Input::I(state),
+			keyboard::O => Input::O(state),
+			keyboard::P => Input::P(state),
+			keyboard::BRACKET_OPEN => Input::BracketOpen(state),
+			keyboard::BRACKET_CLOSE => Input::BracketClose(state),
+			keyboard::BACKSLASH => Input::Backslash(state),
+			keyboard::COMPOSE => Input::Compose(state),
+			keyboard::A => Input::A(state),
+			keyboard::S => Input::S(state),
+			keyboard::D => Input::D(state),
+			keyboard::F => Input::F(state),
+			keyboard::G => Input::G(state),
+			keyboard::H => Input::H(state),
+			keyboard::J => Input::J(state),
+			keyboard::K => Input::K(state),
+			keyboard::L => Input::L(state),
+			keyboard::SEMICOLON => Input::Semicolon(state),
+			keyboard::APOSTROPHE => Input::Apostrophe(state),
+			keyboard::ENTER => Input::Enter(state),
+			keyboard::LSHIFT => Input::LShift(state),
+			keyboard::Z => Input::Z(state),
+			keyboard::X => Input::X(state),
+			keyboard::C => Input::C(state),
+			keyboard::V => Input::V(state),
+			keyboard::B => Input::B(state),
+			keyboard::N => Input::N(state),
+			keyboard::M => Input::M(state),
+			keyboard::COMMA => Input::Comma(state),
+			keyboard::PERIOD => Input::Period(state),
+			keyboard::SLASH => Input::Slash(state),
+			keyboard::RSHIFT => Input::RShift(state),
+			keyboard::LCTRL => Input::LCtrl(state),
+			keyboard::ALT => Input::Alt(state),
+			keyboard::SPACE => Input::Space(state),
+			keyboard::RCTRL => Input::RCtrl(state),
+			keyboard::UP => Input::Up(state),
+			keyboard::DOWN => Input::Down(state),
+			keyboard::LEFT => Input::Left(state),
+			keyboard::RIGHT => Input::Right(state),
+			keyboard::EXT_BACKTICK => Input::ExtBacktick(state),
+			keyboard::EXT_DELETE => Input::ExtDelete(state),
+			keyboard::EXT_INSERT => Input::ExtInsert(state),
+			keyboard::EXT_NUM_LOCK => Input::ExtNumLock(state),
+			keyboard::EXT_PAGE_UP => Input::ExtPageUp(state),
+			keyboard::EXT_PAGE_DOWN => Input::ExtPageDown(state),
+			keyboard::EXT_HOME => Input::ExtHome(state),
+			keyboard::EXT_END => Input::ExtEnd(state),
+			keyboard::EXT_ASTERISK => Input::ExtAsterisk(state),
+			keyboard::EXT_PLUS => Input::ExtPlus(state),
+			keyboard::EXT_ALT_GR => Input::ExtAltGr(state),
+			_ => return,
+		})
 	}
 
 	#[inline(always)]
 	pub fn scroll(&mut self, wh: (u32, u32), c: (i16, i16),
-		direction: ScrollWheel, times: usize)
+		scrolling: (f32, f32))
 	{
 		let xy = cursor_coordinates(wh, c);
 
-		if let Some((x, y)) = xy {
-			match direction {
-				ScrollWheel::Up => self.push(Input::ScrollUp(x,y),times),
-				ScrollWheel::Down => self.push(Input::ScrollDown(x,y),times),
-				ScrollWheel::Left => self.push(Input::ScrollLeft(x,y),times),
-				ScrollWheel::Right => self.push(Input::ScrollRight(x,y),times),
-			}
-		}
+		self.input(Input::Scroll(scrolling, xy))
 	}
 
 	#[inline(always)]
-	pub fn button_down(&mut self, wh: (u32, u32), c: (i16, i16),
-		button_id: Click)
-	{
+	pub fn left_button_release(&mut self, wh: (u32, u32), c: (i16, i16)) {
 		let xy = cursor_coordinates(wh, c);
 
-		if let Some(xy) = xy {
-			self.input(Input::CursorPress(button_id, xy));
-		}
+		self.input(Input::LeftButton(None, xy));
 	}
 
 	#[inline(always)]
-	pub fn button_up(&mut self, wh: (u32, u32), c: (i16, i16),
-		button_id: Click)
-	{
+	pub fn middle_button_release(&mut self, wh: (u32, u32), c: (i16, i16)) {
 		let xy = cursor_coordinates(wh, c);
 
-		self.input(Input::CursorRelease(button_id, xy));
+		self.input(Input::MiddleButton(None, xy));
+	}
+
+	#[inline(always)]
+	pub fn right_button_release(&mut self, wh: (u32, u32), c: (i16, i16)) {
+		let xy = cursor_coordinates(wh, c);
+
+		self.input(Input::RightButton(None, xy));
+	}
+
+	#[inline(always)]
+	pub fn touch_release(&mut self, wh: (u32, u32), c: (i16, i16)) {
+		let xy = cursor_coordinates(wh, c);
+
+		self.input(Input::Touch(None, xy));
+	}
+
+	#[inline(always)]
+	pub fn left_button_press(&mut self, wh: (u32, u32), c: (i16, i16)) {
+		let xy = cursor_coordinates(wh, c);
+
+		self.input(Input::LeftButton(Some(true), xy));
+	}
+
+	#[inline(always)]
+	pub fn middle_button_press(&mut self, wh: (u32, u32), c: (i16, i16)) {
+		let xy = cursor_coordinates(wh, c);
+
+		self.input(Input::MiddleButton(Some(true), xy));
+	}
+
+	#[inline(always)]
+	pub fn right_button_press(&mut self, wh: (u32, u32), c: (i16, i16)) {
+		let xy = cursor_coordinates(wh, c);
+
+		self.input(Input::RightButton(Some(true), xy));
+	}
+
+	#[inline(always)]
+	pub fn touch_press(&mut self, wh: (u32, u32), c: (i16, i16)) {
+		let xy = cursor_coordinates(wh, c);
+
+		self.input(Input::Touch(Some(true), xy));
 	}
 
 	#[inline(always)]
@@ -285,7 +689,7 @@ impl InputQueue {
 
 	#[inline(always)]
 	pub fn back(&mut self) {
-		self.input(Input::Msg(Msg::Back));
+		self.input(Input::Back);
 	}
 
 	#[inline(always)]
@@ -294,13 +698,6 @@ impl InputQueue {
 
 		for c in chars {
 			self.input(Input::Text(c.1));
-		}
-	}	
-
-	#[inline(always)]
-	fn push(&mut self, input: Input, repeat: usize) {
-		for _ in 0..repeat {
-			self.input(input);
 		}
 	}
 
