@@ -38,3 +38,4 @@ exclude = [
 afi = "^0.5"
 afi_docf = "^0.0"
 libc = "^0.2"
+stick = "^0.4"

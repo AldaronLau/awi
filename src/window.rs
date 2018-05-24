@@ -14,6 +14,7 @@ pub struct Window {
 	dimensions: (u32, u32),
 	keyboard: ::Keyboard,
 	reset: bool,
+	cm: ::stick::ControllerManager,
 }
 
 impl Window {
@@ -34,13 +35,14 @@ impl Window {
 		let input_queue = ::input::InputQueue::new();
 		let keyboard = ::Keyboard::new();
 		let reset = false;
+		let cm = ::stick::ControllerManager::new(vec![]);
 
 		// Make the window visible.
 		os_window.show();
 		// Update the window.
 		os_window.update();
 
-		Window { os_window, dimensions, input_queue, keyboard, reset }
+		Window {os_window, dimensions, input_queue, keyboard, reset, cm}
 	}
 
 	/// Toggle whether the window is fullscreen.
@@ -92,5 +94,8 @@ impl Window {
 		if self.input_queue.get_fullscreen() {
 			self.fullscreen();
 		}
+
+		// Generate controller events from stick
+		self.input_queue.stick(&mut self.cm);
 	}
 }

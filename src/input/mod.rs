@@ -235,6 +235,52 @@ pub enum Input {
 	ExtPlus(Option<bool>), // = 73,
 	/// AltGr (Right Alt)
 	ExtAltGr(Option<bool>), // = 74
+	/// Controller: Main joystick movement.
+	CMove(usize, f32, f32),
+	/// Controller: Camera / C joystick movement.
+	CCamera(usize, f32, f32),
+	/// Controller: Left Throttle movement.
+	CThrottleL(usize, f32),
+	/// Controller: Right Throttle movement.
+	CThrottleR(usize, f32),
+	/// Controller: Accept (A Button / Left Top Button - Missle / Circle)
+	CAccept(usize, Option<bool>),
+	/// Controller: Cancel (B Button / Side Button / Cross)
+	CCancel(usize, Option<bool>),
+	/// Controller: Execute (X Button / Trigger / Triangle)
+	CExecute(usize, Option<bool>),
+	/// Controller: Action (Y Button / Right Top Button / Square)
+	CAction(usize, Option<bool>),
+	/// Controller: Left Button (0: L Trigger, 1: LZ / L Bumper).  0 is
+	/// farthest away from user, incrementing as buttons get closer.
+	CL(usize, u8, Option<bool>),
+	/// Controller: Right Button (0: R Trigger, 1: Z / RZ / R Bumper). 0 is
+	/// farthest away from user, incrementing as buttons get closer.
+	CR(usize, u8, Option<bool>),
+	/// Controller: Pause Menu (Start Button)
+	CMenu(usize, Option<bool>),
+	/// Controller: Show Controls (Guide on XBox, Select on PlayStation).
+	/// Use as alternative for Menu -> "Controls".
+	CControls(usize),
+	/// Controller: Exit This Screen (Back on XBox).  Use as alternative for
+	/// Menu -> "Quit" or Cancel, depending on situation.
+	CExit(usize),
+	/// Controller: HAT/DPAD Up Button
+	CUp(usize, Option<bool>),
+	/// Controller: HAT/DPAD Down Button
+	CDown(usize, Option<bool>),
+	/// Controller: Hat/D-Pad left button
+	CLeft(usize, Option<bool>),
+	/// Controller: Hat/D-Pad right button.
+	CRight(usize, Option<bool>),
+	/// Controller: Movement stick Push
+	CMoveStick(usize, Option<bool>),
+	/// Controller: Camera stick Push
+	CCamStick(usize, Option<bool>),
+	/// Controller: Device Plugged-In
+	CPluggedIn(usize, i32),
+	/// Controller: Device Un-Plugged
+	CUnPlugged(usize, i32),
 }
 
 use self::Input::*;
@@ -342,6 +388,27 @@ impl ::std::fmt::Display for Input {
 			ExtEnd(state) => write!(f, "End {:?}", state),
 			ExtAsterisk(state) => write!(f, "* {:?}", state),
 			ExtPlus(state) => write!(f, "+ {:?}", state),
+			CMove(i, x, y) => write!(f, "C{} Move ({}, {})", i, x, y),
+			CCamera(i, x, y) => write!(f, "C{} Camera ({}, {})", i, x, y),
+			CThrottleL(i, x) => write!(f, "C{} ThrottleL ({})", i, x),
+			CThrottleR(i, x) => write!(f, "C{} ThrottleR ({})", i, x),
+			CAccept(i, s) => write!(f, "C{} Accept {:?}", i, s),
+			CCancel(i, s) => write!(f, "C{} Cancel {:?}", i, s),
+			CExecute(i, s) => write!(f, "C{} Execute {:?}", i, s),
+			CAction(i, s) => write!(f, "C{} Action {:?}", i, s),
+			CL(i, a, s) => write!(f, "C{} L-{} {:?}", i, a, s),
+			CR(i, a, s) => write!(f, "C{} R-{} {:?}", i, a, s),
+			CMenu(i, s) => write!(f, "C{} Menu {:?}", i, s),
+			CControls(i) => write!(f, "C{} Controls", i),
+			CExit(i) => write!(f, "C{} Exit", i),
+			CUp(i, s) => write!(f, "C{} Up {:?}", i, s),
+			CDown(i, s) => write!(f, "C{} Down {:?}", i, s),
+			CLeft(i, s) => write!(f, "C{} Left {:?}", i, s),
+			CRight(i, s) => write!(f, "C{} Right {:?}", i, s),
+			CMoveStick(i, s) => write!(f, "C{} Movement Stick Push {:?}", i, s),
+			CCamStick(i, s) => write!(f, "C{} Camera Stick Push {:?}", i, s),
+			CPluggedIn(i, x) => write!(f, "C{} Device Plugged-In {:x}", i, x),
+			CUnPlugged(i, x) =>  write!(f, "C{} Device Un-Plugged {:x}", i, x),
 			_ => write!(f, "FIXME: Unknown") // FIXME
 		}
 	}
@@ -704,5 +771,36 @@ impl InputQueue {
 	#[inline(always)]
 	fn input(&mut self, input: Input) -> () {
 		self.mods.update(&mut self.queue, input)
+	}
+
+	#[inline(always)]
+	pub fn stick(&mut self, cm: &mut ::stick::ControllerManager) {
+		while let Some((js, i)) = cm.update() {
+			use ::stick::Input::*;
+
+			match i {
+				Move(x, y) => self.input(Input::CMove(js, x, y)),
+				Camera(x, y) => self.input(Input::CCamera(js, x, y)),
+				ThrottleL(x) => self.input(Input::CThrottleL(js, x)),
+				ThrottleR(x) => self.input(Input::CThrottleR(js, x)),
+				Accept(s) => self.input(Input::CAccept(js, s)),
+				Cancel(s) => self.input(Input::CCancel(js, s)),
+				Execute(s) => self.input(Input::CExecute(js, s)),
+				Action(s) => self.input(Input::CAction(js, s)),
+				L(b, s) => self.input(Input::CL(js, b, s)),
+				R(b, s) => self.input(Input::CR(js, b, s)),
+				Menu(s) => self.input(Input::CMenu(js, s)),
+				Controls => self.input(Input::CControls(js)),
+				Exit => self.input(Input::CExit(js)),
+				Up(s) => self.input(Input::CUp(js, s)),
+				Down(s) => self.input(Input::CDown(js, s)),
+				Left(s) => self.input(Input::CLeft(js, s)),
+				Right(s) => self.input(Input::CRight(js, s)),
+				MoveStick(s) => self.input(Input::CMoveStick(js, s)),
+				CamStick(s) => self.input(Input::CCamStick(js, s)),
+				PluggedIn(i) => self.input(Input::CPluggedIn(js, i)),
+				UnPlugged(i) => self.input(Input::CUnPlugged(js, i)),
+			}
+		}
 	}
 }
