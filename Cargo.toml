@@ -1,6 +1,5 @@
-# Cargo.toml -- Aldaron's Window Interface
-# Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
-# Licensed under the MIT LICENSE
+# "awi" crate - Licensed under the MIT LICENSE
+#  * Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
 #                             _        _
 #                            /@\——————/@\
 # .———  .                   |   o    o   |     .————      .            .
@@ -14,7 +13,7 @@
 
 [package]
 name = "awi"
-version = "0.5.0"
+version = "0.6.0"
 authors = [
 	"Jeron A. Lau <jeron.lau@plopgrizzly.com>"
 ]
@@ -24,14 +23,14 @@ documentation = "https://docs.rs/awi"
 homepage = "http://plopgrizzly.com/awi"
 repository = "https://github.com/plopgrizzly/awi"
 
-readme = "README.md"
+readme = "readme.md"
 description = "Create a window and handle it's input."
 keywords = ["window", "graphics", "interface", "native", "ffi"]
 categories = ["gui", "hardware-support", "os", "rendering"]
 
 exclude = [
-	"examples/*", "CODE_OF_CONDUCT.md", "CONTRIBUTING.md", ".gitignore",
-	"_config.yml", "ISSUE_TEMPLATE.md", "icon.png", "icon.ico"
+	"examples/*", "code_of_conduct.md", "contributing.md", ".gitignore",
+	"_config.yml", "issue_template.md", "icon.png", "icon.ico"
 ]
 
 [dependencies]
