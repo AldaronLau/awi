@@ -418,7 +418,7 @@ impl ::std::fmt::Display for Input {
 pub(crate) fn key(physical_key: u32) -> Option<u8> {
 	use os_window::key;
 
-	Some( match physical_key {
+	Some( #[allow(unreachable_patterns)] match physical_key {
 		key::ext::BACKTICK => keyboard::EXT_BACKTICK,
 		key::ext::NUM_PAD_PLUS => keyboard::EXT_PLUS,
 		key::ext::NUM_PAD_ASTERISK => keyboard::EXT_ASTERISK,

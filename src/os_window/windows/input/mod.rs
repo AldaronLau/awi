@@ -84,6 +84,7 @@ pub mod key {
 		pub const BACKTICK : u32 = 192;
 		pub const NUMLOCK : u32 = 144;
 		pub const ALT_GR : u32 = 18 | (0b_1_0011_1000 << 16);
+		#[allow(unused)]
 		pub const FULLSCREEN : u32 = 122;
 		pub const HOME : u32 = 36;
 		pub const END : u32 = 35;

@@ -5,7 +5,6 @@
 use input;
 use libc::c_void;
 // use input::keyboard::{ english, FSC, ESC }; TODO
-use Key;
 use super::types::*;
 
 static mut ADI_WNDPROCMSG : u8 = 0b0000_0000;
@@ -171,16 +170,16 @@ pub fn window_poll_event(window: Hwnd, queue: &mut input::InputQueue,
 	match msg.message {
 		WINDOW_CLOSE => queue.back(),
 		CURSOR_MOVE => queue.cursor_move(*wh, (x, y)),
-		LBUTTON_DOWN => queue.button_down(*wh, (x, y), ::Click::Left),
-		LBUTTON_UP => queue.button_up(*wh, (x, y), ::Click::Left),
-		MBUTTON_DOWN => queue.button_down(*wh, (x, y), ::Click::Middle),
-		MBUTTON_UP => queue.button_up(*wh, (x, y), ::Click::Middle),
-		RBUTTON_DOWN => queue.button_down(*wh, (x, y), ::Click::Right),
-		RBUTTON_UP => queue.button_up(*wh, (x, y), ::Click::Right),
+		LBUTTON_DOWN => queue.left_button_press(*wh, (x, y)),
+		LBUTTON_UP => queue.left_button_release(*wh, (x, y)),
+		MBUTTON_DOWN => queue.middle_button_press(*wh, (x, y)),
+		MBUTTON_UP => queue.middle_button_release(*wh, (x, y)),
+		RBUTTON_DOWN => queue.right_button_press(*wh, (x, y)),
+		RBUTTON_UP => queue.right_button_release(*wh, (x, y)),
 		0x0100 | 0x0104 => {
 			let detail = create_key_id(msg.w_param, msg.l_param);
 			
-			if let Some(key) = Key::new(detail) {
+			if let Some(key) = input::key(detail) {
 				keyboard.press(key);
 
 				// Required to generate CHAR & SYSCHAR
@@ -196,14 +195,14 @@ pub fn window_poll_event(window: Hwnd, queue: &mut input::InputQueue,
 			// released while LSHIFT is still pressed, there is no
 			// separate release event for LSHIFT.
 			if detail == RSHIFT {
-				keyboard.release(Key::LShift);
+				keyboard.release(input::key(LSHIFT).unwrap());
 			}
 			// And vice versa
 			if detail == LSHIFT {
-				keyboard.release(Key::RShift);
+				keyboard.release(input::key(RSHIFT).unwrap());
 			}
 
-			if let Some(key) = Key::new(detail) {
+			if let Some(key) = input::key(detail) {
 				keyboard.release(key);
 			}
 
@@ -221,12 +220,10 @@ pub fn window_poll_event(window: Hwnd, queue: &mut input::InputQueue,
 
 			if a > 0 {
 				queue.scroll(*wh, (x, y),
-					input::ScrollWheel::Up,
-					(a / 120) as usize);
+					(0.0, a as f32 / -120.0));
 			} else {
 				queue.scroll(*wh, (x, y),
-					input::ScrollWheel::Down,
-					(a / -120) as usize);
+					(0.0, a as f32 / 120.0));
 			}
 		}
 		// ignore all other messages
