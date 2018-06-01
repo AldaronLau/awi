@@ -1,37 +1,29 @@
 // "awi" crate - Licensed under the MIT LICENSE
 //  * Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
 
-use std::ptr::null_mut;
-use libc::c_void;
+use c_void;
 
 use super::ffi as xcb;
 use super::keyboard;
 
-pub struct NativeConnection(pub xcb::Connection, pub u32, keyboard::Keyboard);
+pub struct NativeConnection(pub xcb::Connection, pub u32, pub keyboard::Keyboard);
 
 impl NativeConnection {
 	pub fn new(xcb_dl: xcb::Dl, visual: Option<i32>) -> Self {
-		let xcb = xcb_dl.dl_handle;
-
-		if xcb.is_null() {
-			return NativeConnection((null_mut(), xcb_dl), 0,
-				keyboard::Keyboard::null((null_mut(), xcb_dl)));
-		}
-
-		let connection = (unsafe { xcb::connect(xcb) }, xcb_dl);
+		let connection = (unsafe { xcb::connect(&xcb_dl) }, xcb_dl);
 		let window = unsafe {
-			let mut screen = xcb::screen_root(connection);
-			let window = xcb::generate_id(connection);
+			let mut screen = xcb::screen_root(&connection);
+			let window = xcb::generate_id(&connection);
 
 			if let Some(v) = visual {
 				screen.1 = ::std::mem::transmute(v);
 			}
 
-			xcb::create_window(connection, window, screen);
+			xcb::create_window(&connection, window, screen);
 
 			window
 		};
-		let keyboard = keyboard::Keyboard::create(connection);
+		let keyboard = keyboard::Keyboard::create(&connection);
 
 		NativeConnection(connection, window, keyboard)
 	}
@@ -39,7 +31,7 @@ impl NativeConnection {
 	pub fn title(self, title: &str) -> Self {
 		let title = title.as_bytes();
 
-		unsafe { xcb::change_property_title(self.0, self.1, title) }
+		unsafe { xcb::change_property_title(&self.0, self.1, title) }
 
 		self
 	}
@@ -52,8 +44,8 @@ impl NativeConnection {
 		ico.extend(icon.2);
 
 		unsafe {
-			xcb::change_property(self.0, self.1, 6,
-				xcb::get_atom(self.0, b"_NET_WM_ICON"),
+			xcb::change_property(&self.0, self.1, 6,
+				xcb::get_atom(&self.0, b"_NET_WM_ICON"),
 				ico.as_slice());
 		}
 
@@ -64,11 +56,7 @@ impl NativeConnection {
 	}
 
 	pub fn show(&self) -> () {
-		unsafe { xcb::map_window(self.0, self.1) }
-	}
-
-	pub fn connection(&self) -> xcb::Connection {
-		self.0
+		unsafe { xcb::map_window(&self.0, self.1) }
 	}
 
 	pub fn keyboard_state(&self) -> *mut c_void {
@@ -78,8 +66,8 @@ impl NativeConnection {
 
 impl Drop for NativeConnection {
 	fn drop(&mut self) -> () {
-		unsafe { xcb::destroy_window(self.0, self.1) }
-		unsafe { xcb::disconnect(self.0) }
+		unsafe { xcb::destroy_window(&self.0, self.1) }
+		unsafe { xcb::disconnect(&self.0) }
 	}
 }
 

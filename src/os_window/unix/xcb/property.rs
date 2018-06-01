@@ -6,7 +6,7 @@ use super::ffi as xcb;
 pub struct Property(u32, u32);
 
 impl Property {
-	pub fn create(connection: xcb::Connection, name: &[u8], name2: &[u8])
+	pub fn create(connection: &xcb::Connection, name: &[u8], name2: &[u8])
 		-> Property
 	{
 		let atom1 = unsafe { xcb::get_atom(connection, name) };
@@ -15,7 +15,7 @@ impl Property {
 		Property(atom1, atom2)
 	}
 
-	pub fn catch(&self, connection: xcb::Connection, window: u32) -> () {
+	pub fn catch(&self, connection: &xcb::Connection, window: u32) -> () {
 		let data = [self.1];
 
 		unsafe {
@@ -23,13 +23,9 @@ impl Property {
 		}
 	}
 
-	pub fn apply(&self, connection: xcb::Connection, window: u32) -> () {
+	pub fn apply(&self, connection: &xcb::Connection, window: u32) -> () {
 		unsafe {
 			xcb::send_event(connection, window, (self.0, self.1))
 		}
-	}
-
-	pub fn dummy() -> Property {
-		Property(0, 0)
 	}
 }

@@ -1,40 +1,23 @@
 // "awi" crate - Licensed under the MIT LICENSE
 //  * Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
 
+use c_void;
 use input;
-use libc::c_void;
 // use input::keyboard::{ english, FSC, ESC }; TODO
 use super::types::*;
+
+use winapi::um::winuser::{
+	WM_LBUTTONDOWN, WM_LBUTTONUP, WM_MBUTTONDOWN, WM_MBUTTONUP, WM_VSCROLL,
+	WM_RBUTTONDOWN, WM_RBUTTONUP, WM_CLOSE, WM_MOUSEMOVE, WM_HSCROLL, 
+	WM_CHAR, WM_SYSCHAR, VK_RSHIFT,
+};
 
 static mut ADI_WNDPROCMSG : u8 = 0b0000_0000;
 static mut AWI_DIMENSIONS: (u32, u32) = (0, 0);
 
-const RESIZED : u8 = 0b1000_0000;
-const PAUSED : u8 = 0b0100_0000;
-const RESUMED : u8 = 0b0010_0000;
-
-// const KEY_DOWN: u32 = 2;
-// const KEY_UP: u32 = 3;
-const CURSOR_MOVE: u32 = 0x0200;
-// const CURSOR_ENTER: u32 = 7;
-// const CURSOR_LEAVE: u32 = 8;
-// const GAIN_FOCUS: u32 = 9;
-// const LOSE_FOCUS: u32 = 10;
-// const WINDOW_RESIZE: u32 = 22;
-const WINDOW_CLOSE: u32 = 0x0012;
-
-const LBUTTON_DOWN: u32 = 0x0201;
-const LBUTTON_UP: u32 = 0x0202;
-const MBUTTON_DOWN: u32 = 0x0207;
-const MBUTTON_UP: u32 = 0x0208;
-const RBUTTON_DOWN: u32 = 0x0204;
-const RBUTTON_UP: u32 = 0x0205;
-const SCROLL: u32 = 0x020A;
-const CHAR: u32 = 0x0102;
-const SYSCHAR: u32 = 0x0106;
-
-const LSHIFT : u32 = 16;
-const RSHIFT : u32 = 16 | (0b_0011_0110 << 16);
+const RESIZED: u8 = 0b1000_0000;
+const PAUSED: u8 = 0b0100_0000;
+const RESUMED: u8 = 0b0010_0000;
 
 #[repr(C)]
 struct Point {
@@ -121,7 +104,7 @@ fn create_key_id(w: Wparam, l: Lparam) -> u32 {
 	let scan = l & 0b00000001_11111111_00000000_00000000;
 	
 	match (w as u32) | ( scan as u32) {
-		d @ RSHIFT => d,
+		d @ VK_RSHIFT => d,
 		d @ RCONTROL => d,
 		d @ RALT => d,
 		_ => (w as u32),
@@ -167,14 +150,14 @@ pub fn window_poll_event(window: Hwnd, queue: &mut input::InputQueue,
 		return false;
 	}
 	match msg.message {
-		WINDOW_CLOSE => queue.back(),
-		CURSOR_MOVE => queue.cursor_move(*wh, (x, y)),
-		LBUTTON_DOWN => queue.left_button_press(*wh, (x, y)),
-		LBUTTON_UP => queue.left_button_release(*wh, (x, y)),
-		MBUTTON_DOWN => queue.middle_button_press(*wh, (x, y)),
-		MBUTTON_UP => queue.middle_button_release(*wh, (x, y)),
-		RBUTTON_DOWN => queue.right_button_press(*wh, (x, y)),
-		RBUTTON_UP => queue.right_button_release(*wh, (x, y)),
+		WM_CLOSE => queue.back(),
+		WM_MOUSEMOVE => queue.cursor_move(*wh, (x, y)),
+		WM_LBUTTONDOWN => queue.left_button_press(*wh, (x, y)),
+		WM_LBUTTONUP => queue.left_button_release(*wh, (x, y)),
+		WM_MBUTTONDOWN => queue.middle_button_press(*wh, (x, y)),
+		WM_MBUTTONUP => queue.middle_button_release(*wh, (x, y)),
+		WM_RBUTTONDOWN => queue.right_button_press(*wh, (x, y)),
+		WM_RBUTTONUP => queue.right_button_release(*wh, (x, y)),
 		0x0100 | 0x0104 => {
 			let detail = create_key_id(msg.w_param, msg.l_param);
 			
@@ -193,13 +176,13 @@ pub fn window_poll_event(window: Hwnd, queue: &mut input::InputQueue,
 			// A workaround for a bug in windows, when RSHIFT is
 			// released while LSHIFT is still pressed, there is no
 			// separate release event for LSHIFT.
-			if detail == RSHIFT {
-				keyboard.release(input::key(LSHIFT).unwrap());
-			}
+//			if detail == RSHIFT {
+//				keyboard.release(input::key(LSHIFT).unwrap());
+//			}
 			// And vice versa
-			if detail == LSHIFT {
-				keyboard.release(input::key(RSHIFT).unwrap());
-			}
+//			if detail == LSHIFT {
+//				keyboard.release(input::key(RSHIFT).unwrap());
+//			}
 
 			if let Some(key) = input::key(detail) {
 				keyboard.release(key);
@@ -208,12 +191,24 @@ pub fn window_poll_event(window: Hwnd, queue: &mut input::InputQueue,
 			// Required to generate CHAR & SYSCHAR
 			unsafe { TranslateMessage(&msg); }
 		}
-		CHAR | SYSCHAR => {
+		WM_CHAR | WM_SYSCHAR => {
 			let c = msg.w_param as u16;
 			
 			queue.text(String::from_utf16(&[c]).unwrap());
 		}
-		SCROLL => {
+		WM_HSCROLL => {
+			let a = (((msg.w_param as u32) >> 16) & 0xFFFF)
+				as i16;
+
+			if a > 0 {
+				queue.scroll(*wh, (x, y),
+					(a as f32 / -120.0, 0.0));
+			} else {
+				queue.scroll(*wh, (x, y),
+					(a as f32 / 120.0, 0.0));
+			}
+		}
+		WM_VSCROLL => {
 			let a = (((msg.w_param as u32) >> 16) & 0xFFFF)
 				as i16;
 

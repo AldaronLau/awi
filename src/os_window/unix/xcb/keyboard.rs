@@ -1,20 +1,18 @@
 // "awi" crate - Licensed under the MIT LICENSE
 //  * Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
 
-use std::ptr::null_mut;
-use libc::c_void;
+use c_void;
 
 use super::ffi as xcb;
 
 pub struct Keyboard {
-	connection: xcb::Connection,
 	pub state: *mut c_void,
 	keymap: *mut c_void,
 	context: *mut c_void,
 }
 
 impl Keyboard {
-	pub fn create(connection: xcb::Connection) -> Keyboard {
+	pub fn create(connection: &xcb::Connection) -> Keyboard {
 		unsafe { xcb::use_xkb_extension(connection) }
 		let device_id = unsafe {
 			xcb::xkb_get_core_keyboard_device_id(connection)
@@ -29,25 +27,25 @@ impl Keyboard {
 				device_id)
 		};
 
-		Keyboard { connection, context, keymap, state }
+		Keyboard { context, keymap, state }
 	}
 
-	pub fn null(connection: xcb::Connection) -> Keyboard {
+// TODO: ?
+/*	pub fn null() -> Keyboard {
 		Keyboard {
-			connection,
 			state: null_mut(),
 			keymap: null_mut(),
 			context: null_mut(),
 		}
-	}
+	}*/
 }
 
-impl Drop for Keyboard {
-	fn drop(&mut self) -> () {
-		unsafe {
-			xcb::xkb_state_unref(self.connection, self.state);
-			xcb::xkb_keymap_unref(self.connection, self.keymap);
-			xcb::xkb_context_unref(self.connection, self.context);
-		}
+// TODO: Drop this keyboard
+#[allow(unused)]
+pub fn drop(keyboard: Keyboard, connection: &xcb::Connection) -> () {
+	unsafe {
+		xcb::xkb_state_unref(connection, keyboard.state);
+		xcb::xkb_keymap_unref(connection, keyboard.keymap);
+		xcb::xkb_context_unref(connection, keyboard.context);
 	}
 }

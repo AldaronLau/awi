@@ -10,9 +10,9 @@ mod window_create;
 mod window_fullscreen;
 mod window_poll_event;
 
+use c_void;
 use input::InputQueue;
 use self::types::*;
-use libc::c_void;
 
 pub use self::input::key;
 

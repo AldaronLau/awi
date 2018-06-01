@@ -9,8 +9,17 @@
 	html_favicon_url = "http://plopgrizzly.com/awi/icon.svg",
 	html_root_url = "http://plopgrizzly.com/awi/")]
 
+// Unix Specific Crates
+#[cfg(any(target_os = "linux", target_os = "macos", target_os = "freebsd",
+	target_os = "dragonfly", target_os = "bitrig", target_os = "openbsd",
+	target_os = "netbsd"))]
+#[macro_use]
+extern crate dl_api;
+// Windows Specific Crates
+#[cfg(target_os="windows")]
+extern crate winapi;
+
 extern crate stick;
-extern crate libc;
 
 pub extern crate afi;
 pub extern crate afi_docf;
@@ -32,6 +41,8 @@ pub(crate) use input::keyboard::Keyboard;
 // Default Width and Height for a window.
 pub(crate) const MWW : u32 = 640;
 pub(crate) const MWH : u32 = 360;
+
+use std::os::raw::c_void;
 
 // Main
 /*#[cfg(target_os = "android")]

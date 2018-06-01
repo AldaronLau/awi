@@ -1,7 +1,7 @@
 // "awi" crate - Licensed under the MIT LICENSE
 //  * Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
 
-use libc::c_void;
+use c_void;
 
 /// Connection is listed first, then window.
 #[derive(Clone)]

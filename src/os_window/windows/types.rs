@@ -1,7 +1,7 @@
 // "awi" crate - Licensed under the MIT LICENSE
 //  * Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
 
-use libc::c_void;
+use c_void;
 use std::ptr::null_mut;
 
 #[cfg(target_pointer_width = "64")]

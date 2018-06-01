@@ -1,8 +1,7 @@
 // "awi" crate - Licensed under the MIT LICENSE
 //  * Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
 
-use libc::c_void;
-
+use c_void;
 use input;
 use super::ffi as xcb;
 
@@ -32,7 +31,8 @@ pub enum Event {
 }
 
 impl Event {
-	pub fn create(connection: xcb::Connection, state: *mut c_void) -> Event{
+	pub fn create(connection: &xcb::Connection, state: *mut c_void) -> Event
+	{
 		let event = unsafe { xcb::poll_for_event(connection, state) };
 
 		if let Some(e) = event {

@@ -36,5 +36,12 @@ exclude = [
 [dependencies]
 afi = "^0.5"
 afi_docf = "^0.0"
-libc = "^0.2"
 stick = "^0.4"
+
+# Unix: Runtime Link to xcb,
+[target.'cfg(any(target_os = "linux", target_os = "macos", target_os = "freebsd", target_os = "dragonfly", target_os = "bitrig", target_os = "openbsd", target_os = "netbsd"))'.dependencies]
+dl_api = { path = "../dl_api" }
+
+# Windows: Compiletime link to winapi
+[target.'cfg(target_os="windows")'.dependencies]
+winapi = "0.3"

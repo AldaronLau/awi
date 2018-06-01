@@ -18,30 +18,25 @@ pub struct XcbWindow {
 
 impl ::WindowOps for XcbWindow {
 	fn new(title: &str, icon: (u32, u32, &[u32]), v: Option<i32>) -> Self {
-		let xcb_dl = unsafe { ffi::load_dl() };
+		// TODO: Return Error
+		let xcb_dl = unsafe { ffi::load_dl() }.unwrap();
+
 		let native = NativeConnection::new(xcb_dl, v);
-
-		if native.failed() {
-			return XcbWindow {
-				fullscreen: Property::dummy(), native: native
-			}
-		}
-
 		let native = native.title(title);
 		let native = native.icon(icon);
 
 		XcbWindow {
-			fullscreen: Property::create(native.connection(),
+			fullscreen: Property::create(&native.0,
 				b"_NET_WM_STATE", b"_NET_WM_STATE_FULLSCREEN"),
-			native: native,
+			native,
 		}
 	}
 
 	fn show(&self) -> () {
 		// Make sure 'X' button works before showing!
-		Property::create(self.native.connection(), b"WM_PROTOCOLS",
+		Property::create(&self.native.0, b"WM_PROTOCOLS",
 				b"WM_DELETE_WINDOW")
-			.catch(self.native.connection(), self.native.1);
+			.catch(&self.native.0, self.native.1);
 		self.native.show()
 	}
 
@@ -53,15 +48,14 @@ impl ::WindowOps for XcbWindow {
 		wh: &mut(u32,u32), keyboard: &mut ::input::keyboard::Keyboard)
 		-> bool
 	{
-		let connection = self.native.connection();
 		let keyboard_state = self.native.keyboard_state();
 
-		Event::create(connection, keyboard_state).poll(input, wh,
+		Event::create(&self.native.0, keyboard_state).poll(input, wh,
 			keyboard)
 	}
 
 	fn fullscreen(&mut self) -> () {
-		self.fullscreen.apply(self.native.connection(), self.native.1)
+		self.fullscreen.apply(&self.native.0, self.native.1)
 	}
 
 	fn get_connection(&self) -> ::WindowConnection {
