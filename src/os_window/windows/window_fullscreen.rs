@@ -1,17 +1,15 @@
 // "awi" crate - Licensed under the MIT LICENSE
 //  * Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
 
-use std::ptr::null_mut;
-use super::types::*;
-
 use winapi::um::winuser::{
-	RECT, GetWindowRect, GetWindowLongW, SetWindowLongW, SetWindowPos, 
-	GetSystemMetrics, WS_VISIBLE, HWND_NOTOPMOST
+	GetWindowRect, GetWindowLongW, SetWindowLongW, SetWindowPos, 
+	GetSystemMetrics, WS_VISIBLE, HWND_NOTOPMOST, HWND_TOPMOST,
 };
-use winapi::shared::windef::HWND;
+use winapi::shared::windef::{ HWND, RECT };
+use winapi::um::winnt::LONG;
 
 pub fn window_fullscreen(window: HWND, state: &mut bool,
-	size: &mut (i32, i32, i32, i32), style: &mut usize)
+	size: &mut (i32, i32, i32, i32), style: &mut LONG)
 {
 	let flags = 0x0040 | 0x0020;
 
@@ -31,8 +29,8 @@ pub fn window_fullscreen(window: HWND, state: &mut bool,
 			
 			GetWindowRect(window, &mut rc);
 
-			SetWindowLongW(window, -16, WS_VISIBLE as usize);
-			SetWindowPos(window, Hwnd::topmost(), 0, 0, w, h, flags);
+			SetWindowLongW(window, -16, WS_VISIBLE as LONG);
+			SetWindowPos(window, HWND_TOPMOST, 0, 0, w, h, flags);
 		}
 
 		let sx = rc.left as i32;

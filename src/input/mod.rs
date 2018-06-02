@@ -413,8 +413,13 @@ impl ::std::fmt::Display for Input {
 	}
 }
 
+#[cfg(windows)]
+type PhysicalKey = i32;
+#[cfg(not(windows))]
+type PhysicalKey = u32;
+
 // create a `Key` from keycode
-pub(crate) fn key(physical_key: u32) -> Option<u8> {
+pub(crate) fn key(physical_key: PhysicalKey) -> Option<u8> {
 	use os_window::key;
 
 	Some( #[allow(unreachable_patterns)] match physical_key {

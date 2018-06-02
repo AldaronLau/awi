@@ -1,23 +1,23 @@
 // "awi" crate - Licensed under the MIT LICENSE
 //  * Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
 
-use c_void;
 use super::{ string };
-use super::types::*;
-use std::ptr::null;
+use std::ptr::{ null, null_mut };
 
 use std::mem;
 
 use winapi::um::winuser::{
-	RegisterClassExW, WNDCLASSEXW, LoadCursorW, CreateIcon,
+	RegisterClassExW, WNDCLASSEXW, LoadCursorW, CreateIcon, IDC_ARROW
 };
 use winapi::um::wingdi::{
 	GetStockObject,
 };
+use winapi::shared::windef::HWND;
+use winapi::shared::minwindef::{ WPARAM, LPARAM, LRESULT, HINSTANCE, UINT };
 
-pub fn class_create(hi: *const c_void, title: &str, icon: (u32, u32, &[u32]),
-	wnd_proc: extern "C" fn(a: Hwnd, b: u32, c: *const c_void,
-		d: *const c_void) -> Lresult)
+pub fn class_create(hi: HINSTANCE, title: &str, icon: (u32, u32, &[u32]),
+	wnd_proc: extern "system" fn(a: HWND, b: u32, c: WPARAM,
+		d: LPARAM) -> LRESULT)
 	-> [u8; 80]
 {
 	let mut name : [u8; 80] = [0u8; 80];
@@ -46,21 +46,23 @@ pub fn class_create(hi: *const c_void, title: &str, icon: (u32, u32, &[u32]),
 	}
 
 	let new_icon = unsafe {
-		CreateIcon(hi, w as i32, h as i32, 1, 32, &and[0], &xor[0])
+		CreateIcon(hi, w as i32, h as i32, 1, 32,
+			&and[0] as *const _ as *const _,
+			&xor[0] as *const _ as *const _)
 	};
 	
 	let window_class = WNDCLASSEXW {
-		cbSize: mem::size_of::<WndClassEx>() as UINT,
+		cbSize: mem::size_of::<WNDCLASSEXW>() as UINT,
 		style: 0x0002 | 0x0001,
-		lpfnWndProc: wnd_proc,
+		lpfnWndProc: Some(wnd_proc),
 		cbClsExtra: 0,
 		cbWndExtra: 0,
 		hInstance: hi,
 		hIcon: new_icon,
-		hCursor: unsafe { LoadCursorW(null(), 32512),
-		hbrBackground: unsafe { GetStockObject(0) },
-		lpszMenuName: 0,
-		lpszClassName: &name,
+		hCursor: unsafe { LoadCursorW(null_mut(), IDC_ARROW) }, // TODO: use undeprecated function?
+		hbrBackground: unsafe { GetStockObject(0) } as *mut _,
+		lpszMenuName: null(),
+		lpszClassName: &name as *const _ as *const _,
 		hIconSm: new_icon,
 	};
 	

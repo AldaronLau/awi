@@ -44,4 +44,4 @@ dl_api = { path = "../dl_api" }
 
 # Windows: Compiletime link to winapi
 [target.'cfg(target_os="windows")'.dependencies]
-winapi = "0.3"
+winapi = { version = "0.3", features = ["winuser", "libloaderapi", "winerror", "minwindef", "errhandlingapi"] }

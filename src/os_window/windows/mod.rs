@@ -1,7 +1,6 @@
 // "awi" crate - Licensed under the MIT LICENSE
 //  * Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
 
-mod types;
 mod input;
 mod class_create;
 mod connection_create;
@@ -12,11 +11,14 @@ mod window_poll_event;
 
 use c_void;
 use input::InputQueue;
-use self::types::*;
 
 pub use self::input::key;
 
-struct Connection { native: *mut c_void }
+use winapi::shared::windef::HWND;
+use winapi::um::winnt::LONG;
+use winapi::shared::minwindef::{ WPARAM, LPARAM, LRESULT, HINSTANCE };
+
+struct Connection { native: HINSTANCE }
 impl Connection {
 	fn create() -> Connection {
 		Connection { native: connection_create::connection_create() }
@@ -25,9 +27,9 @@ impl Connection {
 struct Class { name: [u8; 80] }
 impl Class {
 	fn create(connection: &Connection, name: &str,
-		image: (u32, u32, &[u32]), wnd_proc: extern "C" fn(
-			a: Hwnd, b: u32, c: *const c_void, d: *const c_void)
-			-> Lresult)
+		image: (u32, u32, &[u32]), wnd_proc: extern "system" fn(
+			a: HWND, b: u32, c: WPARAM, d: LPARAM)
+			-> LRESULT)
 		-> Class
 	{
 		Class {
@@ -36,9 +38,9 @@ impl Class {
 		}
 	}
 }
-struct Window { native: Hwnd }
+struct Window { native: HWND }
 impl Window {
-	fn create(connection: &Connection, size: (isize, isize), class: Class) -> Window {
+	fn create(connection: &Connection, size: (LONG, LONG), class: Class) -> Window {
 		let c = connection.native;
 		let name = class.name;
 
@@ -52,7 +54,7 @@ pub struct WindowsWindow {
 	miw: bool, // Mouse In Window
 	restore_size: (i32, i32, i32, i32),
 	fullscreen: bool,
-	restore_style: usize,
+	restore_style: LONG,
 }
 impl ::WindowOps for WindowsWindow {
 	fn new(title: &str, icon: (u32, u32, &[u32]), _v: Option<i32>)
@@ -62,7 +64,7 @@ impl ::WindowOps for WindowsWindow {
 		let class = Class::create(&connection, title, icon,
 			window_poll_event::wnd_proc);
 		let window = Window::create(&connection,
-			(::MWW as isize, ::MWH as isize), class);
+			(::MWW as LONG, ::MWH as LONG), class);
 
 		WindowsWindow { connection: connection, window: window, miw: true,
 			restore_size: (0, 0, 0, 0),
@@ -93,7 +95,7 @@ impl ::WindowOps for WindowsWindow {
 	}
 
 	fn get_connection(&self) -> ::WindowConnection {
-		::WindowConnection::Windows(self.connection.native,
-			self.window.native.to_ptr())
+		::WindowConnection::Windows(self.connection.native as *mut c_void,
+			self.window.native as *mut c_void)
 	}
 }
