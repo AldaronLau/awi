@@ -13,7 +13,7 @@
 
 [package]
 name = "awi"
-version = "0.6.0"
+version = "0.7.0"
 authors = [
 	"Jeron A. Lau <jeron.lau@plopgrizzly.com>"
 ]
@@ -34,13 +34,13 @@ exclude = [
 ]
 
 [dependencies]
-afi = "^0.5"
-afi_docf = "^0.0"
-stick = "^0.4"
+afi = "0.5"
+afi_docf = "0.0"
+stick = "0.4"
 
 # Unix: Runtime Link to xcb,
 [target.'cfg(any(target_os = "linux", target_os = "macos", target_os = "freebsd", target_os = "dragonfly", target_os = "bitrig", target_os = "openbsd", target_os = "netbsd"))'.dependencies]
-dl_api = { path = "../dl_api" }
+dl_api = "0.1"
 
 # Windows: Compiletime link to winapi
 [target.'cfg(target_os="windows")'.dependencies]
