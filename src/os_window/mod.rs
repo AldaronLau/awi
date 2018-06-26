@@ -1,5 +1,9 @@
-// "awi" crate - Licensed under the MIT LICENSE
-//  * Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
+// "awi" - Aldaron's Window Interface
+//
+// Copyright Jeron A. Lau 2017-2018.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at
+// https://www.boost.org/LICENSE_1_0.txt)
 
 #[cfg(target_os = "windows")]
 mod windows;
@@ -11,10 +15,15 @@ mod android;
 #[cfg(target_os = "android")]
 pub use self::android::{ AndroidWindow as OSWindow, key, gsp_main };
 
+#[cfg(target_os = "macos")]
+mod macos;
+#[cfg(target_os = "macos")]
+pub use self::macos::{ MacosWindow as OSWindow, key };
+
 #[cfg(target_os = "ios")]
 mod ios;
 #[cfg(target_os = "ios")]
-pub type OSWindow = self::ios::IosWindow;
+pub use self::macos::{ IosWindow as OSWindow, key };
 
 #[cfg(any(target_os = "linux", target_os = "macos", target_os = "freebsd",
 	target_os = "dragonfly", target_os = "bitrig", target_os = "openbsd",
@@ -32,11 +41,6 @@ mod aldarons_os;
 #[cfg(target_os = "aldarons_os")]
 pub use self::aldarons_os::{ AldaronsWindow as OSWindow, key };
 
-#[cfg(target_os = "arduino")]
-mod arduino;
-#[cfg(target_os = "arduino")]
-pub use self::arduino::{ ArduinoWindow as OSWindow, key };
-
 #[cfg(target_os = "nintendo_switch")]
 mod nintendo_switch;
 #[cfg(target_os = "nintendo_switch")]
@@ -46,8 +50,3 @@ pub use self::nintendo_switch::{ SwitchWindow as OSWindow, key };
 mod web_assembly;
 #[cfg(target_os = "web_assembly")]
 pub use self::web_assembly::{ WebWindow as OSWindow, key };
-
-#[cfg(target_os = "none")]
-mod no_os;
-#[cfg(target_os = "none")]
-pub use self::no_os::{ OSWindow, key };

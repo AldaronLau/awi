@@ -1,5 +1,4 @@
-# "awi" crate - Licensed under the MIT LICENSE
-#  * Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
+# "awi" - Aldaron's Window Interface
 #                             _        _
 #                            /@\——————/@\
 # .———  .                   |   o    o   |     .————      .            .
@@ -10,6 +9,11 @@
 # |     |   ———   |       |                |    ————  |   | :——— :———  |   |
 #                 |        \              /                              __/
 #                           ¯————————————¯
+#
+# Copyright Jeron A. Lau 2017-2018.
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at
+# https://www.boost.org/LICENSE_1_0.txt)
 
 [package]
 name = "awi"
@@ -17,21 +21,14 @@ version = "0.7.1"
 authors = [
 	"Jeron A. Lau <jeron.lau@plopgrizzly.com>"
 ]
-
-license = "MIT"
+license = "BSL-1.0"
 documentation = "https://docs.rs/awi"
-homepage = "http://plopgrizzly.com/awi"
+homepage = "https://plopgrizzly.com/awi"
 repository = "https://github.com/plopgrizzly/awi"
-
 readme = "readme.md"
 description = "Create a window and handle it's input."
 keywords = ["window", "graphics", "interface", "native", "ffi"]
 categories = ["gui", "hardware-support", "os", "rendering"]
-
-exclude = [
-	"examples/*", "code_of_conduct.md", "contributing.md", ".gitignore",
-	"_config.yml", "issue_template.md", "icon.png", "icon.ico"
-]
 
 [dependencies]
 afi = "0.5"
