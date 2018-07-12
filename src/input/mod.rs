@@ -417,96 +417,11 @@ impl ::std::fmt::Display for Input {
 	}
 }
 
-#[cfg(windows)]
-type PhysicalKey = i32;
-#[cfg(not(windows))]
-type PhysicalKey = u32;
-
-// create a `Key` from keycode
-pub(crate) fn key(physical_key: PhysicalKey) -> Option<u8> {
-	use os_window::key;
-
-	Some( #[allow(unreachable_patterns)] match physical_key {
-		key::ext::BACKTICK => keyboard::EXT_BACKTICK,
-		key::ext::NUM_PAD_PLUS => keyboard::EXT_PLUS,
-		key::ext::NUM_PAD_ASTERISK => keyboard::EXT_ASTERISK,
-		key::SLASH | key::ext::NUM_PAD_SLASH => keyboard::SLASH,
-		key::ENTER | key::ext::NUM_PAD_ENTER => keyboard::ENTER,
-		key::NUM_1 | key::ext::NUM_PAD_1 => keyboard::NUM1,
-		key::NUM_2 | key::ext::NUM_PAD_2 => keyboard::NUM2,
-		key::NUM_3 | key::ext::NUM_PAD_3 => keyboard::NUM3,
-		key::NUM_4 | key::ext::NUM_PAD_4 => keyboard::NUM4,
-		key::NUM_5 | key::ext::NUM_PAD_5 => keyboard::NUM5,
-		key::NUM_6 | key::ext::NUM_PAD_6 => keyboard::NUM6,
-		key::NUM_7 | key::ext::NUM_PAD_7 => keyboard::NUM7,
-		key::NUM_8 | key::ext::NUM_PAD_8 => keyboard::NUM8,
-		key::NUM_9 | key::ext::NUM_PAD_9 => keyboard::NUM9,
-		key::NUM_0 | key::ext::NUM_PAD_0 => keyboard::NUM0,
-		key::PERIOD | key::ext::NUM_PAD_PERIOD => keyboard::PERIOD,
-		key::MINUS | key::ext::NUM_PAD_MINUS => keyboard::MINUS,
-		key::EQUAL_SIGN => keyboard::EQUAL_SIGN,
-		key::BACKSPACE => keyboard::BACKSPACE,
-		key::TAB => keyboard::TAB,
-		key::Q => keyboard::Q,
-		key::W => keyboard::W,
-		key::E => keyboard::E,
-		key::R => keyboard::R,
-		key::T => keyboard::T,
-		key::Y => keyboard::Y,
-		key::U => keyboard::U,
-		key::I => keyboard::I,
-		key::O => keyboard::O,
-		key::P => keyboard::P,
-		key::BRACKET_OPEN => keyboard::BRACKET_OPEN,
-		key::BRACKET_CLOSE => keyboard::BRACKET_CLOSE,
-		key::LEFT_CTRL => keyboard::LCTRL,
-		key::RIGHT_CTRL => keyboard::RCTRL,
-		key::LEFT_SHIFT => keyboard::LSHIFT,
-		key::RIGHT_SHIFT => keyboard::RSHIFT,
-		key::LEFT_ALT => keyboard::ALT,
-		key::ext::ALT_GR => keyboard::EXT_ALT_GR,
-		key::CAPS_LOCK => keyboard::COMPOSE,
-		key::A => keyboard::A,
-		key::S => keyboard::S,
-		key::D => keyboard::D,
-		key::F => keyboard::F,
-		key::G => keyboard::G,
-		key::H => keyboard::H,
-		key::J => keyboard::J,
-		key::K => keyboard::K,
-		key::L => keyboard::L,
-		key::SEMICOLON => keyboard::SEMICOLON,
-		key::APOSTROPHE => keyboard::APOSTROPHE,
-		key::BACKSLASH => keyboard::BACKSLASH,
-		key::Z => keyboard::Z,
-		key::X => keyboard::X,
-		key::C => keyboard::C,
-		key::V => keyboard::V,
-		key::B => keyboard::B,
-		key::N => keyboard::N,
-		key::M => keyboard::M,
-		key::COMMA => keyboard::COMMA,
-		key::SPACE => keyboard::SPACE,
-		key::ext::NUMLOCK => keyboard::EXT_NUM_LOCK,
-		key::ext::HOME => keyboard::EXT_HOME,
-		key::ext::END => keyboard::EXT_END,
-		key::ext::PAGE_UP => keyboard::EXT_PAGE_UP,
-		key::ext::PAGE_DOWN => keyboard::EXT_PAGE_DOWN,
-		key::ext::INSERT => keyboard::EXT_INSERT,
-		key::ext::DELETE => keyboard::EXT_DELETE,
-		key::UP => keyboard::UP,
-		key::LEFT => keyboard::LEFT,
-		key::RIGHT => keyboard::RIGHT,
-		key::DOWN => keyboard::DOWN,
-		_ => return None,
-	} )
-}
-
 trait CoordToFloat {
 	fn to_f32(self) -> f32;
 }
 
-impl CoordToFloat for u32 {
+impl CoordToFloat for u16 {
 	fn to_f32(self) -> f32 { self as f32 }
 }
 
@@ -533,7 +448,6 @@ fn cursor_coordinates<T, U>(wh: (T, T), xy: (U, U)) -> Option<(f32, f32)>
 pub struct InputQueue {
 	queue: Vec<Input>,
 	mods: keyboard::modifiers::Modifiers,
-	fullscreen: bool,
 }
 
 impl InputQueue {
@@ -542,9 +456,8 @@ impl InputQueue {
 	pub fn new() -> InputQueue {
 		let queue = Vec::new();
 		let mods = keyboard::modifiers::Modifiers::create();
-		let fullscreen = false;
 
-		InputQueue { queue, mods, fullscreen }
+		InputQueue { queue, mods }
 	}
 
 	/// Returns an iterator over the InputQueue.
@@ -554,13 +467,7 @@ impl InputQueue {
 	}
 
 	#[inline(always)]
-	pub fn get_fullscreen(&self) -> bool {
-		self.fullscreen
-	}
-
-	#[inline(always)]
 	pub fn clear(&mut self) {
-		self.fullscreen = false;
 		self.queue.clear()
 	}
 
@@ -585,17 +492,12 @@ impl InputQueue {
 	}
 
 	#[inline(always)]
-	pub fn resize(&mut self, wh: &mut (u32,u32), d: (u32,u32)) {
+	pub fn resize(&mut self, wh: &mut (u16, u16), d: (u16, u16)) {
 		// Only if new dimensions differ from old.
 		if *wh != d {
 			*wh = d;
 			self.input(Input::Resize);
 		}
-	}
-
-	#[inline(always)]
-	pub fn fullscreen(&mut self) {
-		self.fullscreen = true
 	}
 
 	pub fn key(&mut self, key: u8, state: Option<bool>) {
@@ -676,7 +578,7 @@ impl InputQueue {
 	}
 
 	#[inline(always)]
-	pub fn scroll(&mut self, wh: (u32, u32), c: (i16, i16),
+	pub fn scroll(&mut self, wh: (u16, u16), c: (i16, i16),
 		scrolling: (f32, f32))
 	{
 		let xy = cursor_coordinates(wh, c);
@@ -685,63 +587,63 @@ impl InputQueue {
 	}
 
 	#[inline(always)]
-	pub fn left_button_release(&mut self, wh: (u32, u32), c: (i16, i16)) {
+	pub fn left_button_release(&mut self, wh: (u16, u16), c: (i16, i16)) {
 		let xy = cursor_coordinates(wh, c);
 
 		self.input(Input::LeftButton(None, xy));
 	}
 
 	#[inline(always)]
-	pub fn middle_button_release(&mut self, wh: (u32, u32), c: (i16, i16)) {
+	pub fn middle_button_release(&mut self, wh: (u16, u16), c: (i16, i16)) {
 		let xy = cursor_coordinates(wh, c);
 
 		self.input(Input::MiddleButton(None, xy));
 	}
 
 	#[inline(always)]
-	pub fn right_button_release(&mut self, wh: (u32, u32), c: (i16, i16)) {
+	pub fn right_button_release(&mut self, wh: (u16, u16), c: (i16, i16)) {
 		let xy = cursor_coordinates(wh, c);
 
 		self.input(Input::RightButton(None, xy));
 	}
 
 	#[inline(always)]
-	pub fn touch_release(&mut self, wh: (u32, u32), c: (i16, i16)) {
+	pub fn touch_release(&mut self, wh: (u16, u16), c: (i16, i16)) {
 		let xy = cursor_coordinates(wh, c);
 
 		self.input(Input::Touch(None, xy));
 	}
 
 	#[inline(always)]
-	pub fn left_button_press(&mut self, wh: (u32, u32), c: (i16, i16)) {
+	pub fn left_button_press(&mut self, wh: (u16, u16), c: (i16, i16)) {
 		let xy = cursor_coordinates(wh, c);
 
 		self.input(Input::LeftButton(Some(true), xy));
 	}
 
 	#[inline(always)]
-	pub fn middle_button_press(&mut self, wh: (u32, u32), c: (i16, i16)) {
+	pub fn middle_button_press(&mut self, wh: (u16, u16), c: (i16, i16)) {
 		let xy = cursor_coordinates(wh, c);
 
 		self.input(Input::MiddleButton(Some(true), xy));
 	}
 
 	#[inline(always)]
-	pub fn right_button_press(&mut self, wh: (u32, u32), c: (i16, i16)) {
+	pub fn right_button_press(&mut self, wh: (u16, u16), c: (i16, i16)) {
 		let xy = cursor_coordinates(wh, c);
 
 		self.input(Input::RightButton(Some(true), xy));
 	}
 
 	#[inline(always)]
-	pub fn touch_press(&mut self, wh: (u32, u32), c: (i16, i16)) {
+	pub fn touch_press(&mut self, wh: (u16, u16), c: (i16, i16)) {
 		let xy = cursor_coordinates(wh, c);
 
 		self.input(Input::Touch(Some(true), xy));
 	}
 
 	#[inline(always)]
-	pub fn cursor_move(&mut self, wh: (u32,u32), c: (i16,i16)) {
+	pub fn cursor_move(&mut self, wh: (u16, u16), c: (i16,i16)) {
 		let xy = cursor_coordinates(wh, c);
 
 		self.input(Input::Cursor(xy));

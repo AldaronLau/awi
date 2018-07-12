@@ -61,7 +61,7 @@ pub struct WindowsWindow {
 	restore_style: LONG,
 }
 impl ::WindowOps for WindowsWindow {
-	fn new(title: &str, icon: (u32, u32, &[u32]), _v: Option<i32>)
+	fn new(title: &str, icon: (u16, u16, Vec<u32>), _v: Option<i32>)
 		-> WindowsWindow
 	{
 		let connection = Connection::create();

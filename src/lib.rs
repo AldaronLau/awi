@@ -13,51 +13,36 @@
 	html_favicon_url = "http://plopgrizzly.com/awi/icon.svg",
 	html_root_url = "http://plopgrizzly.com/awi/")]
 
-// Unix Specific Crates
-#[cfg(any(target_os = "linux", target_os = "macos", target_os = "freebsd",
-	target_os = "dragonfly", target_os = "bitrig", target_os = "openbsd",
-	target_os = "netbsd"))]
-#[macro_use]
-extern crate dl_api;
-// Windows Specific Crates
-#[cfg(target_os="windows")]
-extern crate winapi;
-
 extern crate stick;
-
 pub extern crate afi;
 pub extern crate afi_docf;
+#[cfg(target_os="windows")] extern crate winapi;
+#[cfg(any(target_os = "linux", target_os = "freebsd", target_os = "dragonfly",
+	target_os = "bitrig", target_os = "openbsd", target_os = "netbsd",
+	target_os = "macos", target_os = "android"))]
+	#[macro_use] extern crate dl_api;
 
 pub(crate) mod input;
-pub(crate) mod os_window;
 pub(crate) mod window_connection;
 pub(crate) mod window;
 pub(crate) mod window_ops;
+
+/* 1. Windows */ #[cfg(target_os = "windows")] pub(crate) mod os { mod windows; pub use self::windows::*; }
+/* 2. Linux / BSD */ #[cfg(any(target_os = "linux", target_os = "freebsd", target_os = "dragonfly", target_os = "bitrig", target_os = "openbsd", target_os = "netbsd"))] pub(crate) mod os { mod linux; pub use self::linux::*; }
+/* 3. Raspberry Pi (Custom target_os) */ #[cfg(target_os = "pi")] pub(crate) mod os { mod pi; pub use self::pi::*; }
+/* 4. Grizzly (Custom target_os) */ #[cfg(target_os = "splat")] pub(crate) mod os { mod grizzly; pub use self::grizzly::*; }
+/* 5. Android */ #[cfg(target_os = "android")] pub(crate) mod os { mod android; pub use self::android::*; }
+/* 6. MacOS / iOS */ #[cfg(any(target_os = "macos", target_os = "ios"))] pub(crate) mod os { mod apple; pub use self::apple::*; }
+/* 7. Web */ #[cfg(target_arch = "wasm32")] pub(crate) mod os { mod web; pub use self::web::*; }
+/* 8. Nintendo Switch (Custom target_os) */ #[cfg(target_os = "switch")] pub(crate) mod os { mod switch; pub use self::switch::*; }
+/* 9. Redox */ #[cfg(target_os = "redox")] pub(crate) mod os { mod redox; pub use self::redox::*; }
+/* 10. XBox One (Custom target_os) */ #[cfg(target_os = "xbox")] pub(crate) mod os { mod xbox; pub use self::xbox::*; }
+
+pub(crate) use std::os::raw::c_void;
+pub(crate) use input::keyboard::Keyboard;
 
 pub use input::Input;
 pub use window_connection::WindowConnection;
 pub use window::Window;
 pub use window_ops::WindowOps;
 pub use afi_docf::{ Emphasis, Align, FontColor };
-
-pub(crate) use input::keyboard::Keyboard;
-
-// Default Width and Height for a window.
-pub(crate) const MWW : u32 = 640;
-pub(crate) const MWH : u32 = 360;
-
-use std::os::raw::c_void;
-
-// Main
-/*#[cfg(target_os = "android")]
-#[allow(unused)]
-#[no_mangle]
-pub extern "C" fn gsp_main(activity: *mut ANativeActivity) -> () {
-	println!("Got Start");
-}*/
-
-/*#[cfg(not(target_os = "android"))]
-#[no_mangle]
-pub extern "C" fn gsp_main() -> () {
-	println!("Got Start");
-}*/
