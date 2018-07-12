@@ -15,7 +15,6 @@
 
 extern crate stick;
 pub extern crate afi;
-pub extern crate afi_docf;
 #[cfg(target_os="windows")] extern crate winapi;
 #[cfg(any(target_os = "linux", target_os = "freebsd", target_os = "dragonfly",
 	target_os = "bitrig", target_os = "openbsd", target_os = "netbsd",
@@ -45,4 +44,3 @@ pub use input::Input;
 pub use window_connection::WindowConnection;
 pub use window::Window;
 pub use window_ops::WindowOps;
-pub use afi_docf::{ Emphasis, Align, FontColor };

@@ -5,8 +5,6 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // https://www.boost.org/LICENSE_1_0.txt)
 
-use afi_docf::{ Emphasis, Align };
-
 use Input;
 
 const NONE : u8 = 0b0000_0000;
@@ -179,7 +177,7 @@ impl Modifiers {
 
 	fn i(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::Emphasis(Emphasis::Italic), // 𝘢
+			CTRL => Input::EmphasisItalic, // 𝘢
 			CTRL_SHIFT => Input::Info, // 🛈
 			ALT => return, // TODO: What does it do?
 			_ => return,
@@ -206,7 +204,7 @@ impl Modifiers {
 
 	fn l(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::Align(Align::Left),
+			CTRL => Input::AlignLeft,
 			ALT => return, // TODO: What does it do?
 			_ => return,
 		})
@@ -284,7 +282,7 @@ impl Modifiers {
 	#[allow(unreachable_code)]
 	fn u(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::Emphasis(Emphasis::Underline),//⎁
+			CTRL => Input::EmphasisUnderline,//⎁
 			ALT => return, // TODO: What does it do?
 			_ => return,
 		})
@@ -333,7 +331,7 @@ impl Modifiers {
 
 	fn enter(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::Align(Align::Justified),
+			CTRL => Input::AlignJustified,
 			ALT => return, // TODO: What does it do?
 			_ => return,
 		})
@@ -341,7 +339,7 @@ impl Modifiers {
 
 	fn apostrophe(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::Align(Align::Right),
+			CTRL => Input::AlignRight,
 			ALT => return, // TODO: What does it do?
 			_ => return,
 		})
@@ -349,7 +347,7 @@ impl Modifiers {
 
 	fn semicolon(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::Align(Align::Centered),
+			CTRL => Input::AlignCenter,
 			ALT => Input::Text('°'),
 			_ => return,
 		})
@@ -357,14 +355,14 @@ impl Modifiers {
 
 	fn equalsign(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::Emphasis(Emphasis::UnderlineX2),
+			CTRL => Input::EmphasisDoubleUnderline,
 			_ => return,
 		})
 	}
 
 	fn minus(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::Emphasis(Emphasis::StrikeOut),
+			CTRL => Input::EmphasisStrikeOut,
 			_ => return,
 		})
 	}
@@ -416,7 +414,7 @@ impl Modifiers {
 
 	fn num6(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::Emphasis(Emphasis::UnderlineDC),//⎂,
+			CTRL => Input::EmphasisBrokenUnderline,//⎂,
 			ALT => return, // TODO: Aldaron's OS / No OS: ⏮ Track
 			_ => return,
 		})
@@ -424,7 +422,7 @@ impl Modifiers {
 
 	fn num7(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::Emphasis(Emphasis::Overline),
+			CTRL => Input::EmphasisOverline,
 			ALT => return, // TODO: Aldaron's OS / No OS: ⏭ Track
 			_ => return,
 		})
@@ -432,7 +430,7 @@ impl Modifiers {
 
 	fn num8(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::Emphasis(Emphasis::Bold),
+			CTRL => Input::EmphasisBold,
 			ALT => return, // TODO: Brightness ☀ - 🔅
 			_ => return,
 		})
@@ -440,7 +438,7 @@ impl Modifiers {
 
 	fn num9(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::Emphasis(Emphasis::InvertColor),
+			CTRL => Input::EmphasisInvertColor,
 			ALT => return, // TODO: Brightness ☀ + 🔆
 			_ => return,
 		})
@@ -448,7 +446,7 @@ impl Modifiers {
 
 	fn num0(&self, queue: &mut Vec<Input>) -> () {
 		queue.push(match self.held & 0b0000_1111 {
-			CTRL => Input::Emphasis(Emphasis::None),
+			CTRL => Input::EmphasisNone,
 			ALT => return, // TODO: Toggle Monitor Config 🖵
 			_ => return,
 		})

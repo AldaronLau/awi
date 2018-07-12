@@ -32,7 +32,6 @@ categories = ["gui", "hardware-support", "os", "rendering"]
 
 [dependencies]
 afi = "0.5"
-afi_docf = "0.0"
 stick = "0.4"
 
 # Unix: Runtime Link to xcb,

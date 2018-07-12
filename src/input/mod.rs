@@ -19,27 +19,32 @@ pub enum Input {
 	Pause,
 	/// The user has inputted text.
 	Text(char),
-	/// Keyboard Shortcut - Align
-	///
-	/// * (CTRL-L) `Align::Left`
-	/// * (CTRL-;) `Align::Centered`
-	/// * (CTRL-') `Align::Right`
-	/// * (CTRL-ENTER) `Align::Justified`
-	Align(::afi_docf::Align),
-	/// Keyboard Shortcut - Emphasis
-	///
-	/// * (CTRL-6) `Emphasis::UnderlineDC`
-	/// * (CTRL-7) `Emphasis::Overline`
-	/// * (CTRL-8) `Emphasis::Bold`
-	/// * (CTRL-9) `Emphasis::InvertColor`
-	/// * (CTRL-0) `Emphasis::None`
-	/// * (CTRL-MINUS) `Emphasis::StrikeOut`
-	/// * (CTRL-EQUALS) `Emphasis::UnderlineX2`
-	/// * (CTRL-U) `Emphasis::Underline`
-	/// * (CTRL-I) `Emphasis::Italic`
-	Emphasis(::afi_docf::Emphasis),
-	/// Keyboard Shortcut - Text Color
-	Color(::afi_docf::FontColor),
+	/// Keyboard Shortcut - (CTRL-L) Align Left
+	AlignLeft,
+	/// Keyboard Shortcut - (CTRL-;) Align Center
+	AlignCenter,
+	/// Keyboard Shortcut - (CTRL-') Align Right
+	AlignRight,
+	/// Keyboard Shortcut - (CTRL-ENTER) Align Justified
+	AlignJustified,
+	/// Keyboard Shortcut - (CTRL-6) Emphasis Broken Underline
+	EmphasisBrokenUnderline,
+	/// Keyboard Shortcut - (CTRL-7) Emphasis Continuous Overline
+	EmphasisOverline,
+	/// Keyboard Shortcut - (CTRL-8) Emphasis Bold
+	EmphasisBold,
+	/// Keyboard Shortcut - (CTRL-9) Emphasis InvertColor
+	EmphasisInvertColor,
+	/// Keyboard Shortcut - (CTRL-0) Emphasis None
+	EmphasisNone,
+	/// Keyboard Shortcut - (CTRL-MINUS) Emphasis Strike Out
+	EmphasisStrikeOut,
+	/// Keyboard Shortcut - (CTRL-EQUALS) Emphasis Double Underline
+	EmphasisDoubleUnderline,
+	/// Keyboard Shortcut - (CTRL-U) Emphasis Underline
+	EmphasisUnderline,
+	/// Keyboard Shortcut - (CTRL-I) Emphasis Italic
+	EmphasisItalic,
 	/// Keyboard Shortcut - Select All (CTRL-A)
 	Select,
 	/// Keyboard Shortcut - Copy (CTRL-C)
