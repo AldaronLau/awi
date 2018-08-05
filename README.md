@@ -1,5 +1,9 @@
+[![Plop Grizzly](https://plopgrizzly.com/images/logo-bar.png)](https://plopgrizzly.com)
+
 # [Aldaron's Window Interface](https://crates.io/crates/awi)
 Create a window and handle it's input
+
+This project is part of [ADI](https://crates.io/crates/adi).
 
 ## Features
 * Create a window
@@ -19,7 +23,7 @@ platform           | support
 -------------------|--------
 3. Raspberry Pi    | TODO (pi - directfb)
 -------------------|--------
-4. Grizzly         | TODO (grizzly)
+4. Deskron         | TODO (deskron)
 -------------------|--------
 5. Android         | TODO (android)
 -------------------|--------
@@ -32,8 +36,6 @@ platform           | support
 9. Redox           | TODO (redox)
 -------------------|--------
 10. XBox One       | TODO (xbox)
-
-## [Contributing](http://plopgrizzly.com/contributing/en#contributing)
 
 ## Roadmap to 1.0 (Future Features)
 * Complete the first 9 platforms.

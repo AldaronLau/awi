@@ -1,15 +1,12 @@
-// "awi" - Aldaron's Window Interface
-//
 // Copyright Jeron A. Lau 2017-2018.
-// Distributed under the Boost Software License, Version 1.0.
-// (See accompanying file LICENSE_1_0.txt or copy at
+// Dual-licensed under either the MIT License or the Boost Software License,
+// Version 1.0.  (See accompanying file LICENSE_1_0.txt or copy at
 // https://www.boost.org/LICENSE_1_0.txt)
 
 use os;
 use afi;
 
-/// A window on Windows, Android, IOS, Wayland, XWindows, Direct to Display,
-/// Aldaron's OS, Arduino, Nintendo Switch, A Web Page, or No OS.
+/// A graphics window on a computer, linked to a rendering API.
 pub struct Window {
 	os_window: os::Window,
 	input_queue: ::input::InputQueue,
@@ -23,8 +20,8 @@ impl Window {
 	/// window icon.  The format of icon is as follows:
 	/// `(width, height, pixels)`.  You can load icons with aci.  `v` should
 	/// be either `None` or `Some(visual_id from EGL)`.
-	pub fn new(title: &str, icon: &afi::Graphic, v: Option<i32>) -> Window {
-		let os_window = os::Window::new(title, icon.into_bgra(), v);
+	pub fn new(title: &str, icon: &afi::Video, v: Option<i32>) -> Window {
+		let os_window = os::Window::new(title, icon, v);
 		let input_queue = ::input::InputQueue::new();
 		let keyboard = ::Keyboard::new();
 		let reset = false;
@@ -65,6 +62,9 @@ impl Window {
 
 	/// Poll for events.
 	fn get_events(&mut self) {
+		// Let go of some time.
+		::std::thread::yield_now();
+
 		// Get window events, and update keyboard state.
 		while self.os_window.poll_event(&mut self.input_queue,
 			&mut self.keyboard) {}

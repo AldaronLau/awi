@@ -1,8 +1,6 @@
-// "awi" - Aldaron's Window Interface
-//
 // Copyright Jeron A. Lau 2017-2018.
-// Distributed under the Boost Software License, Version 1.0.
-// (See accompanying file LICENSE_1_0.txt or copy at
+// Dual-licensed under either the MIT License or the Boost Software License,
+// Version 1.0.  (See accompanying file LICENSE_1_0.txt or copy at
 // https://www.boost.org/LICENSE_1_0.txt)
 
 use input::keyboard;
@@ -23,7 +21,7 @@ pub struct Window {
 }
 
 impl Window {
-	pub fn new(_title: &str, _icon: (u16, u16, Vec<u32>), v: Option<i32>) -> Self{
+	pub fn new(_title: &str, _icon: &::afi::Video, v: Option<i32>) -> Self {
 		// TODO: Try Wayland first
 
 		let (xcb, xkb) = xcb_load();
@@ -43,6 +41,7 @@ impl Window {
 		keyboard: &mut ::input::keyboard::Keyboard)
 		-> bool
 	{
+		unsafe { (self.xcb.xcb_flush)(self.connection) };
 		xcb_poll_for_event(self.connection, &self.xcb, &self.xkb,
 			self.state, input, &mut self.wh,
 			keyboard)
@@ -204,21 +203,29 @@ fn xcb_screen(connection: *mut c_void, xcb: &Xcb) -> XcbScreen {
 fn xcb_window(connection: *mut c_void, xcb: &Xcb, screen: &mut XcbScreen,
 	v: Option<i32>) -> u32
 {
-	let atom1 = get_atom(connection, xcb, b"_NET_WM_STATE");
-	let atom = get_atom(connection, xcb, b"_NET_WM_STATE_FULLSCREEN");
+	let atom1 = get_atom(connection, xcb, b"_MOTIF_WM_HINTS");
+	let atom2 = get_atom(connection, xcb, b"_NET_WM_STATE");
+	let atom3 = get_atom(connection, xcb, b"_NET_WM_STATE_MAXIMIZED_VERT");
+	let atom4 = get_atom(connection, xcb, b"_NET_WM_STATE_MAXIMIZED_HORZ");
+	let atom5 = get_atom(connection, xcb, b"WM_PROTOCOLS");
+	let atom6 = get_atom(connection, xcb, b"WM_DELETE_WINDOW");
 	let window = unsafe { (xcb.xcb_generate_id)(connection) };
-	let mut value_list = [screen.black_pixel, 0b01000100000000001101111];
+	let mut value_list = [ 0b01000100000000001101111 ];
 	if let Some(v) = v {
 		screen.root_visual = unsafe { ::std::mem::transmute(v) };
 	}
 	unsafe {
 		(xcb.xcb_create_window)(
 			connection, 0, window, screen.root, 0, 0,
-			screen.width_in_pixels, screen.height_in_pixels, 10, 1,
-			screen.root_visual, 2 | 2048, &mut value_list[0]
+			screen.width_in_pixels, screen.height_in_pixels, 0, 1,
+			screen.root_visual, 2048, &mut value_list[0]
 		);
 		(xcb.xcb_change_property)(connection, 0, window, atom1,
-			4, 32, 1, &atom as *const _ as *const c_void);
+			atom1, 32, 5, &[2u32, 0, 0, 0, 0] as *const _ as *const c_void);
+		(xcb.xcb_change_property)(connection, 0, window, atom2,
+			4, 32, 2, [atom3, atom4].as_ptr() as *const _ as *const c_void);
+		(xcb.xcb_change_property)(connection, 0, window, atom5,
+			4, 32, 1, [atom6].as_ptr() as *const _ as *const c_void);
 		(xcb.xcb_map_window)(connection, window);
 		(xcb.xcb_flush)(connection);
 	}
@@ -359,8 +366,8 @@ fn xcb_poll_for_event(connection: *mut c_void, xcb: &Xcb,
 		LOSE_FOCUS => queue.pause(),
 		WINDOW_RESIZE => queue.resize(wh, root_xy),
 		WINDOW_SELECT => println!("!SELECT!"),
-		WINDOW_CLOSE => queue.back(),
-		_ => { }, // ignore all other messages
+		WINDOW_CLOSE => { println!("BACK"); queue.back() }
+		a => { println!("a {}", a); } // ignore all other messages
 	}
 
 	if let Some(string) = string {

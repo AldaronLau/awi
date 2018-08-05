@@ -1,8 +1,6 @@
-// "awi" - Aldaron's Window Interface
-//
 // Copyright Jeron A. Lau 2017-2018.
-// Distributed under the Boost Software License, Version 1.0.
-// (See accompanying file LICENSE_1_0.txt or copy at
+// Dual-licensed under either the MIT License or the Boost Software License,
+// Version 1.0.  (See accompanying file LICENSE_1_0.txt or copy at
 // https://www.boost.org/LICENSE_1_0.txt)
 
 //! Aldaron's Window Interface is a library developed by Plop Grizzly for
@@ -29,7 +27,7 @@ pub(crate) mod window_ops;
 /* 1. Windows */ #[cfg(target_os = "windows")] pub(crate) mod os { mod windows; pub use self::windows::*; }
 /* 2. Linux / BSD */ #[cfg(any(target_os = "linux", target_os = "freebsd", target_os = "dragonfly", target_os = "bitrig", target_os = "openbsd", target_os = "netbsd"))] pub(crate) mod os { mod linux; pub use self::linux::*; }
 /* 3. Raspberry Pi (Custom target_os) */ #[cfg(target_os = "pi")] pub(crate) mod os { mod pi; pub use self::pi::*; }
-/* 4. Grizzly (Custom target_os) */ #[cfg(target_os = "splat")] pub(crate) mod os { mod grizzly; pub use self::grizzly::*; }
+/* 4. Deskron (Custom target_os) */ #[cfg(target_os = "splat")] pub(crate) mod os { mod deskron; pub use self::deskron::*; }
 /* 5. Android */ #[cfg(target_os = "android")] pub(crate) mod os { mod android; pub use self::android::*; }
 /* 6. MacOS / iOS */ #[cfg(any(target_os = "macos", target_os = "ios"))] pub(crate) mod os { mod apple; pub use self::apple::*; }
 /* 7. Web */ #[cfg(target_arch = "wasm32")] pub(crate) mod os { mod web; pub use self::web::*; }
