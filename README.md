@@ -16,25 +16,16 @@ platform that exists).  AWI's goal is to be able to run on any computer.
 If you see a missing platform you would like supported, open an issue.
 
 platform           | support
--------------------|--------
+--------           | -------
 1. Windows         | Yes (windows)
--------------------|--------
 2. Linux / BSD     | Yes (linux - TODO: Wayland, fallback on XCB)
--------------------|--------
 3. Raspberry Pi    | TODO (pi - directfb)
--------------------|--------
 4. Deskron         | TODO (deskron)
--------------------|--------
 5. Android         | TODO (android)
--------------------|--------
 6. MacOS / iOS     | TODO (apple - TODO: Cocoa)
--------------------|--------
 7. Web             | TODO (web - Web Assembly)
--------------------|--------
 8. Nintendo Switch | TODO (switch)
--------------------|--------
 9. Redox           | TODO (redox)
--------------------|--------
 10. XBox One       | TODO (xbox)
 
 ## Roadmap to 1.0 (Future Features)
