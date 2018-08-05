@@ -45,5 +45,3 @@ If you see a missing platform you would like supported, open an issue.
 ### 0.6
 * Simplified input.
 * Added support for joysticks / controllers.
-
-## Developed by [Plop Grizzly](http://plopgrizzly.com)
