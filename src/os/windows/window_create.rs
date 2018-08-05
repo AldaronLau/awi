@@ -21,8 +21,6 @@ pub fn window_create(connection: HINSTANCE,
 	unsafe {
 		AdjustWindowRect(&mut wr, WS_OVERLAPPEDWINDOW, 0)
 	};
-	let width = wr.right - wr.left;
-	let height = wr.bottom - wr.top;
 
 	let window = unsafe { CreateWindowExW(0,
 		&name as *const _ as *const _,		// class name TODO: should be utf16?

@@ -7,7 +7,6 @@ mod class_create;
 mod connection_create;
 mod string; // for UTF-16 conversions
 mod window_create;
-mod window_fullscreen;
 mod window_poll_event;
 
 use winapi::ctypes::c_int;
@@ -16,7 +15,6 @@ use c_void;
 use input::InputQueue;
 
 use winapi::shared::windef::HWND;
-use winapi::um::winnt::LONG;
 use winapi::shared::minwindef::{ WPARAM, LPARAM, LRESULT, HINSTANCE };
 
 struct Connection { native: HINSTANCE }
@@ -53,9 +51,6 @@ pub struct Window {
 	window: NativeWindow,
 	connection: Connection,
 	miw: bool, // Mouse In Window
-	restore_size: (i32, i32, i32, i32),
-	fullscreen: bool,
-	restore_style: LONG,
 	wh: (u16, u16),
 }
 impl Window {
@@ -68,16 +63,9 @@ impl Window {
 			class);
 
 		Window { connection: connection, window: window, miw: true,
-			restore_size: (0, 0, 0, 0),
-			fullscreen: false, restore_style: 0, wh: (640, 360),
+			wh: (640, 360),
 		}
 	}
-
-/*	fn fullscreen(&mut self) {
-		window_fullscreen::window_fullscreen(self.window.native,
-			&mut self.fullscreen, &mut self.restore_size,
-			&mut self.restore_style);
-	}*/
 
 	pub fn poll_event(&mut self, input: &mut InputQueue,
 		keyboard: &mut ::Keyboard) -> bool
