@@ -1,0 +1,10 @@
+[package]
+name = "web_test"
+version = "0.1.0"
+authors = ["Jeron A. Lau <jeron.lau@plopgrizzly.com>"]
+
+[dependencies]
+stdweb = "0.4"
+stdweb-derive = "0.4"
+serde = "1.0"
+serde_derive = "1.0"

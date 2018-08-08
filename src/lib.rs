@@ -5,6 +5,19 @@
 
 //! Aldaron's Window Interface is a library developed by Plop Grizzly for
 //! creating a window and handling it's input.
+//!
+//! # C API
+//! ## `AwiWindow* awi_new(void);`
+//! This function creates a new window, and returns a handle to it.
+//!
+//! ## `AwiInput awi_input(AwiWindow* window);`
+//! Poll for Window input.
+//!
+//! ## `void awi_drop(AwiWindow* window);`
+//! Close the Window.
+//!
+//! ## `AwiWh awi_wh(AwiWindow* window);`
+//! Get the Window width and height.
 
 #![warn(missing_docs)]
 #![doc(html_logo_url = "http://plopgrizzly.com/awi/icon.png",
@@ -26,11 +39,11 @@ pub(crate) mod window_ops;
 
 /* 1. Windows */ #[cfg(target_os = "windows")] pub(crate) mod os { mod windows; pub use self::windows::*; }
 /* 2. Linux / BSD */ #[cfg(any(target_os = "linux", target_os = "freebsd", target_os = "dragonfly", target_os = "bitrig", target_os = "openbsd", target_os = "netbsd"))] pub(crate) mod os { mod linux; pub use self::linux::*; }
-/* 3. Raspberry Pi (Custom target_os) */ #[cfg(target_os = "pi")] pub(crate) mod os { mod pi; pub use self::pi::*; }
-/* 4. Deskron (Custom target_os) */ #[cfg(target_os = "splat")] pub(crate) mod os { mod deskron; pub use self::deskron::*; }
+/* 3. Raspberry Pi (Custom target_os) */ #[cfg(feature = "pi")] pub(crate) mod os { mod pi; pub use self::pi::*; }
+/* 4. Deskron (Custom target_os) */ #[cfg(feature = "deskron")] pub(crate) mod os { mod deskron; pub use self::deskron::*; }
 /* 5. Android */ #[cfg(target_os = "android")] pub(crate) mod os { mod android; pub use self::android::*; }
 /* 6. MacOS / iOS */ #[cfg(any(target_os = "macos", target_os = "ios"))] pub(crate) mod os { mod apple; pub use self::apple::*; }
-/* 7. Web */ #[cfg(target_arch = "wasm32")] pub(crate) mod os { mod web; pub use self::web::*; }
+/* 7. Web */ #[cfg(target_arch = "wasm32")] pub(crate) mod os { mod wasm; pub use self::wasm::*; }
 /* 8. Nintendo Switch (Custom target_os) */ #[cfg(target_os = "switch")] pub(crate) mod os { mod switch; pub use self::switch::*; }
 /* 9. Redox */ #[cfg(target_os = "redox")] pub(crate) mod os { mod redox; pub use self::redox::*; }
 /* 10. XBox One (Custom target_os) */ #[cfg(target_os = "xbox")] pub(crate) mod os { mod xbox; pub use self::xbox::*; }

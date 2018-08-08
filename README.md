@@ -23,7 +23,7 @@ If you see a missing platform you would like supported, open an issue.
 | 4. Deskron         | TODO (deskron) |
 | 5. Android         | TODO (android) |
 | 6. MacOS / iOS     | TODO (apple - TODO: Cocoa) |
-| 7. Web             | TODO (web - Web Assembly) |
+| 7. Web App         | TODO (wasm) |
 | 8. Nintendo Switch | TODO (switch) |
 | 9. Redox           | TODO (redox) |
 | 10. XBox One       | TODO (xbox) |
