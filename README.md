@@ -19,14 +19,17 @@ If you see a missing platform you would like supported, open an issue.
 | --------           | ------- |
 | 1. Windows         | Yes (windows) |
 | 2. Linux / BSD     | Yes (linux - TODO: Wayland, fallback on XCB) |
-| 3. Raspberry Pi    | TODO (pi - directfb) |
-| 4. Deskron         | TODO (deskron) |
+| 3. Raspberry Pi¹   | TODO (rpi - directfb) |
+| 4. Deskron²        | TODO (deskron) |
 | 5. Android         | TODO (android) |
 | 6. MacOS / iOS     | TODO (apple - TODO: Cocoa) |
-| 7. Web App         | TODO (wasm) |
+| 7. Web App         | TODO (wasm32) |
 | 8. Nintendo Switch | TODO (switch) |
 | 9. Redox           | TODO (redox) |
 | 10. XBox One       | TODO (xbox) |
+
+* ¹ Needs feature `directfb` enabled, since target_os is linux.
+* ² Needs feature `deskron` enabled, since the DE can be installed on any OS.
 
 ## Roadmap to 1.0 (Future Features)
 * Complete the first 9 platforms.

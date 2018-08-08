@@ -3,14 +3,14 @@
 // Version 1.0.  (See accompanying file LICENSE_1_0.txt or copy at
 // https://www.boost.org/LICENSE_1_0.txt)
 
-use std::ffi::c_void;
+// use c_void;
 
 use os;
 use afi;
 
 /// A graphics window on a computer, linked to a rendering API.
 pub struct Window {
-	os_window: *mut c_void,
+	os_window: os::Window/* *mut c_void */,
 	input_queue: ::input::InputQueue,
 	keyboard: ::Keyboard,
 	reset: bool,

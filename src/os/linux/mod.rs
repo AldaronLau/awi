@@ -6,6 +6,33 @@
 use input::keyboard;
 use c_void;
 use std::ptr::null_mut;
+use c_api;
+
+pub(crate) unsafe extern "C" fn awi_init_xcb(window: *mut *mut c_void,
+	flags: u32) -> Option<c_api::AwiCApi>
+{
+	None
+/*	Some(c_api::AwiCApi {
+		awi_input: awi_input_xcb,
+		awi_update: awi_update_xcb,
+		awi_free: awi_free_xcb,
+	})*/
+}
+
+pub(crate) unsafe extern "C" fn awi_init_wayland(window: *mut *mut c_void,
+	flags: u32) -> Option<c_api::AwiCApi>
+{
+	// TODO: support wayland.
+	None
+}
+
+pub(crate) unsafe extern "C" fn awi_init(window: *mut *mut c_void, flags: u32)
+	-> c_api::AwiCApi
+{
+	awi_init_wayland(window, flags)
+		.or_else(|| { awi_init_xcb(window, flags) })
+		.expect("Couldn't initialize Wayland or XCB!")
+}
 
 pub struct Window {
 	// Keyboard (XKB)

@@ -1,20 +1,43 @@
 #include <stdint.h>
 
-#define AwiWindow void
-
+/// An input event.
 union AwiInput {
-	AwiInput
+	// No more input events from last frame. 
+	none;
 };
 
-typedef struct AwiWh {
-	uint16_t w;
-	uint16_t h;
-};
+/// Window subsystem (graphics & input) should be initialized.
+#define AWI_GRAPHICS 1
+/// Audio subsystem should be initialized.
+#define AWI_AUDIO 2
 
-AwiWindow* awi_new(void);
+/// Create a new window.
+/// ```
+/// #include "awi.h"
+///
+/// void* window;
+/// awi_new(&window, AWI_GRAPHICS | AWI_AUDIO);
+///
+/// uint16_t width, height;
+/// awi_wh(window, &width, &height);
+///
+/// AwiInput input;
+/// awi_input(window, &input);
+///
+/// awi_update(window);
+///
+/// awi_free(window);
+/// ```
+void awi_new(void** window, uint32_t flags);
 
-AwiInput awi_input(AwiWindow* window);
+/// Get Input
+void awi_input(void* window, AwiInput* input);
 
-void awi_drop(AwiWindow* window);
+/// Update window.
+void awi_update(void* window);
 
-AwiWh awi_wh(AwiWindow* window);
+/// Close the window.
+void awi_free(void* window);
+
+/// Get the window width and height.
+void awi_wh(void* window, uint16_t* width, uint16_t* height);
