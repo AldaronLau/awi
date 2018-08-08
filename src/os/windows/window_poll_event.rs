@@ -6,6 +6,7 @@
 use std::ptr::null_mut;
 
 use input;
+use super::key;
 // use input::keyboard::{ english, FSC, ESC }; TODO
 
 use winapi::um::winuser::{
@@ -21,7 +22,7 @@ use winapi::shared::windef::{ HWND, POINT };
 use winapi::shared::minwindef::{ WPARAM, LPARAM, LRESULT, HIWORD, LOWORD, DWORD };
 
 static mut ADI_WNDPROCMSG : u8 = 0b0000_0000;
-static mut AWI_DIMENSIONS: (u32, u32) = (0, 0);
+static mut AWI_DIMENSIONS: (u16, u16) = (0, 0);
 
 const RESIZED: u8 = 0b1000_0000;
 const PAUSED: u8 = 0b0100_0000;
@@ -43,7 +44,7 @@ pub extern "system" fn wnd_proc(h_wnd: HWND, u_msg: u32, w_param: WPARAM,
 			let h = HIWORD(l_param as DWORD);
 			let w = LOWORD(l_param as DWORD);
 
-			unsafe { AWI_DIMENSIONS = (w as u32, h as u32); }
+			unsafe { AWI_DIMENSIONS = (w as u16, h as u16); }
 
 			return 0;
 		},
@@ -55,17 +56,16 @@ pub extern "system" fn wnd_proc(h_wnd: HWND, u_msg: u32, w_param: WPARAM,
 	}
 }
 
-fn get_mouse(window: HWND, wh: &(u32, u32), is_miw: &mut bool)
-	-> (i16, i16, bool)
-{
+fn get_mouse(window: HWND, is_miw: &mut bool) -> (i16, i16, bool) {
+	let (w, h) = unsafe { AWI_DIMENSIONS };
 	let mut pos = POINT { x: 0, y: 0 };
 	unsafe {
 		GetCursorPos(&mut pos);
 		ScreenToClient(window, &mut pos);
 	}
 
-	let miw = pos.x >= 0 && pos.x as isize <= (*wh).0 as isize && pos.y as isize >= 0
-		&& pos.y as isize <= (*wh).1 as isize;
+	let miw = pos.x >= 0 && pos.x as isize <= w as isize && pos.y as isize >= 0
+		&& pos.y as isize <= h as isize;
 
 	let miw_changed = if *is_miw != miw {
 		*is_miw = miw;
@@ -91,11 +91,11 @@ fn create_key_id(w: WPARAM, l: LPARAM) -> c_int {
 }
 
 pub fn window_poll_event(window: HWND, queue: &mut input::InputQueue,
-	miw: &mut bool, wh: &mut (u32, u32), keyboard: &mut ::Keyboard) -> bool
+	miw: &mut bool, keyboard: &mut ::Keyboard, wh2: &mut (u16, u16)) -> bool
 {
 	if unsafe { ADI_WNDPROCMSG & RESIZED != 0 } {
 		println!("RESIZE {:?}", unsafe { AWI_DIMENSIONS });
-		queue.resize(wh, unsafe { AWI_DIMENSIONS });
+		queue.resize(wh2, unsafe { AWI_DIMENSIONS });
 		unsafe { ADI_WNDPROCMSG &= !RESIZED };
 		return true;
 	}
@@ -112,7 +112,7 @@ pub fn window_poll_event(window: HWND, queue: &mut input::InputQueue,
 		return true;
 	}
 
-	let (x, y, miw_changed) = get_mouse(window, wh, miw);
+	let (x, y, miw_changed) = get_mouse(window, miw);
 	if miw_changed {
 		if *miw == false {
 			queue.cursor_leave();
@@ -127,24 +127,27 @@ pub fn window_poll_event(window: HWND, queue: &mut input::InputQueue,
 	} == 0 { // no messages available
 		return false;
 	}
+
+	let wh = unsafe { AWI_DIMENSIONS };
+
 	match msg.message {
 		WM_CLOSE => queue.back(),
-		WM_MOUSEMOVE => queue.cursor_move(*wh, (x, y)),
-		WM_LBUTTONDOWN => queue.left_button_press(*wh, (x, y)),
-		WM_LBUTTONUP => queue.left_button_release(*wh, (x, y)),
-		WM_MBUTTONDOWN => queue.middle_button_press(*wh, (x, y)),
-		WM_MBUTTONUP => queue.middle_button_release(*wh, (x, y)),
-		WM_RBUTTONDOWN => queue.right_button_press(*wh, (x, y)),
-		WM_RBUTTONUP => queue.right_button_release(*wh, (x, y)),
+		WM_MOUSEMOVE => queue.cursor_move(wh, (x, y)),
+		WM_LBUTTONDOWN => queue.left_button_press(wh, (x, y)),
+		WM_LBUTTONUP => queue.left_button_release(wh, (x, y)),
+		WM_MBUTTONDOWN => queue.middle_button_press(wh, (x, y)),
+		WM_MBUTTONUP => queue.middle_button_release(wh, (x, y)),
+		WM_RBUTTONDOWN => queue.right_button_press(wh, (x, y)),
+		WM_RBUTTONUP => queue.right_button_release(wh, (x, y)),
 		0x0100 | 0x0104 => {
 			let detail = create_key_id(msg.wParam, msg.lParam);
 			
-			if let Some(key) = input::key(detail) {
+			if let Some(key) = key(detail) {
 				keyboard.press(key);
 
 				// Required to generate CHAR & SYSCHAR
 				unsafe { TranslateMessage(&msg); }
-			} else if detail == ::os_window::key::lib::ESCAPE {
+			} else if detail == 27 { // escape
 				queue.back();
 			}
 		}
@@ -162,7 +165,7 @@ pub fn window_poll_event(window: HWND, queue: &mut input::InputQueue,
 //				keyboard.release(input::key(RSHIFT).unwrap());
 //			}
 
-			if let Some(key) = input::key(detail) {
+			if let Some(key) = key(detail) {
 				keyboard.release(key);
 			}
 
@@ -179,10 +182,10 @@ pub fn window_poll_event(window: HWND, queue: &mut input::InputQueue,
 				as i16;
 
 			if a > 0 {
-				queue.scroll(*wh, (x, y),
+				queue.scroll(wh, (x, y),
 					(a as f32 / -120.0, 0.0));
 			} else {
-				queue.scroll(*wh, (x, y),
+				queue.scroll(wh, (x, y),
 					(a as f32 / 120.0, 0.0));
 			}
 		}
@@ -191,10 +194,10 @@ pub fn window_poll_event(window: HWND, queue: &mut input::InputQueue,
 				as i16;
 
 			if a > 0 {
-				queue.scroll(*wh, (x, y),
+				queue.scroll(wh, (x, y),
 					(0.0, a as f32 / -120.0));
 			} else {
-				queue.scroll(*wh, (x, y),
+				queue.scroll(wh, (x, y),
 					(0.0, a as f32 / 120.0));
 			}
 		}

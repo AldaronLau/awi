@@ -17,7 +17,7 @@ use winapi::um::wingdi::{
 use winapi::shared::windef::HWND;
 use winapi::shared::minwindef::{ WPARAM, LPARAM, LRESULT, HINSTANCE, UINT };
 
-pub fn class_create(hi: HINSTANCE, title: &str, icon: (u32, u32, &[u32]),
+pub fn class_create(hi: HINSTANCE, title: &str,
 	wnd_proc: extern "system" fn(a: HWND, b: u32, c: WPARAM,
 		d: LPARAM) -> LRESULT)
 	-> [u8; 80]
@@ -29,7 +29,7 @@ pub fn class_create(hi: HINSTANCE, title: &str, icon: (u32, u32, &[u32]),
 		name[i] = nam[i];
 	}
 
-	let (w, h, pixels) = icon;
+	let (w, h, pixels) = (1, 1, &[0xFF_FF_FF_FF]);
 
 	let mut and : Vec<u32> = Vec::new();
 	let mut xor : Vec<u32> = Vec::new();

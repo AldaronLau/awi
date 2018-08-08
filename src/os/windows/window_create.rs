@@ -11,27 +11,24 @@ use winapi::um::winuser::{
 };
 use winapi::shared::windef::{ HWND, RECT };
 use winapi::shared::minwindef::HINSTANCE;
-use winapi::um::winnt::LONG;
 
 const WS_FLAGS : u32 = WS_OVERLAPPEDWINDOW | WS_VISIBLE | WS_SYSMENU;
 
-pub fn window_create(connection: HINSTANCE, size: (LONG, LONG),
+pub fn window_create(connection: HINSTANCE,
 	name: [u8; 80]) -> HWND
 {
-	let mut wr = RECT { left: 0, top: 0, right: size.0, bottom: size.1 };
+	let mut wr = RECT { left: 0, top: 0, right: 640, bottom: 480 };
 	unsafe {
 		AdjustWindowRect(&mut wr, WS_OVERLAPPEDWINDOW, 0)
 	};
-	let width = wr.right - wr.left;
-	let height = wr.bottom - wr.top;
 
 	let window = unsafe { CreateWindowExW(0,
 		&name as *const _ as *const _,		// class name TODO: should be utf16?
 		&name as *const _ as *const _,		// app name TODO: should be utf16?
 		WS_FLAGS,	// window style
 		0, 0,		// x/y coords
-		width as i32,	// width
-		height as i32,	// height
+		640 as i32,	// width, TODO: need to pass in Width?
+		480 as i32,	// height, TODO: need to pass in Height?
 		null_mut(),	// handle to parent
 		null_mut(),	// handle to menu
 		connection,	// hInstance
