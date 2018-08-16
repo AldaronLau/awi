@@ -22,8 +22,8 @@ impl Window {
 	/// window icon.  The format of icon is as follows:
 	/// `(width, height, pixels)`.  You can load icons with aci.  `v` should
 	/// be either `None` or `Some(visual_id from EGL)`.
-	pub fn new(title: &str, icon: &afi::Video, v: Option<i32>) -> Window {
-		let os_window = os::Window::new(title, icon, v);
+	pub fn new(v: Option<i32>) -> Window {
+		let os_window = os::Window::new(v);
 		let input_queue = ::input::InputQueue::new();
 		let keyboard = ::Keyboard::new();
 		let reset = false;

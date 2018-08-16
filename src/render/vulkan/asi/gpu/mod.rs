@@ -289,9 +289,7 @@ pub(crate) struct GpuContext {
 
 impl Gpu {
 	/// Create the GPU context, and optionally a window to render to.
-	pub fn new(window: Option<(&str, &Video)>, rgb: Vec3)
-		-> Result<(Gpu, ::Window), String>
-	{ unsafe {
+	pub fn new(rgb: Vec3) -> Result<(Gpu, ::Window), String> { unsafe {
 		// Load the Vulkan library
 		let api = VulkanApi::new()?;
 
@@ -300,8 +298,7 @@ impl Gpu {
 		);
 
 		// Create Surface
-		let window = window.unwrap();
-		let window = ::Window::new(window.0, window.1, None);
+		let window = ::Window::new(None);
 		let surface = surface::new(vk, &api, window.get_connection());
 		let (gpu, pqi, sampled, format)
 			= device::get_gpu(vk, &api, surface)?;

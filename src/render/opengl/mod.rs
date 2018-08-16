@@ -139,11 +139,10 @@ pub struct Display {
 	projection: Transform,
 }
 
-pub fn new(title: &str, icon: &afi::Video) -> Result<Box<Display>, &'static str>
-{
+pub fn new() -> Result<Box<Display>, &'static str> {
 	if let Some(tuple) = OpenGLBuilder::new() {
 		let (builder, v) = tuple;
-		let window = base::Window::new(title, icon, Some(v));
+		let window = base::Window::new(Some(v));
 
 		let context = builder.to_opengl(match window.get_connection() {
 			WindowConnection::Xcb(_, window) => // |
@@ -239,9 +238,10 @@ pub fn new(title: &str, icon: &afi::Video) -> Result<Box<Display>, &'static str>
 }
 
 impl base::Display for Display {
-	fn color(&mut self, color: (f32, f32, f32)) {
-		self.color = color;
-		self.context.color(color.0, color.1, color.2);
+	fn color(&mut self, color: (u8, u8, u8)) {
+		self.color = (color.0 as f32 / 255.0,
+			color.1 as f32 / 255.0, color.2 as f32 / 255.0);
+		self.context.color(self.color.0, self.color.1, self.color.2);
 	}
 
 	fn update(&mut self) -> Option<base::Input> {

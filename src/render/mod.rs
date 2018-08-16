@@ -20,9 +20,7 @@ pub use self::base::*;
 ))] mod opengl;
 
 /// Create a new Vulkan / OpenGL Display.
-pub fn new_display(title: &str, icon: afi::Video)
-	-> Result<Box<Display>, String>
-{
+pub fn new_display() -> Result<Box<Display>, String> {
 	let mut err = "".to_string();
 
 	// Try Vulkan first.
@@ -31,7 +29,7 @@ pub fn new_display(title: &str, icon: afi::Video)
 		target_os="windows", target_os="nintendo_switch"
 	))]
 	{
-		match vulkan::new(title, &icon) {
+		match vulkan::new() {
 			Ok(vulkan) => return Ok(vulkan),
 			Err(vulkan) => err.push_str(&vulkan),
 		}
@@ -44,7 +42,7 @@ pub fn new_display(title: &str, icon: afi::Video)
 		target_os="web"
 	))]
 	{
-		match opengl::new(title, &icon) {
+		match opengl::new() {
 			Ok(opengl) => return Ok(opengl),
 			Err(opengl) => err.push_str(opengl),
 		}

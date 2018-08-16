@@ -25,7 +25,7 @@ pub trait Display {
 	/// Set the background color for the `Display`.
 	///
 	/// * `color`: The background color for the display.
-	fn color(&mut self, color: (f32, f32, f32)) -> ();
+	fn color(&mut self, color: (u8, u8, u8)) -> ();
 
 	/// Set the fog for the display.
 	///

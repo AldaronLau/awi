@@ -28,9 +28,8 @@ pub struct Display {
 	renderer: renderer::Renderer,
 }
 
-pub fn new(title: &str, icon: &afi::Video) -> Result<Box<Display>, String> {
+pub fn new() -> Result<Box<Display>, String> {
 	let (renderer, window) = renderer::Renderer::new(
-		Some((title, icon)),
 		vec3!(0.0, 0.0, 0.0)
 	)?;
 
@@ -38,8 +37,9 @@ pub fn new(title: &str, icon: &afi::Video) -> Result<Box<Display>, String> {
 }
 
 impl base::Display for Display {
-	fn color(&mut self, color: (f32, f32, f32)) {
-		self.renderer.bg_color(vec3!(color.0, color.1, color.2));
+	fn color(&mut self, color: (u8, u8, u8)) {
+		self.renderer.bg_color(vec3!(color.0 as f32 / 255.0,
+			color.1 as f32 / 255.0, color.2 as f32 / 255.0));
 	}
 
 	fn update(&mut self) -> Option<base::Input> {

@@ -48,7 +48,7 @@ pub struct Window {
 }
 
 impl Window {
-	pub fn new(_title: &str, _icon: &::afi::Video, v: Option<i32>) -> Self {
+	pub fn new(v: Option<i32>) -> Self {
 		// TODO: Try Wayland first
 
 		let (xcb, xkb) = xcb_load();

@@ -40,3 +40,6 @@ dl_api = "0.2"
 # Windows: Compiletime link to winapi
 [target.'cfg(target_os="windows")'.dependencies]
 winapi = { version = "0.3", features = ["winuser", "libloaderapi", "winerror", "minwindef", "errhandlingapi"] }
+
+[build-dependencies]
+webgl_generator = "0.1"

@@ -293,11 +293,8 @@ fn set_texture(vw: &mut Vw, texture: &mut Texture, rgba: &[u8]) {
 }*/
 
 impl Vw {
-	pub fn new(window: Option<(&str, &Video)>, rgb: Vec3)
-		-> Result<(Vw, Window), String>
-	{
-		let (mut connection, window)
-			= super::asi::Gpu::new(window, rgb)?;
+	pub fn new(rgb: Vec3) -> Result<(Vw, Window), String> {
+		let (mut connection, window) = super::asi::Gpu::new(rgb)?;
 
 		// END BLOCK 2
 		let mut image_count = unsafe {
@@ -377,10 +374,8 @@ pub struct Renderer {
 }
 
 impl Renderer {
-	pub fn new(window: Option<(&str, &Video)>, rgb: Vec3)
-		-> Result<(Renderer, Window), String>
-	{
-		let (mut vw, window) = Vw::new(window, rgb)?;
+	pub fn new(rgb: Vec3) -> Result<(Renderer, Window), String> {
+		let (mut vw, window) = Vw::new(rgb)?;
 
 		let solid_vert = super::asi::ShaderModule::new(
 			&mut vw.connection, include_bytes!(
