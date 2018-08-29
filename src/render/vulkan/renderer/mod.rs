@@ -631,7 +631,7 @@ impl Renderer {
 
 	/// Push texture coordinates (collection of vertices) into graphics
 	/// memory.
-	pub fn texcoords(&mut self, texcoords: &[::barg::TexCoord]) -> usize {
+	pub fn texcoords(&mut self, texcoords: &[(f32, f32)]) -> usize {
 		let mut buffer = Vec::with_capacity(texcoords.len() * 4);
 
 		for i in texcoords {

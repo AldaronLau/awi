@@ -370,7 +370,7 @@ impl base::Display for Display {
 		Gradient(a)
 	}
 
-	fn texcoords(&mut self, texcoords: &[::barg::TexCoord]) -> TexCoords {
+	fn texcoords(&mut self, texcoords: &[(f32, f32)]) -> TexCoords {
 		// TODO: A lot of duplication here from adi_gpu_vulkan.  Put in
 		// base.
 		let vertex_buffer = Buffer::new(&self.context);

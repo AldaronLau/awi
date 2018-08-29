@@ -53,7 +53,7 @@ pub trait Display {
 	fn gradient(&mut self, colors: &[f32]) -> Gradient;
 
 	/// Create new `TexCoords` for this `Display`.
-	fn texcoords(&mut self, texcoords: &[::barg::TexCoord]) -> TexCoords;
+	fn texcoords(&mut self, texcoords: &[(f32, f32)]) -> TexCoords;
 
 	/// Set the pixels for a `Texture`.
 	fn set_texture(&mut self, texture: &mut Texture, wh: (u16,u16),

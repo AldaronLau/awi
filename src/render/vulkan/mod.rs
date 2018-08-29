@@ -78,7 +78,7 @@ impl base::Display for Display {
 		Gradient(self.renderer.colors(colors))
 	}
 
-	fn texcoords(&mut self, texcoords: &[::barg::TexCoord]) -> TexCoords {
+	fn texcoords(&mut self, texcoords: &[(f32, f32)]) -> TexCoords {
 		TexCoords(self.renderer.texcoords(texcoords))
 	}
 

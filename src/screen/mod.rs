@@ -23,7 +23,7 @@ use self::win::{Display};
 #[cfg(target_arch="wasm32")]
 pub use self::win::{Shape, Gradient, Model, Texture, TexCoords};
 
-pub use barg::{PathOp3D, TexCoord};
+pub use barg::{PathOp3D};
 pub use screen::PathOp3D::{Move, Line, Quad};
 
 /// A Window to the Screen.
@@ -64,7 +64,7 @@ impl<Ctx> Screen<Ctx> where Ctx: Default {
 				(screen.run)(&mut screen, input, dt);
 			}
 
-			run(&mut screen, Event::Timestep, dt);
+			(screen.run)(&mut screen, Event::Timestep, dt);
 			dt = screen.display.update();
 		}
 
@@ -135,7 +135,7 @@ impl<Ctx> Screen<Ctx> where Ctx: Default {
 	}
 
 	/// Create texture coordinate object.
-	pub fn texcoords(&mut self, texcoords: &[TexCoord]) -> TexCoords {
+	pub fn texcoords(&mut self, texcoords: &[(f32, f32)]) -> TexCoords {
 		self.display.texcoords(texcoords)
 	}
 
