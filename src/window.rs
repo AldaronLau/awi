@@ -6,10 +6,9 @@
 // use c_void;
 
 use os;
-use afi;
 
 /// A graphics window on a computer, linked to a rendering API.
-pub struct Window {
+pub(crate) struct Window {
 	os_window: os::Window/* *mut c_void */,
 	input_queue: ::input::InputQueue,
 	keyboard: ::Keyboard,
@@ -45,7 +44,7 @@ impl Window {
 
 	/// Poll window input, return `None` when finished.  After returning
 	/// `None`, the next call will update the window.
-	pub fn update(&mut self) -> Option<::Input> {
+	pub fn update(&mut self) -> Option<::Event> {
 		// First, update & get events
 		// Next, cycle them
 		// Then, Return None when through event loop.

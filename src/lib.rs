@@ -10,15 +10,23 @@
 #![doc(html_logo_url = "https://plopgrizzly.com/images/awi.png",
        html_favicon_url = "https://plopgrizzly.com/images/awi.png")]
 
+extern crate barg;
+#[macro_use] extern crate approx;
+extern crate arrayvec;
+extern crate ordered_float;
 extern crate stick;
 pub extern crate afi;
 #[cfg(target_os="windows")] extern crate winapi;
-#[macro_use] extern crate dl_api;
+#[cfg(not(target_arch="wasm32"))] #[macro_use] extern crate dl_api;
+#[cfg(target_arch="wasm32")] #[macro_use] extern crate stdweb;
+#[cfg(target_arch="wasm32")] #[macro_use] extern crate stdweb_derive;
 
+pub mod screen;
+
+mod window_connection;
 pub(crate) mod input;
-pub(crate) mod window_connection;
-pub(crate) mod window;
-pub(crate) mod window_ops;
+#[cfg(not(target_arch="wasm32"))] pub(crate) mod window;
+#[cfg(not(target_arch="wasm32"))] pub(crate) mod window_ops;
 pub mod render;
 
 /* 1. Windows */ #[cfg(target_os = "windows")] pub(crate) mod os { mod windows; pub use self::windows::*; }
@@ -33,12 +41,11 @@ pub mod render;
 /* 10. XBox One (Custom target_os) */ #[cfg(target_os = "xbox")] pub(crate) mod os { mod xbox; pub use self::xbox::*; }
 
 /// Compatibility with different platforms, languages, C API
-pub mod c_api;
+// pub mod c_api;
 
 pub(crate) use std::os::raw::c_void;
 pub(crate) use input::keyboard::Keyboard;
 
-pub use input::Input;
-pub use window_connection::WindowConnection;
-pub use window::Window;
-pub use window_ops::WindowOps;
+pub use input::Event;
+#[cfg(not(target_arch="wasm32"))] pub(crate) use window_connection::WindowConnection;
+#[cfg(not(target_arch="wasm32"))] pub(crate) use window::Window;

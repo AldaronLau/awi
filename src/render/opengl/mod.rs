@@ -9,6 +9,8 @@ mod asi;
 
 use std::mem;
 
+use WindowConnection;
+
 pub use self::base::Shape;
 pub use self::base::Gradient;
 pub use self::base::Model;
@@ -120,7 +122,7 @@ struct TextureData {
 
 /// To render anything with adi_gpu, you have to make a `Display`
 pub struct Display {
-	window: base::Window,
+	window: ::Window,
 	context: OpenGL,
 	color: (f32, f32, f32),
 	opaque_ind: Vec<u32>,
@@ -142,7 +144,7 @@ pub struct Display {
 pub fn new() -> Result<Box<Display>, &'static str> {
 	if let Some(tuple) = OpenGLBuilder::new() {
 		let (builder, v) = tuple;
-		let window = base::Window::new(Some(v));
+		let window = ::Window::new(Some(v));
 
 		let context = builder.to_opengl(match window.get_connection() {
 			WindowConnection::Xcb(_, window) => // |
@@ -244,15 +246,11 @@ impl base::Display for Display {
 		self.context.color(self.color.0, self.color.1, self.color.2);
 	}
 
-	fn update(&mut self) -> Option<base::Input> {
-		if let Some(input) = self.window.update() {
-			return Some(input);
-		}
+	fn input(&mut self) -> Option<base::Event> {
+		self.window.update()
+	}
 
-		// Update Window:
-		// TODO: This is copied pretty much from adi_gpu_vulkan.  Move
-		// to the base.
-
+	fn update(&mut self) -> f32 {
 		// Opaque & Alpha Shapes need a camera.
 		for i in (&self.styles).iter() {
 			i.has_camera.set_int1(1);
@@ -288,11 +286,7 @@ impl base::Display for Display {
 			draw_shape(&self.styles[shape.style], shape);
 		}
 
-		// end todo
-
-		self.context.update();
-		// Return None, there was no input, updated screen.
-		None
+		self.context.update()
 	}
 
 	fn camera(&mut self, xyz: Vec3, rotate_xyz: Vec3) {
@@ -376,17 +370,24 @@ impl base::Display for Display {
 		Gradient(a)
 	}
 
-	fn texcoords(&mut self, texcoords: &[f32]) -> TexCoords {
+	fn texcoords(&mut self, texcoords: &[::barg::TexCoord]) -> TexCoords {
 		// TODO: A lot of duplication here from adi_gpu_vulkan.  Put in
 		// base.
 		let vertex_buffer = Buffer::new(&self.context);
-		vertex_buffer.set(texcoords);
+		let mut buffer = vec![];
+		for i in texcoords {
+			buffer.push(i.0);
+			buffer.push(i.1);
+			buffer.push(1.0);
+			buffer.push(1.0);
+		}
+		vertex_buffer.set(buffer.as_slice());
 
 		let a = self.texcoords.len();
 
 		self.texcoords.push(TexcoordsData {
 			vertex_buffer,
-			vertex_count: texcoords.len() as u32 / 4,
+			vertex_count: texcoords.len() as u32,
 		});
 
 		TexCoords(a)

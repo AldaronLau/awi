@@ -39,7 +39,6 @@ pub fn new_display() -> Result<Box<Display>, String> {
 	// Fallback on OpenGL/OpenGLES
 	#[cfg(any(
 		target_os="android", target_os="linux", target_os="windows",
-		target_os="web"
 	))]
 	{
 		match opengl::new() {

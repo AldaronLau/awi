@@ -5,10 +5,13 @@
 
 pub(crate) mod keyboard;
 
-/// Input to the window, that's put into the input queue, when an event has
-/// occurred.
+/// Window Input Event, put on queue when an event has occurred.
 #[derive(PartialEq, Copy, Clone)]
-pub enum Input {
+pub enum Event {
+	/// Timestep event.
+	Timestep,
+	/// Exit event (Back key / Esc / 'X' button on app's window / Ctrl-Q).
+	Exit,
 	/// The window has just been resized.
 	Resize,
 	/// The user has switched to this window (in focus).
@@ -57,10 +60,6 @@ pub enum Input {
 	Help,
 	/// Keyboard Shortcut - Info
 	Info,
-	/// Request to exit the current screen - Back key / (Esc)
-	Back,
-	/// Request to exit the app - 'X' button on app's window / (Ctrl-Q)
-	Quit,
 	/// Keyboard Shortcut - Close (Ctrl-W)
 	Close,
 	/// Keyboard Shortcut - Open (Ctrl-O)
@@ -289,12 +288,14 @@ pub enum Input {
 	CUnPlugged(usize, i32),
 }
 
-use self::Input::*;
+use self::Event::*;
 
-impl ::std::fmt::Display for Input {
+impl ::std::fmt::Display for Event {
 	fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result<> {
 		// TODO: Write in language of the user.
 		match self {
+			Timestep => write!(f, "Timestep"),
+			Exit => write!(f, "Exit"),
 			Resize => write!(f, "Resize"),
 			Resume => write!(f, "Resume"),
 			Pause => write!(f, "Pause"),
@@ -306,8 +307,6 @@ impl ::std::fmt::Display for Input {
 			Find => write!(f, "Find"),
 			Help => write!(f, "Help"),
 			Info => write!(f, "Info"),
-			Back => write!(f, "Back"),
-			Quit => write!(f, "Quit"),
 			Close => write!(f, "Close"),
 			Open(_) => write!(f, "Open..."),
 			Share => write!(f, "Share..."),
@@ -449,7 +448,7 @@ fn cursor_coordinates<T, U>(wh: (T, T), xy: (U, U)) -> Option<(f32, f32)>
 }
 
 pub struct InputQueue {
-	queue: Vec<Input>,
+	queue: Vec<Event>,
 	mods: keyboard::modifiers::Modifiers,
 }
 
@@ -465,7 +464,7 @@ impl InputQueue {
 
 	/// Returns an iterator over the InputQueue.
 	#[inline(always)]
-	pub fn iter(&self) -> ::std::slice::Iter<Input> {
+	pub fn iter(&self) -> ::std::slice::Iter<Event> {
 		self.queue.iter()
 	}
 
@@ -485,12 +484,12 @@ impl InputQueue {
 	}
 
 	#[inline(always)]
-	pub fn pop(&mut self) -> Option<Input> {
+	pub fn pop(&mut self) -> Option<Event> {
 		self.queue.pop()
 	}
 
 	#[inline(always)]
-	pub fn last(&self) -> Input {
+	pub fn last(&self) -> Event {
 		self.queue[self.queue.len() - 1]
 	}
 
@@ -499,83 +498,83 @@ impl InputQueue {
 		// Only if new dimensions differ from old.
 		if *wh != d {
 			*wh = d;
-			self.input(Input::Resize);
+			self.input(Event::Resize);
 		}
 	}
 
 	pub fn key(&mut self, key: u8, state: Option<bool>) {
 		self.input(match key {
-			keyboard::NUM1 => Input::Num1(state),
-			keyboard::NUM2 => Input::Num2(state),
-			keyboard::NUM3 => Input::Num3(state),
-			keyboard::NUM4 => Input::Num4(state),
-			keyboard::NUM5 => Input::Num5(state),
-			keyboard::NUM6 => Input::Num6(state),
-			keyboard::NUM7 => Input::Num7(state),
-			keyboard::NUM8 => Input::Num8(state),
-			keyboard::NUM9 => Input::Num9(state),
-			keyboard::NUM0 => Input::Num0(state),
-			keyboard::MINUS => Input::Minus(state),
-			keyboard::EQUAL_SIGN => Input::EqualSign(state),
-			keyboard::BACKSPACE => Input::Backspace(state),
-			keyboard::TAB => Input::Tab(state),
-			keyboard::Q => Input::Q(state),
-			keyboard::W => Input::W(state),
-			keyboard::E => Input::E(state),
-			keyboard::R => Input::R(state),
-			keyboard::T => Input::T(state),
-			keyboard::Y => Input::Y(state),
-			keyboard::U => Input::U(state),
-			keyboard::I => Input::I(state),
-			keyboard::O => Input::O(state),
-			keyboard::P => Input::P(state),
-			keyboard::BRACKET_OPEN => Input::BracketOpen(state),
-			keyboard::BRACKET_CLOSE => Input::BracketClose(state),
-			keyboard::BACKSLASH => Input::Backslash(state),
-			keyboard::COMPOSE => Input::Compose(state),
-			keyboard::A => Input::A(state),
-			keyboard::S => Input::S(state),
-			keyboard::D => Input::D(state),
-			keyboard::F => Input::F(state),
-			keyboard::G => Input::G(state),
-			keyboard::H => Input::H(state),
-			keyboard::J => Input::J(state),
-			keyboard::K => Input::K(state),
-			keyboard::L => Input::L(state),
-			keyboard::SEMICOLON => Input::Semicolon(state),
-			keyboard::APOSTROPHE => Input::Apostrophe(state),
-			keyboard::ENTER => Input::Enter(state),
-			keyboard::LSHIFT => Input::LShift(state),
-			keyboard::Z => Input::Z(state),
-			keyboard::X => Input::X(state),
-			keyboard::C => Input::C(state),
-			keyboard::V => Input::V(state),
-			keyboard::B => Input::B(state),
-			keyboard::N => Input::N(state),
-			keyboard::M => Input::M(state),
-			keyboard::COMMA => Input::Comma(state),
-			keyboard::PERIOD => Input::Period(state),
-			keyboard::SLASH => Input::Slash(state),
-			keyboard::RSHIFT => Input::RShift(state),
-			keyboard::LCTRL => Input::LCtrl(state),
-			keyboard::ALT => Input::Alt(state),
-			keyboard::SPACE => Input::Space(state),
-			keyboard::RCTRL => Input::RCtrl(state),
-			keyboard::UP => Input::Up(state),
-			keyboard::DOWN => Input::Down(state),
-			keyboard::LEFT => Input::Left(state),
-			keyboard::RIGHT => Input::Right(state),
-			keyboard::EXT_BACKTICK => Input::ExtBacktick(state),
-			keyboard::EXT_DELETE => Input::ExtDelete(state),
-			keyboard::EXT_INSERT => Input::ExtInsert(state),
-			keyboard::EXT_NUM_LOCK => Input::ExtNumLock(state),
-			keyboard::EXT_PAGE_UP => Input::ExtPageUp(state),
-			keyboard::EXT_PAGE_DOWN => Input::ExtPageDown(state),
-			keyboard::EXT_HOME => Input::ExtHome(state),
-			keyboard::EXT_END => Input::ExtEnd(state),
-			keyboard::EXT_ASTERISK => Input::ExtAsterisk(state),
-			keyboard::EXT_PLUS => Input::ExtPlus(state),
-			keyboard::EXT_ALT_GR => Input::ExtAltGr(state),
+			keyboard::NUM1 => Event::Num1(state),
+			keyboard::NUM2 => Event::Num2(state),
+			keyboard::NUM3 => Event::Num3(state),
+			keyboard::NUM4 => Event::Num4(state),
+			keyboard::NUM5 => Event::Num5(state),
+			keyboard::NUM6 => Event::Num6(state),
+			keyboard::NUM7 => Event::Num7(state),
+			keyboard::NUM8 => Event::Num8(state),
+			keyboard::NUM9 => Event::Num9(state),
+			keyboard::NUM0 => Event::Num0(state),
+			keyboard::MINUS => Event::Minus(state),
+			keyboard::EQUAL_SIGN => Event::EqualSign(state),
+			keyboard::BACKSPACE => Event::Backspace(state),
+			keyboard::TAB => Event::Tab(state),
+			keyboard::Q => Event::Q(state),
+			keyboard::W => Event::W(state),
+			keyboard::E => Event::E(state),
+			keyboard::R => Event::R(state),
+			keyboard::T => Event::T(state),
+			keyboard::Y => Event::Y(state),
+			keyboard::U => Event::U(state),
+			keyboard::I => Event::I(state),
+			keyboard::O => Event::O(state),
+			keyboard::P => Event::P(state),
+			keyboard::BRACKET_OPEN => Event::BracketOpen(state),
+			keyboard::BRACKET_CLOSE => Event::BracketClose(state),
+			keyboard::BACKSLASH => Event::Backslash(state),
+			keyboard::COMPOSE => Event::Compose(state),
+			keyboard::A => Event::A(state),
+			keyboard::S => Event::S(state),
+			keyboard::D => Event::D(state),
+			keyboard::F => Event::F(state),
+			keyboard::G => Event::G(state),
+			keyboard::H => Event::H(state),
+			keyboard::J => Event::J(state),
+			keyboard::K => Event::K(state),
+			keyboard::L => Event::L(state),
+			keyboard::SEMICOLON => Event::Semicolon(state),
+			keyboard::APOSTROPHE => Event::Apostrophe(state),
+			keyboard::ENTER => Event::Enter(state),
+			keyboard::LSHIFT => Event::LShift(state),
+			keyboard::Z => Event::Z(state),
+			keyboard::X => Event::X(state),
+			keyboard::C => Event::C(state),
+			keyboard::V => Event::V(state),
+			keyboard::B => Event::B(state),
+			keyboard::N => Event::N(state),
+			keyboard::M => Event::M(state),
+			keyboard::COMMA => Event::Comma(state),
+			keyboard::PERIOD => Event::Period(state),
+			keyboard::SLASH => Event::Slash(state),
+			keyboard::RSHIFT => Event::RShift(state),
+			keyboard::LCTRL => Event::LCtrl(state),
+			keyboard::ALT => Event::Alt(state),
+			keyboard::SPACE => Event::Space(state),
+			keyboard::RCTRL => Event::RCtrl(state),
+			keyboard::UP => Event::Up(state),
+			keyboard::DOWN => Event::Down(state),
+			keyboard::LEFT => Event::Left(state),
+			keyboard::RIGHT => Event::Right(state),
+			keyboard::EXT_BACKTICK => Event::ExtBacktick(state),
+			keyboard::EXT_DELETE => Event::ExtDelete(state),
+			keyboard::EXT_INSERT => Event::ExtInsert(state),
+			keyboard::EXT_NUM_LOCK => Event::ExtNumLock(state),
+			keyboard::EXT_PAGE_UP => Event::ExtPageUp(state),
+			keyboard::EXT_PAGE_DOWN => Event::ExtPageDown(state),
+			keyboard::EXT_HOME => Event::ExtHome(state),
+			keyboard::EXT_END => Event::ExtEnd(state),
+			keyboard::EXT_ASTERISK => Event::ExtAsterisk(state),
+			keyboard::EXT_PLUS => Event::ExtPlus(state),
+			keyboard::EXT_ALT_GR => Event::ExtAltGr(state),
 			_ => return,
 		})
 	}
@@ -586,90 +585,90 @@ impl InputQueue {
 	{
 		let xy = cursor_coordinates(wh, c);
 
-		self.input(Input::Scroll(scrolling, xy))
+		self.input(Event::Scroll(scrolling, xy))
 	}
 
 	#[inline(always)]
 	pub fn left_button_release(&mut self, wh: (u16, u16), c: (i16, i16)) {
 		let xy = cursor_coordinates(wh, c);
 
-		self.input(Input::LeftButton(None, xy));
+		self.input(Event::LeftButton(None, xy));
 	}
 
 	#[inline(always)]
 	pub fn middle_button_release(&mut self, wh: (u16, u16), c: (i16, i16)) {
 		let xy = cursor_coordinates(wh, c);
 
-		self.input(Input::MiddleButton(None, xy));
+		self.input(Event::MiddleButton(None, xy));
 	}
 
 	#[inline(always)]
 	pub fn right_button_release(&mut self, wh: (u16, u16), c: (i16, i16)) {
 		let xy = cursor_coordinates(wh, c);
 
-		self.input(Input::RightButton(None, xy));
+		self.input(Event::RightButton(None, xy));
 	}
 
 	#[inline(always)]
 	pub fn touch_release(&mut self, wh: (u16, u16), c: (i16, i16)) {
 		let xy = cursor_coordinates(wh, c);
 
-		self.input(Input::Touch(None, xy));
+		self.input(Event::Touch(None, xy));
 	}
 
 	#[inline(always)]
 	pub fn left_button_press(&mut self, wh: (u16, u16), c: (i16, i16)) {
 		let xy = cursor_coordinates(wh, c);
 
-		self.input(Input::LeftButton(Some(true), xy));
+		self.input(Event::LeftButton(Some(true), xy));
 	}
 
 	#[inline(always)]
 	pub fn middle_button_press(&mut self, wh: (u16, u16), c: (i16, i16)) {
 		let xy = cursor_coordinates(wh, c);
 
-		self.input(Input::MiddleButton(Some(true), xy));
+		self.input(Event::MiddleButton(Some(true), xy));
 	}
 
 	#[inline(always)]
 	pub fn right_button_press(&mut self, wh: (u16, u16), c: (i16, i16)) {
 		let xy = cursor_coordinates(wh, c);
 
-		self.input(Input::RightButton(Some(true), xy));
+		self.input(Event::RightButton(Some(true), xy));
 	}
 
 	#[inline(always)]
 	pub fn touch_press(&mut self, wh: (u16, u16), c: (i16, i16)) {
 		let xy = cursor_coordinates(wh, c);
 
-		self.input(Input::Touch(Some(true), xy));
+		self.input(Event::Touch(Some(true), xy));
 	}
 
 	#[inline(always)]
 	pub fn cursor_move(&mut self, wh: (u16, u16), c: (i16,i16)) {
 		let xy = cursor_coordinates(wh, c);
 
-		self.input(Input::Cursor(xy));
+		self.input(Event::Cursor(xy));
 	}
 
 	#[inline(always)]
 	pub fn cursor_leave(&mut self) {
-		self.input(Input::Cursor(None));
+		self.input(Event::Cursor(None));
 	}
 
 	#[inline(always)]
 	pub fn pause(&mut self) {
-		self.input(Input::Pause);
+		self.input(Event::Pause);
 	}
 
 	#[inline(always)]
 	pub fn resume(&mut self) {
-		self.input(Input::Resume);
+		self.input(Event::Resume);
 	}
 
 	#[inline(always)]
-	pub fn back(&mut self) {
-		self.input(Input::Back);
+	pub fn exit(&mut self) {
+		self.input(Event::Exit);
 	}
 
 	#[inline(always)]
@@ -677,12 +676,12 @@ impl InputQueue {
 		let chars = string.char_indices();
 
 		for c in chars {
-			self.input(Input::Text(c.1));
+			self.input(Event::Text(c.1));
 		}
 	}
 
 	#[inline(always)]
-	fn input(&mut self, input: Input) -> () {
+	fn input(&mut self, input: Event) -> () {
 		self.mods.update(&mut self.queue, input)
 	}
 
@@ -692,27 +691,27 @@ impl InputQueue {
 			use ::stick::Input::*;
 
 			match i {
-				Move(x, y) => self.input(Input::CMove(js, x, y)),
-				Camera(x, y) => self.input(Input::CCamera(js, x, y)),
-				ThrottleL(x) => self.input(Input::CThrottleL(js, x)),
-				ThrottleR(x) => self.input(Input::CThrottleR(js, x)),
-				Accept(s) => self.input(Input::CAccept(js, s)),
-				Cancel(s) => self.input(Input::CCancel(js, s)),
-				Execute(s) => self.input(Input::CExecute(js, s)),
-				Action(s) => self.input(Input::CAction(js, s)),
-				L(b, s) => self.input(Input::CL(js, b, s)),
-				R(b, s) => self.input(Input::CR(js, b, s)),
-				Menu(s) => self.input(Input::CMenu(js, s)),
-				Controls => self.input(Input::CControls(js)),
-				Exit => self.input(Input::CExit(js)),
-				Up(s) => self.input(Input::CUp(js, s)),
-				Down(s) => self.input(Input::CDown(js, s)),
-				Left(s) => self.input(Input::CLeft(js, s)),
-				Right(s) => self.input(Input::CRight(js, s)),
-				MoveStick(s) => self.input(Input::CMoveStick(js, s)),
-				CamStick(s) => self.input(Input::CCamStick(js, s)),
-				PluggedIn(i) => self.input(Input::CPluggedIn(js, i)),
-				UnPlugged(i) => self.input(Input::CUnPlugged(js, i)),
+				Move(x, y) => self.input(Event::CMove(js, x, y)),
+				Camera(x, y) => self.input(Event::CCamera(js, x, y)),
+				ThrottleL(x) => self.input(Event::CThrottleL(js, x)),
+				ThrottleR(x) => self.input(Event::CThrottleR(js, x)),
+				Accept(s) => self.input(Event::CAccept(js, s)),
+				Cancel(s) => self.input(Event::CCancel(js, s)),
+				Execute(s) => self.input(Event::CExecute(js, s)),
+				Action(s) => self.input(Event::CAction(js, s)),
+				L(b, s) => self.input(Event::CL(js, b, s)),
+				R(b, s) => self.input(Event::CR(js, b, s)),
+				Menu(s) => self.input(Event::CMenu(js, s)),
+				Controls => self.input(Event::CControls(js)),
+				Exit => self.input(Event::CExit(js)),
+				Up(s) => self.input(Event::CUp(js, s)),
+				Down(s) => self.input(Event::CDown(js, s)),
+				Left(s) => self.input(Event::CLeft(js, s)),
+				Right(s) => self.input(Event::CRight(js, s)),
+				MoveStick(s) => self.input(Event::CMoveStick(js, s)),
+				CamStick(s) => self.input(Event::CCamStick(js, s)),
+				PluggedIn(i) => self.input(Event::CPluggedIn(js, i)),
+				UnPlugged(i) => self.input(Event::CUnPlugged(js, i)),
 			}
 		}
 	}

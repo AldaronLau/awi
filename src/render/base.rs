@@ -14,9 +14,7 @@ use std::cmp::Ordering;
 
 pub use	afi;
 pub use afi::VFrame;
-pub use Input;
-pub use Window;
-pub use WindowConnection;
+pub use Event;
 pub use self::euler::*;
 pub use std::f32::consts::PI;
 
@@ -33,9 +31,11 @@ pub trait Display {
 	///	end distance.
 	fn fog(&mut self, fog: Option<(f32, f32)>) -> ();
 
-	/// Get input, if there's any.  If there's no input, update the
-	///`Display` and return `None`.
-	fn update(&mut self) -> Option<Input>;
+	/// Get input, if there's any.
+	fn input(&mut self) -> Option<Event>;
+
+	/// Update the `Display`.
+	fn update(&mut self) -> f32;
 
 	/// Move the camera.
 	///
@@ -53,7 +53,7 @@ pub trait Display {
 	fn gradient(&mut self, colors: &[f32]) -> Gradient;
 
 	/// Create new `TexCoords` for this `Display`.
-	fn texcoords(&mut self, texcoords: &[f32]) -> TexCoords;
+	fn texcoords(&mut self, texcoords: &[::barg::TexCoord]) -> TexCoords;
 
 	/// Set the pixels for a `Texture`.
 	fn set_texture(&mut self, texture: &mut Texture, wh: (u16,u16),

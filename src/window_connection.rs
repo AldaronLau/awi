@@ -6,7 +6,7 @@
 use c_void;
 
 /// Connection is listed first, then window.
-#[derive(Clone)]
+#[allow(unused)] #[derive(Clone)]
 pub enum WindowConnection {
 	/// XCB Window Handles
 	Xcb(*mut c_void, u32),

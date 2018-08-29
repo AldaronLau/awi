@@ -268,4 +268,3 @@ fn main() {
 
     stdweb::event_loop();
 }
-

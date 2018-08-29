@@ -24,7 +24,7 @@ use super::base::*;
 
 /// To render anything with adi_gpu, you have to make a `Display`
 pub struct Display {
-	window: base::Window,
+	window: ::Window,
 	renderer: renderer::Renderer,
 }
 
@@ -42,15 +42,12 @@ impl base::Display for Display {
 			color.1 as f32 / 255.0, color.2 as f32 / 255.0));
 	}
 
-	fn update(&mut self) -> Option<base::Input> {
-		if let Some(input) = self.window.update() {
-			return Some(input);
-		}
+	fn input(&mut self) -> Option<base::Event> {
+		self.window.update()
+	}
 
-		// Update Window:
-		self.renderer.update();
-		// Return None, there was no input, updated screen.
-		None
+	fn update(&mut self) -> f32 {
+		self.renderer.update()
 	}
 
 	fn camera(&mut self, xyz: Vec3, rotate_xyz: Vec3) {
@@ -81,7 +78,7 @@ impl base::Display for Display {
 		Gradient(self.renderer.colors(colors))
 	}
 
-	fn texcoords(&mut self, texcoords: &[f32]) -> TexCoords {
+	fn texcoords(&mut self, texcoords: &[::barg::TexCoord]) -> TexCoords {
 		TexCoords(self.renderer.texcoords(texcoords))
 	}
 

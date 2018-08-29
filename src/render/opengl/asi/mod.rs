@@ -3,6 +3,8 @@
 // Version 1.0.  (See accompanying file LICENSE_1_0.txt or copy at
 // https://www.boost.org/LICENSE_1_0.txt)
 
+use std::time::Instant;
+
 #[cfg(windows)]
 extern crate winapi;
 
@@ -44,7 +46,6 @@ pub enum Feature {
 	CullFace = 0x0B44,
 	Blend = 0x0BE2,
 	DepthTest = 0x0B71,
-	StencilTest = 0x0B90,
 }
 
 /// What the vertices represent
@@ -88,6 +89,7 @@ impl OpenGLBuilder {
 		self.lib.init2(&mut self.display, window);
 
 		OpenGL(Rc::new(RefCell::new(OpenGLContext {
+			earlier: Instant::now(),
 			// FFI OpenGL Functions.
 			clear: self.lib.load(b"glClear\0"),
 			clear_color: self.lib.load(b"glClearColor\0"),
@@ -133,8 +135,6 @@ impl OpenGLBuilder {
 			delete_program: self.lib.load(b"glDeleteProgram\0"),
 			delete_buffer: self.lib.load(b"glDeleteBuffers\0"),
 			delete_texture: self.lib.load(b"glDeleteTextures\0"),
-			stencil_op: self.lib.load(b"glStencilOp\0"),
-			stencil_func: self.lib.load(b"glStencilFunc\0"),
 			// Other
 			display: self.display,
 			lib: self.lib,
@@ -144,6 +144,7 @@ impl OpenGLBuilder {
 
 /// The OpenGL context.
 struct OpenGLContext {
+	earlier: Instant,
 	#[allow(unused)] // is used at drop.
 	lib: loader::Lib,
 	display: loader::Display,
@@ -200,8 +201,6 @@ struct OpenGLContext {
 	delete_program: unsafe extern "system" fn(GLuint) -> (),
 	delete_buffer: unsafe extern "system" fn(GLsizei, *const GLuint) -> (),
 	delete_texture: unsafe extern "system" fn(GLsizei, *const GLuint) -> (),
-	stencil_op: unsafe extern "system" fn(GLenum, GLenum, GLenum) -> (),
-	stencil_func: unsafe extern "system" fn(GLenum, GLint, GLuint) -> (),
 }
 
 impl OpenGL {
@@ -211,14 +210,23 @@ impl OpenGL {
 	}
 
 	/// Update the screen
-	pub fn update(&self) {
+	pub fn update(&self) -> f32 {
 		// Swap Display
 		self.get().display.swap(
 			#[cfg(not(target_os = "windows"))]
 			&self.get().lib
 		);
+
+		// Get the time step for the next frame.
+		let new = Instant::now();
+		let r = new.duration_since(self.get().earlier).subsec_nanos() as f32
+			/ 1_000_000_000.0;
+		self.0.borrow_mut().earlier = new;
+
 		// Clear Color & Depth
 		gl!(self, (self.get().clear)(0x00000100 | 0x00004000));
+
+		r
 	}
 
 	/// Enable something
@@ -242,19 +250,6 @@ impl OpenGL {
 			GL_ONE_MINUS_SRC_ALPHA,
 			GL_SRC_ALPHA,
 			GL_DST_ALPHA
-		));
-	}
-
-	/// Configure stencil testing
-	pub fn stencil(&self) {
-		gl!(self, (self.get().stencil_op)(
-			0x150A, 0x150A, 0x150A // GL_INVERT
-		));
-
-		gl!(self, (self.get().stencil_func)(
-			0x0205, // GL_NOTEQUAL
-			0, // ≠ 0
-			0xffffffff // Mask
 		));
 	}
 

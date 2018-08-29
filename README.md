@@ -1,7 +1,7 @@
 [![Plop Grizzly](https://plopgrizzly.com/images/logo-bar.png)](https://plopgrizzly.com)
 
 # [Aldaron's Window Interface](https://crates.io/crates/awi)
-Create a window and handle it's input
+Interface through a window to a device.
 
 This project is part of [ADI](https://crates.io/crates/adi).
 

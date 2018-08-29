@@ -3,15 +3,13 @@
 // Version 1.0.  (See accompanying file LICENSE_1_0.txt or copy at
 // https://www.boost.org/LICENSE_1_0.txt)
 
-use afi::Video;
-
 use std::{ mem };
+use std::time::Instant;
 
 use super::base::*;
 
 mod ffi;
 
-use super::asi;
 use super::asi::types::*;
 use super::asi::Image;
 use super::asi::Style;
@@ -293,7 +291,7 @@ fn set_texture(vw: &mut Vw, texture: &mut Texture, rgba: &[u8]) {
 }*/
 
 impl Vw {
-	pub fn new(rgb: Vec3) -> Result<(Vw, Window), String> {
+	pub(crate) fn new(rgb: Vec3) -> Result<(Vw, ::Window), String> {
 		let (mut connection, window) = super::asi::Gpu::new(rgb)?;
 
 		// END BLOCK 2
@@ -343,6 +341,7 @@ fn draw_shape(connection: &Gpu, shape: &Shape) {
 }
 
 pub struct Renderer {
+	earlier: Instant,
 	vw: Vw,
 	ar: f32,
 	opaque_ind: Vec<u32>,
@@ -374,7 +373,7 @@ pub struct Renderer {
 }
 
 impl Renderer {
-	pub fn new(rgb: Vec3) -> Result<(Renderer, Window), String> {
+	pub(crate) fn new(rgb: Vec3) -> Result<(Renderer, ::Window), String> {
 		let (mut vw, window) = Vw::new(rgb)?;
 
 		let solid_vert = super::asi::ShaderModule::new(
@@ -452,6 +451,7 @@ impl Renderer {
 		};
 
 		let mut renderer = Renderer {
+			earlier: Instant::now(),
 			vw, ar, projection,
 			camera_memory, effect_memory,
 			alpha_ind: Vec::new(),
@@ -485,7 +485,7 @@ impl Renderer {
 		self.fog_color(rgb.x, rgb.y, rgb.z);
 	}
 
-	pub fn update(&mut self) {
+	pub fn update(&mut self) -> f32 {
 		let rendering_complete_sem = unsafe {
 			super::asi::new_semaphore(&self.vw.connection)
 		};
@@ -557,6 +557,13 @@ impl Renderer {
 
 			super::asi::wait_idle(&self.vw.connection);
 		}
+
+		// Get the time step for the next frame.
+		let new = Instant::now();
+		let r = new.duration_since(self.earlier).subsec_nanos() as f32
+			/ 1_000_000_000.0;
+		self.earlier = new;
+		r
 	}
 
 	pub fn resize(&mut self, size: (u16, u16)) {
@@ -624,11 +631,20 @@ impl Renderer {
 
 	/// Push texture coordinates (collection of vertices) into graphics
 	/// memory.
-	pub fn texcoords(&mut self, texcoords: &[f32]) -> usize {
+	pub fn texcoords(&mut self, texcoords: &[::barg::TexCoord]) -> usize {
+		let mut buffer = Vec::with_capacity(texcoords.len() * 4);
+
+		for i in texcoords {
+			buffer.push(i.0);
+			buffer.push(i.1);
+			buffer.push(1.0);
+			buffer.push(1.0);
+		}
+
 		let vertex_buffer = unsafe {
 			super::asi::new_buffer(
 				&self.vw.connection,
-				texcoords,
+				buffer.as_slice(),
 			)
 		};
 
@@ -636,7 +652,7 @@ impl Renderer {
 
 		self.texcoords.push(TexCoords {
 			vertex_buffer,
-			vertex_count: texcoords.len() as u32 / 4,
+			vertex_count: texcoords.len() as u32,
 		});
 
 		a

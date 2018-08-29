@@ -11,7 +11,6 @@ use c_void;
 use super::types::*;
 
 use std::{ rc::Rc, cell::RefCell };
-use afi::Video;
 use super::Vec3;
 
 mod surface;
@@ -289,7 +288,7 @@ pub(crate) struct GpuContext {
 
 impl Gpu {
 	/// Create the GPU context, and optionally a window to render to.
-	pub fn new(rgb: Vec3) -> Result<(Gpu, ::Window), String> { unsafe {
+	pub(crate) fn new(rgb: Vec3) -> Result<(Gpu, ::Window), String> { unsafe {
 		// Load the Vulkan library
 		let api = VulkanApi::new()?;
 
