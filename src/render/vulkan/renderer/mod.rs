@@ -23,6 +23,8 @@ use super::asi::Gpu;
 
 use super::ShapeHandle;
 
+use Matrix;
+
 #[derive(Clone)] #[repr(C)] struct TransformFullUniform {
 	mat4: [f32; 16],
 	hcam: u32,
@@ -67,13 +69,13 @@ pub struct Shape {
 	buffers: [VkBuffer; 3],
 	instance: Sprite,
 	fans: Vec<(u32, u32)>,
-	transform: Transform, // Transformation matrix.
+	transform: Matrix, // Transformation matrix.
 }
 
 impl super::base::Point for Shape {
-	fn point(&self) -> Vec3 {
+	fn point(&self) -> Vector {
 		// Position vector at origin * object transform.
-		(self.transform.0 * vec4!(0f32, 0f32, 0f32, 1f32)).xyz()
+		self.transform * (vector!(), 1f32)
 	}
 }
 
@@ -291,7 +293,7 @@ fn set_texture(vw: &mut Vw, texture: &mut Texture, rgba: &[u8]) {
 }*/
 
 impl Vw {
-	pub(crate) fn new(rgb: Vec3) -> Result<(Vw, ::Window), String> {
+	pub(crate) fn new(rgb: Vector) -> Result<(Vw, ::Window), String> {
 		let (mut connection, window) = super::asi::Gpu::new(rgb)?;
 
 		// END BLOCK 2
@@ -364,16 +366,16 @@ pub struct Renderer {
 	style_natinted: Style,
 	style_complex: Style,
 	style_nacomplex: Style,
-	projection: Transform,
+	projection: Matrix,
 	camera_memory: super::asi::Memory<TransformUniform>,
 	effect_memory: super::asi::Memory<FogUniform>,
 	clear_color: (f32, f32, f32),
-	xyz: Vec3,
-	rotate_xyz: Vec3,
+	xyz: Vector,
+	rotate_xyz: Vector,
 }
 
 impl Renderer {
-	pub(crate) fn new(rgb: Vec3) -> Result<(Renderer, ::Window), String> {
+	pub(crate) fn new(rgb: Vector) -> Result<(Renderer, ::Window), String> {
 		let (mut vw, window) = Vw::new(rgb)?;
 
 		let solid_vert = super::asi::ShaderModule::new(
@@ -470,8 +472,8 @@ impl Renderer {
 			style_tinted, style_natinted,
 			style_complex, style_nacomplex,
 			clear_color: (rgb.x, rgb.y, rgb.z),
-			xyz: vec3!(0.0, 0.0, 0.0),
-			rotate_xyz: vec3!(0.0, 0.0, 0.0),
+			xyz: vector!(0.0, 0.0, 0.0),
+			rotate_xyz: vector!(0.0, 0.0, 0.0),
 		};
 
 		renderer.camera();
@@ -479,7 +481,7 @@ impl Renderer {
 		Ok((renderer, window))
 	}
 
-	pub fn bg_color(&mut self, rgb: Vec3) {
+	pub fn bg_color(&mut self, rgb: Vector) {
 		self.clear_color = (rgb.x, rgb.y, rgb.z);
 		self.vw.connection.color(rgb);
 		self.fog_color(rgb.x, rgb.y, rgb.z);
@@ -677,7 +679,7 @@ impl Renderer {
 		a
 	}
 
-	pub fn textured(&mut self, model: usize, mat4: Transform,
+	pub fn textured(&mut self, model: usize, mat4: Matrix,
 		texture: usize, texcoords: usize, alpha: bool,
 		fog: bool, camera: bool) -> ShapeHandle
 	{
@@ -737,7 +739,7 @@ impl Renderer {
 		}
 	}
 
-	pub fn solid(&mut self, model: usize, mat4: Transform, color: [f32; 4],
+	pub fn solid(&mut self, model: usize, mat4: Matrix, color: [f32; 4],
 		alpha: bool, fog: bool, camera: bool)
 		-> ShapeHandle
 	{
@@ -790,7 +792,7 @@ impl Renderer {
 		}
 	}
 
-	pub fn gradient(&mut self, model: usize, mat4: Transform, colors: usize,
+	pub fn gradient(&mut self, model: usize, mat4: Matrix, colors: usize,
 		alpha: bool, fog: bool, camera: bool)
 		-> ShapeHandle
 	{
@@ -848,7 +850,7 @@ impl Renderer {
 		}
 	}
 
-	pub fn faded(&mut self, model: usize, mat4: Transform, texture: usize,
+	pub fn faded(&mut self, model: usize, mat4: Matrix, texture: usize,
 		texcoords: usize, fade_factor: f32, fog: bool,
 		camera: bool) -> ShapeHandle
 	{
@@ -900,7 +902,7 @@ impl Renderer {
 		}
 	}
 
-	pub fn tinted(&mut self, model: usize, mat4: Transform,
+	pub fn tinted(&mut self, model: usize, mat4: Matrix,
 		texture: usize, texcoords: usize, color: [f32; 4],
 		alpha: bool, fog: bool, camera: bool)
 		-> ShapeHandle
@@ -962,7 +964,7 @@ impl Renderer {
 		}
 	}
 
-	pub fn complex(&mut self, model: usize, mat4: Transform,
+	pub fn complex(&mut self, model: usize, mat4: Matrix,
 		texture: usize, texcoords: usize, colors: usize, alpha: bool,
 		fog: bool, camera: bool) -> ShapeHandle
 	{
@@ -1044,7 +1046,7 @@ impl Renderer {
 		}
 	}
 
-	pub fn transform(&mut self, shape: &ShapeHandle, transform: Transform) {
+	pub fn transform(&mut self, shape: &ShapeHandle, transform: Matrix) {
 		let uniform = TransformUniform {
 			mat4: transform.into(),
 		};
@@ -1074,16 +1076,16 @@ impl Renderer {
 		}
 	}
 
-	pub fn set_camera(&mut self, xyz: Vec3, rxyz: Vec3) {
+	pub fn set_camera(&mut self, xyz: Vector, rxyz: Vector) {
 		self.xyz = xyz;
 		self.rotate_xyz = rxyz;
 	}
 
 	pub fn camera(&mut self) {
-		self.camera_memory.data.mat4 = Transform::IDENTITY
-			.t(vec3!()-self.xyz) // Move camera - TODO: negation operator?
-			.r(vec3!()-self.rotate_xyz) // Rotate camera - TODO: negation operator?
-			.m(self.projection.0) // Apply projection to camera
+		self.camera_memory.data.mat4 = matrix!()
+			.t(-self.xyz) // Move camera
+			.r(Rotation::euler(-self.rotate_xyz)) // Rotate camera
+			.m(self.projection) // Apply projection to camera
 			.into(); // convert to f32 array
 
 		self.camera_memory.update(&self.vw.connection);

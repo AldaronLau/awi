@@ -5,8 +5,6 @@
 
 //! Vulkan implementation for adi_gpu.
 
-// #![no_std]
-
 extern crate libc;
 
 /// Transform represents a transformation matrix.
@@ -22,6 +20,8 @@ pub use self::base::Texture;
 use super::base;
 use super::base::*;
 
+use Matrix;
+
 /// To render anything with adi_gpu, you have to make a `Display`
 pub struct Display {
 	window: ::Window,
@@ -30,7 +30,7 @@ pub struct Display {
 
 pub fn new() -> Result<Box<Display>, String> {
 	let (renderer, window) = renderer::Renderer::new(
-		vec3!(0.0, 0.0, 0.0)
+		vector!()
 	)?;
 
 	Ok(Box::new(Display { window, renderer }))
@@ -38,7 +38,7 @@ pub fn new() -> Result<Box<Display>, String> {
 
 impl base::Display for Display {
 	fn color(&mut self, color: (u8, u8, u8)) {
-		self.renderer.bg_color(vec3!(color.0 as f32 / 255.0,
+		self.renderer.bg_color(vector!(color.0 as f32 / 255.0,
 			color.1 as f32 / 255.0, color.2 as f32 / 255.0));
 	}
 
@@ -50,7 +50,7 @@ impl base::Display for Display {
 		self.renderer.update()
 	}
 
-	fn camera(&mut self, xyz: Vec3, rotate_xyz: Vec3) {
+	fn camera(&mut self, xyz: Vector, rotate_xyz: Vector) {
 		self.renderer.set_camera(xyz, rotate_xyz);
 		self.renderer.camera();
 	}
@@ -96,7 +96,7 @@ impl base::Display for Display {
 	}
 
 	#[inline(always)]
-	fn shape_solid(&mut self, model: &Model, transform: Transform,
+	fn shape_solid(&mut self, model: &Model, transform: Matrix,
 		color: [f32; 4], blending: bool, fog: bool,
 		camera: bool) -> Shape
 	{
@@ -105,7 +105,7 @@ impl base::Display for Display {
 	}
 
 	#[inline(always)]
-	fn shape_gradient(&mut self, model: &Model, transform: Transform,
+	fn shape_gradient(&mut self, model: &Model, transform: Matrix,
 		colors: Gradient, blending: bool, fog: bool,
 		camera: bool) -> Shape
 	{
@@ -114,7 +114,7 @@ impl base::Display for Display {
 	}
 
 	#[inline(always)]
-	fn shape_texture(&mut self, model: &Model, transform: Transform,
+	fn shape_texture(&mut self, model: &Model, transform: Matrix,
 		texture: &Texture, tc: TexCoords, blending: bool,
 		fog: bool, camera: bool) -> Shape
 	{
@@ -123,7 +123,7 @@ impl base::Display for Display {
 	}
 
 	#[inline(always)]
-	fn shape_faded(&mut self, model: &Model, transform: Transform,
+	fn shape_faded(&mut self, model: &Model, transform: Matrix,
 		texture: &Texture, tc: TexCoords, alpha: f32,
 		fog: bool, camera: bool) -> Shape
 	{
@@ -132,7 +132,7 @@ impl base::Display for Display {
 	}
 
 	#[inline(always)]
-	fn shape_tinted(&mut self, model: &Model, transform: Transform,
+	fn shape_tinted(&mut self, model: &Model, transform: Matrix,
 		texture: &Texture, tc: TexCoords, tint: [f32; 4], blending: bool,
 		fog: bool, camera: bool) -> Shape
 	{
@@ -141,7 +141,7 @@ impl base::Display for Display {
 	}
 
 	#[inline(always)]
-	fn shape_complex(&mut self, model: &Model, transform: Transform,
+	fn shape_complex(&mut self, model: &Model, transform: Matrix,
 		texture: &Texture, tc: TexCoords, tints: Gradient,
 		blending: bool, fog: bool, camera: bool) -> Shape
 	{
@@ -154,7 +154,7 @@ impl base::Display for Display {
 		self.renderer.drop_shape(get_shape(&shape));
 	}
 
-	fn transform(&mut self, shape: &Shape, transform: Transform) {
+	fn transform(&mut self, shape: &Shape, transform: Matrix) {
 		self.renderer.transform(&base::get_shape(shape), transform);
 	}
 

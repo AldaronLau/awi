@@ -8,6 +8,8 @@
 mod asi;
 
 use std::mem;
+use Matrix;
+use Rotation;
 
 use WindowConnection;
 
@@ -86,16 +88,16 @@ struct ShapeData {
 	has_fog: bool,
 	alpha: Option<f32>,
 	color: Option<[f32; 4]>,
-	transform: Transform, // Transformation matrix.
+	transform: Matrix, // Transformation matrix.
 	texture: Option<asi::Texture>,
 	vertex_buffer: Buffer,
 	fans: Vec<(u32, u32)>,
 }
 
 impl base::Point for ShapeData {
-	fn point(&self) -> Vec3 {
+	fn point(&self) -> Vector {
 		// Position vector at origin * object transform.
-		(self.transform.0 * vec4!(0f32, 0f32, 0f32, 1f32)).xyz()
+		self.transform * (vector!(0f32, 0f32, 0f32), 1f32)
 	}
 }
 
@@ -135,10 +137,10 @@ pub struct Display {
 	gradients: Vec<GradientData>,
 	textures: Vec<TextureData>,
 	styles: [Style; 6],
-	xyz: Vec3,
-	rotate_xyz: Vec3,
+	xyz: Vector,
+	rotate_xyz: Vector,
 	ar: f32,
-	projection: Transform,
+	projection: Matrix,
 }
 
 pub fn new() -> Result<Box<Display>, &'static str> {
@@ -224,14 +226,14 @@ pub fn new() -> Result<Box<Display>, &'static str> {
 				style_solid,
 				style_complex,
 			],
-			xyz: vec3!(0.0, 0.0, 0.0),
-			rotate_xyz: vec3!(0.0, 0.0, 0.0),
+			xyz: vector!(0.0, 0.0, 0.0),
+			rotate_xyz: vector!(0.0, 0.0, 0.0),
 			ar,
 			projection,
 		};
 
 		use self::base::Display;
-		display.camera(vec3!(0.0, 0.0, 0.0), vec3!(0.0, 0.0, 0.0));
+		display.camera(vector!(0.0, 0.0, 0.0), vector!(0.0, 0.0, 0.0));
 
 		Ok(Box::new(display))
 	} else {
@@ -289,7 +291,7 @@ impl base::Display for Display {
 		self.context.update()
 	}
 
-	fn camera(&mut self, xyz: Vec3, rotate_xyz: Vec3) {
+	fn camera(&mut self, xyz: Vector, rotate_xyz: Vector) {
 		// Set Camera
 		self.xyz = xyz;
 		self.rotate_xyz = rotate_xyz;
@@ -297,10 +299,10 @@ impl base::Display for Display {
 		// Write To Camera Uniforms.  TODO: only before use (not here).
 		// TODO this assignment copied from vulkan implementation.  Put
 		// in the base library.
-		let cam = Transform::IDENTITY
-			.t(vec3!()-self.xyz) // Move camera - TODO: negation operator?
-			.r(vec3!()-self.rotate_xyz) // Rotate camera - TODO: negation operator?
-			.m(self.projection.0); // Apply projection to camera
+		let cam = matrix!()
+			.t(-self.xyz) // Move camera.
+			.r(Rotation::euler(-self.rotate_xyz)) // Rotate camera.
+			.m(self.projection); // Apply projection to camera
 
 		for i in (&self.styles).iter() {
 			i.camera_uniform.set_mat4(cam.into());
@@ -401,7 +403,7 @@ impl base::Display for Display {
 	}
 
 	#[inline(always)]
-	fn shape_solid(&mut self, model: &Model, transform: Transform,
+	fn shape_solid(&mut self, model: &Model, transform: Matrix,
 		color: [f32; 4], blending: bool, fog: bool, camera: bool)
 		-> Shape
 	{
@@ -435,7 +437,7 @@ impl base::Display for Display {
 	}
 
 	#[inline(always)]
-	fn shape_gradient(&mut self, model: &Model, transform: Transform,
+	fn shape_gradient(&mut self, model: &Model, transform: Matrix,
 		colors: Gradient, blending: bool, fog: bool, camera: bool)
 		-> Shape
 	{
@@ -479,7 +481,7 @@ impl base::Display for Display {
 	}
 
 	#[inline(always)]
-	fn shape_texture(&mut self, model: &Model, transform: Transform,
+	fn shape_texture(&mut self, model: &Model, transform: Matrix,
 		texture: &Texture, tc: TexCoords, blending: bool, fog: bool,
 		camera: bool) -> Shape
 	{
@@ -523,7 +525,7 @@ impl base::Display for Display {
 	}
 
 	#[inline(always)]
-	fn shape_faded(&mut self, model: &Model, transform: Transform,
+	fn shape_faded(&mut self, model: &Model, transform: Matrix,
 		texture: &Texture, tc: TexCoords, alpha: f32, fog: bool,
 		camera: bool) -> Shape
 	{
@@ -562,7 +564,7 @@ impl base::Display for Display {
 	}
 
 	#[inline(always)]
-	fn shape_tinted(&mut self, model: &Model, transform: Transform,
+	fn shape_tinted(&mut self, model: &Model, transform: Matrix,
 		texture: &Texture, tc: TexCoords, tint: [f32; 4], blending: bool,
 		fog: bool, camera: bool) -> Shape
 	{
@@ -606,7 +608,7 @@ impl base::Display for Display {
 	}
 
 	#[inline(always)]
-	fn shape_complex(&mut self, model: &Model, transform: Transform,
+	fn shape_complex(&mut self, model: &Model, transform: Matrix,
 		texture: &Texture, tc: TexCoords, tints: Gradient,
 		blending: bool, fog: bool, camera: bool) -> Shape
 	{
@@ -677,7 +679,7 @@ impl base::Display for Display {
 		}
 	}
 
-	fn transform(&mut self, shape: &Shape, transform: Transform) {
+	fn transform(&mut self, shape: &Shape, transform: Matrix) {
 		// TODO: put in base, some is copy from vulkan implementation.
 		match base::get_shape(shape) {
 			ShapeHandle::Opaque(x) => {

@@ -10,8 +10,11 @@ use render::{Display, new_display};
 #[cfg(not(target_arch="wasm32"))]
 pub use render::{Shape, Gradient, Model, Texture, TexCoords};
 
-use render::{Vec3, Event, Transform};
+use render::{Event};
 use afi::{VFrame, PathOp};
+
+use Matrix;
+use Vector;
 
 // Vector Graphics Renderer.
 mod vg;
@@ -113,7 +116,7 @@ impl<Ctx> Screen<Ctx> where Ctx: Default {
 	}
 
 	/// Set the camera position.
-	pub fn camera(&mut self, position: Vec3, rotation: Vec3) {
+	pub fn camera(&mut self, position: Vector, rotation: Vector) {
 		self.display.camera(position, rotation)
 	}
 
@@ -147,56 +150,56 @@ impl<Ctx> Screen<Ctx> where Ctx: Default {
 	}
 
 	/// Make a shape with solid color.
-	pub fn shape_solid(&mut self, model: &Model, transform: Transform,
+	pub fn shape_solid(&mut self, model: &Model, matrix: Matrix,
 		color: [f32; 4], blending: bool, fog: bool, camera: bool)
 		-> Shape	
 	{
-		self.display.shape_solid(model, transform, color, blending, fog,
+		self.display.shape_solid(model, matrix, color, blending, fog,
 			camera)
 	}
 
 	/// Make a shape with gradient
-	pub fn shape_gradient(&mut self, model: &Model, transform: Transform,
+	pub fn shape_gradient(&mut self, model: &Model, matrix: Matrix,
 		gradient: Gradient, blending: bool, fog: bool, camera: bool)
 		-> Shape
 	{
-		self.display.shape_gradient(model, transform, gradient,
+		self.display.shape_gradient(model, matrix, gradient,
 			blending, fog, camera)
 	}
 
 	/// Make a shape will solid texture.
-	pub fn shape_texture(&mut self, model: &Model, transform: Transform,
+	pub fn shape_texture(&mut self, model: &Model, matrix: Matrix,
 		texture: &Texture, tc: TexCoords, blending: bool, fog: bool, 
 		camera: bool) -> Shape
 	{
-		self.display.shape_texture(model, transform, texture, tc,
+		self.display.shape_texture(model, matrix, texture, tc,
 			blending, fog, camera)
 	}
 
 	/// Make a shape will texture and transparency
-	pub fn shape_faded(&mut self, model: &Model, transform: Transform,
+	pub fn shape_faded(&mut self, model: &Model, matrix: Matrix,
 		texture: &Texture, tc: TexCoords, alpha: f32, fog: bool,
 		camera: bool) -> Shape
 	{
-		self.display.shape_faded(model, transform, texture, tc, alpha,
+		self.display.shape_faded(model, matrix, texture, tc, alpha,
 			fog, camera)
 	}
 
 	/// Make a shape with texture, and tint (color)
-	pub fn shape_tinted(&mut self, model: &Model, transform: Transform, 
+	pub fn shape_tinted(&mut self, model: &Model, matrix: Matrix, 
 		texture: &Texture, tc: TexCoords, tint: [f32; 4],
 		blending: bool, fog: bool, camera: bool) -> Shape
 	{
-		self.display.shape_tinted(model, transform, texture, tc, tint,
+		self.display.shape_tinted(model, matrix, texture, tc, tint,
 			blending, fog, camera)
 	}
 
 	/// Make a shape with texture, and gradent
-	pub fn shape_complex(&mut self, model: &Model, transform: Transform, 
+	pub fn shape_complex(&mut self, model: &Model, matrix: Matrix, 
 		texture: &Texture, tc: TexCoords, gradient: Gradient,
 		blending: bool, fog: bool, camera: bool) -> Shape
 	{
-		self.display.shape_complex(model, transform, texture, tc,
+		self.display.shape_complex(model, matrix, texture, tc,
 			gradient, blending, fog, camera)
 	}
 
@@ -206,8 +209,8 @@ impl<Ctx> Screen<Ctx> where Ctx: Default {
 	}
 
 	/// Apply a matrix transform to a shape.
-	pub fn transform(&mut self, shape: &Shape, transform: Transform) {
-		self.display.transform(shape, transform)
+	pub fn transform(&mut self, shape: &Shape, matrix: Matrix) {
+		self.display.transform(shape, matrix)
 	}
 
 	/// Call this function when you get a resize event.

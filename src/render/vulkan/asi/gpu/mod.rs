@@ -11,7 +11,7 @@ use c_void;
 use super::types::*;
 
 use std::{ rc::Rc, cell::RefCell };
-use super::Vec3;
+use Vector;
 
 mod surface;
 mod device;
@@ -148,7 +148,7 @@ pub(crate) struct GpuContext {
 	pub(crate) command_buffer: VkCommandBuffer,
 	pub(crate) command_pool: u64,
 	pub(crate) sampler: VkSampler,
-	pub(crate) rgb: Vec3,
+	pub(crate) rgb: Vector,
 	pub(crate) api: VulkanApi,
 	pub(crate) format: VkFormat,
 	pub(crate) extent: VkExtent2D,
@@ -288,7 +288,7 @@ pub(crate) struct GpuContext {
 
 impl Gpu {
 	/// Create the GPU context, and optionally a window to render to.
-	pub(crate) fn new(rgb: Vec3) -> Result<(Gpu, ::Window), String> { unsafe {
+	pub(crate) fn new(rgb: Vector) -> Result<(Gpu, ::Window), String> { unsafe {
 		// Load the Vulkan library
 		let api = VulkanApi::new()?;
 
@@ -395,7 +395,7 @@ impl Gpu {
 	} }
 
 	/// Set the clear color.
-	pub fn color(&self, rgb: Vec3) {
+	pub fn color(&self, rgb: Vector) {
 		self.get_mut().rgb = rgb;
 	}
 

@@ -5,8 +5,6 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // https://www.boost.org/LICENSE_1_0.txt)
 
-extern crate euler;
-
 // Modules
 pub mod types;
 
@@ -29,7 +27,8 @@ pub use self::sprite::Sprite;
 pub use self::style::Style;
 pub use self::fence::Fence;
 pub use self::gpu::Gpu;
-pub use self::euler::Vec3;
+
+pub use Vector;
 
 //
 use self::types::*;

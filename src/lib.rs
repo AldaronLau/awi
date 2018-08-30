@@ -10,6 +10,8 @@
 #![doc(html_logo_url = "https://plopgrizzly.com/images/awi.png",
        html_favicon_url = "https://plopgrizzly.com/images/awi.png")]
 
+#[macro_use]
+extern crate ami;
 extern crate barg;
 #[macro_use] extern crate approx;
 extern crate arrayvec;
@@ -49,3 +51,5 @@ pub(crate) use input::keyboard::Keyboard;
 pub use input::Event;
 #[cfg(not(target_arch="wasm32"))] pub(crate) use window_connection::WindowConnection;
 #[cfg(not(target_arch="wasm32"))] pub(crate) use window::Window;
+
+pub use ami::*;
