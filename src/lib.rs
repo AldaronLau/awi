@@ -10,8 +10,7 @@
 #![doc(html_logo_url = "https://plopgrizzly.com/images/awi.png",
        html_favicon_url = "https://plopgrizzly.com/images/awi.png")]
 
-#[macro_use]
-extern crate ami;
+#[macro_use] extern crate ami;
 extern crate barg;
 #[macro_use] extern crate approx;
 extern crate arrayvec;

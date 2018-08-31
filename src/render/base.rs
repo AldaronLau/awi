@@ -115,7 +115,7 @@ pub trait Display {
 
 /// Handle for shape.
 #[derive(Clone)]
-pub enum ShapeHandle {
+pub(crate) enum ShapeHandle {
 	Alpha(u32),
 	Opaque(u32),
 	Gui(u32),
@@ -140,12 +140,12 @@ pub struct TexCoords(pub usize); // TODO: unsafe
 pub struct Texture(pub usize, pub u16, pub u16); // TODO: unsafe
 
 /// Create a new shape
-pub fn new_shape(i: ShapeHandle) -> Shape {
+pub(crate) fn new_shape(i: ShapeHandle) -> Shape {
 	Shape(i)
 }
 
 /// Get the index of a shape
-pub fn get_shape(s: &Shape) -> ShapeHandle {
+pub(crate) fn get_shape(s: &Shape) -> ShapeHandle {
 	s.0.clone()
 }
 

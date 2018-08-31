@@ -462,17 +462,6 @@ impl InputQueue {
 		InputQueue { queue, mods }
 	}
 
-	/// Returns an iterator over the InputQueue.
-	#[inline(always)]
-	pub fn iter(&self) -> ::std::slice::Iter<Event> {
-		self.queue.iter()
-	}
-
-	#[inline(always)]
-	pub fn clear(&mut self) {
-		self.queue.clear()
-	}
-
 	#[inline(always)]
 	pub fn len(&self) -> usize {
 		self.queue.len()

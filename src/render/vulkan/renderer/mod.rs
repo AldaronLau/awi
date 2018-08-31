@@ -679,7 +679,7 @@ impl Renderer {
 		a
 	}
 
-	pub fn textured(&mut self, model: usize, mat4: Matrix,
+	pub(crate) fn textured(&mut self, model: usize, mat4: Matrix,
 		texture: usize, texcoords: usize, alpha: bool,
 		fog: bool, camera: bool) -> ShapeHandle
 	{
@@ -739,8 +739,8 @@ impl Renderer {
 		}
 	}
 
-	pub fn solid(&mut self, model: usize, mat4: Matrix, color: [f32; 4],
-		alpha: bool, fog: bool, camera: bool)
+	pub(crate) fn solid(&mut self, model: usize, mat4: Matrix,
+		color: [f32; 4], alpha: bool, fog: bool, camera: bool)
 		-> ShapeHandle
 	{
 		// Add an instance
@@ -792,8 +792,8 @@ impl Renderer {
 		}
 	}
 
-	pub fn gradient(&mut self, model: usize, mat4: Matrix, colors: usize,
-		alpha: bool, fog: bool, camera: bool)
+	pub(crate) fn gradient(&mut self, model: usize, mat4: Matrix,
+		colors: usize, alpha: bool, fog: bool, camera: bool)
 		-> ShapeHandle
 	{
 		if self.models[model].vertex_count
@@ -850,8 +850,8 @@ impl Renderer {
 		}
 	}
 
-	pub fn faded(&mut self, model: usize, mat4: Matrix, texture: usize,
-		texcoords: usize, fade_factor: f32, fog: bool,
+	pub(crate) fn faded(&mut self, model: usize, mat4: Matrix,
+		texture: usize, texcoords: usize, fade_factor: f32, fog: bool,
 		camera: bool) -> ShapeHandle
 	{
 		if self.models[model].vertex_count
@@ -902,7 +902,7 @@ impl Renderer {
 		}
 	}
 
-	pub fn tinted(&mut self, model: usize, mat4: Matrix,
+	pub(crate) fn tinted(&mut self, model: usize, mat4: Matrix,
 		texture: usize, texcoords: usize, color: [f32; 4],
 		alpha: bool, fog: bool, camera: bool)
 		-> ShapeHandle
@@ -964,7 +964,7 @@ impl Renderer {
 		}
 	}
 
-	pub fn complex(&mut self, model: usize, mat4: Matrix,
+	pub(crate) fn complex(&mut self, model: usize, mat4: Matrix,
 		texture: usize, texcoords: usize, colors: usize, alpha: bool,
 		fog: bool, camera: bool) -> ShapeHandle
 	{
@@ -1026,7 +1026,7 @@ impl Renderer {
 		}
 	}
 
-	pub fn drop_shape(&mut self, shape: ShapeHandle) {
+	pub(crate) fn drop_shape(&mut self, shape: ShapeHandle) {
 		match shape {
 			ShapeHandle::Opaque(x) => {
 				let index = self.opaque_ind.iter()
@@ -1046,7 +1046,9 @@ impl Renderer {
 		}
 	}
 
-	pub fn transform(&mut self, shape: &ShapeHandle, transform: Matrix) {
+	pub(crate) fn transform(&mut self, shape: &ShapeHandle,
+		transform: Matrix)
+	{
 		let uniform = TransformUniform {
 			mat4: transform.into(),
 		};
