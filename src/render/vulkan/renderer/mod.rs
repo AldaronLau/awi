@@ -3,6 +3,8 @@
 // Version 1.0.  (See accompanying file LICENSE_1_0.txt or copy at
 // https://www.boost.org/LICENSE_1_0.txt)
 
+use std::cell::UnsafeCell;
+
 use std::{ mem };
 use std::time::Instant;
 
@@ -17,7 +19,6 @@ use super::asi::Buffer;
 
 // TODO
 use super::asi::TransformUniform;
-use super::asi::FogUniform;
 use super::asi::Sprite;
 use super::asi::Gpu;
 
@@ -27,19 +28,16 @@ use Matrix;
 
 #[derive(Clone)] #[repr(C)] struct TransformFullUniform {
 	mat4: [f32; 16],
-	hcam: u32,
 }
 
 #[derive(Clone)] #[repr(C)] struct TransformAndFadeUniform {
 	mat4: [f32; 16],
 	fade: f32,
-	hcam: u32,
 }
 
 #[derive(Clone)] #[repr(C)] struct TransformAndColorUniform {
 	mat4: [f32; 16],
 	vec4: [f32; 4],
-	hcam: u32,
 }
 
 pub struct Vw {
@@ -93,50 +91,6 @@ pub struct TexCoords {
 pub struct Gradient {
 	vertex_buffer: Buffer,
 	vertex_count: u32,
-}
-
-impl Shape {
-// TODO
-/*	pub fn animate(window: &mut Window, index: usize, i: usize,
-		texture: *const NativeTexture, style: Style)
-	{
-		let hastx = window.sprites[index].hastx;
-
-		// Must be same style
-		if hastx {
-			if (texture as *const _ as usize) == 0 {
-				panic!("Can't set Style of a Sprite initialized\
-					with Style::Texture to Style::Solid");
-			}
-		} else {
-			if (texture as *const _ as usize) != 0 {
-				panic!("Can't set Style of a Sprite initialized\
-					with Style::Solid to Style::Texture");
-			}
-		}
-
-		// Free old Style, and set new uniform buffers.
-		unsafe {
-			super::asi::destroy_uniforms(&window.vw, &mut
-				window.sprites[index].instances[i].instance);
-			window.sprites[index].instances[i].instance =
-				vw_vulkan_uniforms(&window.vw, style, texture,
-					if hastx { 1 } else { 0 });
-		}
-		// TODO: Optimize when using same value from vw_vulkan_uniforms
-		// Set texture
-//		unsafe {
-//			vw_vulkan_txuniform(&window.vw,
-//				&mut window.sprites[index].shape.instances[i].instance, texture,
-//				if window.sprites[index].shape.hastx { 1 } else { 0 });
-//		}
-		Shape::enable(window, index, i, true);
-	}
-
-	pub fn vertices(window: &Window, index: usize, v: &[f32]) {
-		ffi::copy_memory(window.vw.device,
-			window.sprites[index].shape.vertex_buffer_memory, v);
-	}*/
 }
 
 fn swapchain_resize(connection: &Gpu, image_count: &mut u32,
@@ -274,24 +228,6 @@ fn set_texture(vw: &mut Vw, texture: &mut Texture, rgba: &[u8]) {
 	}
 }
 
-/*pub fn make_styles(vw: &mut Vw, extrashaders: &[Shader], shaders: &mut Vec<Style>)
-{
-	let mut shadev = Vec::new();
-	let default_shaders = [
-//		Shader::create(vw, include_bytes!("res/texture-vert.spv"),
-//			include_bytes!("res/texture-frag.spv"), 1),
-	];
-	shadev.extend(default_shaders.iter().cloned());
-	shadev.extend(extrashaders.iter().cloned());
-
-	*shaders = vec![Style { pipeline: 0, descsetlayout: 0,
-		pipeline_layout: 0 }; shadev.len()];
-	unsafe {
-		vw_vulkan_pipeline(&mut shaders[0], vw, &shadev[0],
-			shadev.len() as u32);
-	}
-}*/
-
 impl Vw {
 	pub(crate) fn new(rgb: Vector) -> Result<(Vw, ::Window), String> {
 		let (mut connection, window) = super::asi::Gpu::new(rgb)?;
@@ -348,9 +284,9 @@ pub struct Renderer {
 	ar: f32,
 	opaque_ind: Vec<u32>,
 	alpha_ind: Vec<u32>,
-	opaque_vec: Vec<Shape>,
-	alpha_vec: Vec<Shape>,
-	gui_vec: Vec<Shape>,
+	opaque_vec: UnsafeCell<Vec<Shape>>,
+	alpha_vec: UnsafeCell<Vec<Shape>>,
+	gui_vec: UnsafeCell<Vec<Shape>>,
 	models: Vec<Model>,
 	texcoords: Vec<TexCoords>,
 	gradients: Vec<Gradient>,
@@ -367,8 +303,6 @@ pub struct Renderer {
 	style_complex: Style,
 	style_nacomplex: Style,
 	projection: Matrix,
-	camera_memory: super::asi::Memory<TransformUniform>,
-	effect_memory: super::asi::Memory<FogUniform>,
 	clear_color: (f32, f32, f32),
 	xyz: Vector,
 	rotate_xyz: Vector,
@@ -446,21 +380,15 @@ impl Renderer {
 
 		let ar = vw.connection.ar();
 		let projection = super::base::projection(ar, 0.5 * PI);
-		let (camera_memory, effect_memory) = unsafe {
-			super::asi::vw_camera_new(&mut vw.connection,
-				(rgb.x, rgb.y, rgb.z, 1.0),
-				(::std::f32::MAX, ::std::f32::MAX))
-		};
 
 		let mut renderer = Renderer {
 			earlier: Instant::now(),
 			vw, ar, projection,
-			camera_memory, effect_memory,
 			alpha_ind: Vec::new(),
 			opaque_ind: Vec::new(),
-			alpha_vec: Vec::new(),
-			opaque_vec: Vec::new(),
-			gui_vec: Vec::new(),
+			alpha_vec: UnsafeCell::new(Vec::new()),
+			opaque_vec: UnsafeCell::new(Vec::new()),
+			gui_vec: UnsafeCell::new(Vec::new()),
 			gradients: Vec::new(),
 			models: Vec::new(),
 			texcoords: Vec::new(),
@@ -476,15 +404,12 @@ impl Renderer {
 			rotate_xyz: vector!(0.0, 0.0, 0.0),
 		};
 
-		renderer.camera();
-
 		Ok((renderer, window))
 	}
 
 	pub fn bg_color(&mut self, rgb: Vector) {
 		self.clear_color = (rgb.x, rgb.y, rgb.z);
 		self.vw.connection.color(rgb);
-		self.fog_color(rgb.x, rgb.y, rgb.z);
 	}
 
 	pub fn update(&mut self) -> f32 {
@@ -506,23 +431,23 @@ impl Renderer {
 		}
 
 		// sort nearest
-		super::base::zsort(&mut self.opaque_ind, &self.opaque_vec,
+		super::base::zsort(&mut self.opaque_ind, unsafe{::std::mem::transmute::<_, &mut Vec<Shape>>(self.opaque_vec.get())},
 			true, self.xyz);
 		for shape in self.opaque_ind.iter() {
-			let shape = &self.opaque_vec[*shape as usize];
+			let shape = &unsafe{::std::mem::transmute::<_, &mut Vec<Shape>>(self.opaque_vec.get())}[*shape as usize];
 			draw_shape(&self.vw.connection, shape);
 		}
 
 		// sort farthest
-		super::base::zsort(&mut self.alpha_ind, &self.alpha_vec,
+		super::base::zsort(&mut self.alpha_ind, unsafe{::std::mem::transmute::<_, &mut Vec<Shape>>(self.alpha_vec.get())},
 			false, self.xyz);
 		for shape in self.alpha_ind.iter() {
-			let shape = &self.alpha_vec[*shape as usize];
+			let shape = &unsafe{::std::mem::transmute::<_, &mut Vec<Shape>>(self.alpha_vec.get())}[*shape as usize];
 			draw_shape(&self.vw.connection, shape);
 		}
 
 		// No need to sort gui elements.
-		for shape in self.gui_vec.iter() {
+		for shape in unsafe{::std::mem::transmute::<_, &mut Vec<Shape>>(self.gui_vec.get())}.iter() {
 			draw_shape(&self.vw.connection, shape);
 		}
 
@@ -583,7 +508,6 @@ impl Renderer {
 		self.vw.render_pass = render_pass;
 
 		self.projection = super::base::projection(self.ar, 0.5 * PI);
-		self.camera();
 	}
 
 	pub fn texture(&mut self, width: u16, height: u16, rgba: &[u8])
@@ -679,7 +603,7 @@ impl Renderer {
 		a
 	}
 
-	pub(crate) fn textured(&mut self, model: usize, mat4: Matrix,
+	pub(crate) fn textured(&mut self, model: usize, mat: Matrix,
 		texture: usize, texcoords: usize, alpha: bool,
 		fog: bool, camera: bool) -> ShapeHandle
 	{
@@ -699,11 +623,8 @@ impl Renderer {
 					&self.style_natexture
 				},
 				TransformFullUniform {
-					mat4: mat4.into(),
-					hcam: fog as u32 + camera as u32,
+					mat4: (self.projection * mat).into(),
 				},
-				&self.camera_memory, // TODO: at shader creation, not shape creation
-				Some(&self.effect_memory),
 				Some(self.textures[texture].image.as_ref()
 					.unwrap_or(&self.textures[texture]
 						.mappable_image).clone()),
@@ -720,26 +641,26 @@ impl Renderer {
 				unsafe { mem::uninitialized() }
 			],
 			fans: self.models[model].fans.clone(),
-			transform: mat4,
+			transform: mat,
 		};
 
 		if !camera && !fog {
-			self.gui_vec.push(shape);
-			ShapeHandle::Gui(self.gui_vec.len() as u32 - 1)
+			unsafe{::std::mem::transmute::<_, &mut Vec<Shape>>(self.gui_vec.get())}.push(shape);
+			ShapeHandle::Gui(unsafe{::std::mem::transmute::<_, &mut Vec<Shape>>(self.gui_vec.get())}.len() as u32 - 1)
 		} else if alpha {
-			let index = self.alpha_vec.len() as u32;
-			self.alpha_vec.push(shape);
+			let index = unsafe{::std::mem::transmute::<_, &mut Vec<Shape>>(self.alpha_vec.get())}.len() as u32;
+			unsafe{::std::mem::transmute::<_, &mut Vec<Shape>>(self.alpha_vec.get())}.push(shape);
 			self.alpha_ind.push(index);
 			ShapeHandle::Alpha(index)
 		} else {
-			let index = self.opaque_vec.len() as u32;
-			self.opaque_vec.push(shape);
+			let index = unsafe{::std::mem::transmute::<_, &mut Vec<Shape>>(self.opaque_vec.get())}.len() as u32;
+			unsafe{::std::mem::transmute::<_, &mut Vec<Shape>>(self.opaque_vec.get())}.push(shape);
 			self.opaque_ind.push(index);
 			ShapeHandle::Opaque(index)
 		}
 	}
 
-	pub(crate) fn solid(&mut self, model: usize, mat4: Matrix,
+	pub(crate) fn solid(&mut self, model: usize, mat: Matrix,
 		color: [f32; 4], alpha: bool, fog: bool, camera: bool)
 		-> ShapeHandle
 	{
@@ -754,11 +675,8 @@ impl Renderer {
 				},
 				TransformAndColorUniform {
 					vec4: color,
-					hcam: fog as u32 + camera as u32,
-					mat4: mat4.into(),
+					mat4: (self.projection * mat).into(),
 				},
-				&self.camera_memory,
-				Some(&self.effect_memory),
 				None,
 				false, // no texure
 			)
@@ -773,26 +691,26 @@ impl Renderer {
 				unsafe { mem::uninitialized() }
 			],
 			fans: self.models[model].fans.clone(),
-			transform: mat4,
+			transform: mat,
 		};
 
 		if !camera && !fog {
-			self.gui_vec.push(shape);
-			ShapeHandle::Gui(self.gui_vec.len() as u32 - 1)
+			unsafe{::std::mem::transmute::<_, &mut Vec<Shape>>(self.gui_vec.get())}.push(shape);
+			ShapeHandle::Gui(unsafe{::std::mem::transmute::<_, &mut Vec<Shape>>(self.gui_vec.get())}.len() as u32 - 1)
 		} else if alpha {
-			let index = self.alpha_vec.len() as u32;
-			self.alpha_vec.push(shape);
+			let index = unsafe{::std::mem::transmute::<_, &mut Vec<Shape>>(self.alpha_vec.get())}.len() as u32;
+			unsafe{::std::mem::transmute::<_, &mut Vec<Shape>>(self.alpha_vec.get())}.push(shape);
 			self.alpha_ind.push(index);
 			ShapeHandle::Alpha(index)
 		} else {
-			let index = self.opaque_vec.len() as u32;
-			self.opaque_vec.push(shape);
+			let index = unsafe{::std::mem::transmute::<_, &mut Vec<Shape>>(self.opaque_vec.get())}.len() as u32;
+			unsafe{::std::mem::transmute::<_, &mut Vec<Shape>>(self.opaque_vec.get())}.push(shape);
 			self.opaque_ind.push(index);
 			ShapeHandle::Opaque(index)
 		}
 	}
 
-	pub(crate) fn gradient(&mut self, model: usize, mat4: Matrix,
+	pub(crate) fn gradient(&mut self, model: usize, mat: Matrix,
 		colors: usize, alpha: bool, fog: bool, camera: bool)
 		-> ShapeHandle
 	{
@@ -812,11 +730,8 @@ impl Renderer {
 					&self.style_nagradient
 				},
 				TransformFullUniform {
-					mat4: mat4.into(),
-					hcam: fog as u32 + camera as u32,
+					mat4: (self.projection * mat).into(),
 				},
-				&self.camera_memory,
-				Some(&self.effect_memory),
 				None,
 				false, // no texure
 			)
@@ -831,26 +746,26 @@ impl Renderer {
 				unsafe { mem::uninitialized() }
 			],
 			fans: self.models[model].fans.clone(),
-			transform: mat4,
+			transform: mat,
 		};
 
 		if !camera && !fog {
-			self.gui_vec.push(shape);
-			ShapeHandle::Gui(self.gui_vec.len() as u32 - 1)
+			unsafe{::std::mem::transmute::<_, &mut Vec<Shape>>(self.gui_vec.get())}.push(shape);
+			ShapeHandle::Gui(unsafe{::std::mem::transmute::<_, &mut Vec<Shape>>(self.gui_vec.get())}.len() as u32 - 1)
 		} else if alpha {
-			let index = self.alpha_vec.len() as u32;
-			self.alpha_vec.push(shape);
+			let index = unsafe{::std::mem::transmute::<_, &mut Vec<Shape>>(self.alpha_vec.get())}.len() as u32;
+			unsafe{::std::mem::transmute::<_, &mut Vec<Shape>>(self.alpha_vec.get())}.push(shape);
 			self.alpha_ind.push(index);
 			ShapeHandle::Alpha(index)
 		} else {
-			let index = self.opaque_vec.len() as u32;
-			self.opaque_vec.push(shape);
+			let index = unsafe{::std::mem::transmute::<_, &mut Vec<Shape>>(self.opaque_vec.get())}.len() as u32;
+			unsafe{::std::mem::transmute::<_, &mut Vec<Shape>>(self.opaque_vec.get())}.push(shape);
 			self.opaque_ind.push(index);
 			ShapeHandle::Opaque(index)
 		}
 	}
 
-	pub(crate) fn faded(&mut self, model: usize, mat4: Matrix,
+	pub(crate) fn faded(&mut self, model: usize, mat: Matrix,
 		texture: usize, texcoords: usize, fade_factor: f32, fog: bool,
 		camera: bool) -> ShapeHandle
 	{
@@ -866,12 +781,9 @@ impl Renderer {
 				&self.vw.connection,
 				&self.style_faded,
 				TransformAndFadeUniform {
-					mat4: mat4.into(),
-					hcam: fog as u32 + camera as u32,
+					mat4: (self.projection * mat).into(),
 					fade: fade_factor,
 				},
-				&self.camera_memory,
-				Some(&self.effect_memory),
 				Some(self.textures[texture].image.as_ref()
 					.unwrap_or(&self.textures[texture]
 						.mappable_image).clone()),
@@ -888,21 +800,21 @@ impl Renderer {
 				unsafe { mem::uninitialized() }
 			],
 			fans: self.models[model].fans.clone(),
-			transform: mat4,
+			transform: mat,
 		};
 
 		if !camera && !fog {
-			self.gui_vec.push(shape);
-			ShapeHandle::Gui(self.gui_vec.len() as u32 - 1)
+			unsafe{::std::mem::transmute::<_, &mut Vec<Shape>>(self.gui_vec.get())}.push(shape);
+			ShapeHandle::Gui(unsafe{::std::mem::transmute::<_, &mut Vec<Shape>>(self.gui_vec.get())}.len() as u32 - 1)
 		} else {
-			let index = self.alpha_vec.len() as u32;
-			self.alpha_vec.push(shape);
+			let index = unsafe{::std::mem::transmute::<_, &mut Vec<Shape>>(self.alpha_vec.get())}.len() as u32;
+			unsafe{::std::mem::transmute::<_, &mut Vec<Shape>>(self.alpha_vec.get())}.push(shape);
 			self.alpha_ind.push(index);
 			ShapeHandle::Alpha(index)
 		}
 	}
 
-	pub(crate) fn tinted(&mut self, model: usize, mat4: Matrix,
+	pub(crate) fn tinted(&mut self, model: usize, mat: Matrix,
 		texture: usize, texcoords: usize, color: [f32; 4],
 		alpha: bool, fog: bool, camera: bool)
 		-> ShapeHandle
@@ -923,12 +835,9 @@ impl Renderer {
 					&self.style_natinted
 				},
 				TransformAndColorUniform {
-					mat4: mat4.into(),
-					hcam: fog as u32 + camera as u32,
+					mat4: (self.projection * mat).into(),
 					vec4: color,
 				},
-				&self.camera_memory,
-				Some(&self.effect_memory),
 				Some(self.textures[texture].image.as_ref()
 					.unwrap_or(&self.textures[texture]
 						.mappable_image).clone()),
@@ -945,26 +854,26 @@ impl Renderer {
 				unsafe { mem::uninitialized() }
 			],
 			fans: self.models[model].fans.clone(),
-			transform: mat4,
+			transform: mat,
 		};
 
 		if !camera && !fog {
-			self.gui_vec.push(shape);
-			ShapeHandle::Gui(self.gui_vec.len() as u32 - 1)
+			unsafe{::std::mem::transmute::<_, &mut Vec<Shape>>(self.gui_vec.get())}.push(shape);
+			ShapeHandle::Gui(unsafe{::std::mem::transmute::<_, &mut Vec<Shape>>(self.gui_vec.get())}.len() as u32 - 1)
 		} else if alpha {
-			let index = self.alpha_vec.len() as u32;
-			self.alpha_vec.push(shape);
+			let index = unsafe{::std::mem::transmute::<_, &mut Vec<Shape>>(self.alpha_vec.get())}.len() as u32;
+			unsafe{::std::mem::transmute::<_, &mut Vec<Shape>>(self.alpha_vec.get())}.push(shape);
 			self.alpha_ind.push(index);
 			ShapeHandle::Alpha(index)
 		} else {
-			let index = self.opaque_vec.len() as u32;
-			self.opaque_vec.push(shape);
+			let index = unsafe{::std::mem::transmute::<_, &mut Vec<Shape>>(self.opaque_vec.get())}.len() as u32;
+			unsafe{::std::mem::transmute::<_, &mut Vec<Shape>>(self.opaque_vec.get())}.push(shape);
 			self.opaque_ind.push(index);
 			ShapeHandle::Opaque(index)
 		}
 	}
 
-	pub(crate) fn complex(&mut self, model: usize, mat4: Matrix,
+	pub(crate) fn complex(&mut self, model: usize, mat: Matrix,
 		texture: usize, texcoords: usize, colors: usize, alpha: bool,
 		fog: bool, camera: bool) -> ShapeHandle
 	{
@@ -986,11 +895,8 @@ impl Renderer {
 					&self.style_nacomplex
 				},
 				TransformFullUniform {
-					mat4: mat4.into(),
-					hcam: fog as u32 + camera as u32,
+					mat4: (self.projection * mat).into(),
 				},
-				&self.camera_memory,
-				Some(&self.effect_memory),
 				Some(self.textures[texture].image.as_ref()
 					.unwrap_or(&self.textures[texture]
 						.mappable_image).clone()),
@@ -1007,20 +913,20 @@ impl Renderer {
 				self.gradients[colors].vertex_buffer.buffer(),
 			],
 			fans: self.models[model].fans.clone(),
-			transform: mat4,
+			transform: mat,
 		};
 
 		if !camera && !fog {
-			self.gui_vec.push(shape);
-			ShapeHandle::Gui(self.gui_vec.len() as u32 - 1)
+			unsafe{::std::mem::transmute::<_, &mut Vec<Shape>>(self.gui_vec.get())}.push(shape);
+			ShapeHandle::Gui(unsafe{::std::mem::transmute::<_, &mut Vec<Shape>>(self.gui_vec.get())}.len() as u32 - 1)
 		} else if alpha {
-			let index = self.alpha_vec.len() as u32;
-			self.alpha_vec.push(shape);
+			let index = unsafe{::std::mem::transmute::<_, &mut Vec<Shape>>(self.alpha_vec.get())}.len() as u32;
+			unsafe{::std::mem::transmute::<_, &mut Vec<Shape>>(self.alpha_vec.get())}.push(shape);
 			self.alpha_ind.push(index);
 			ShapeHandle::Alpha(index)
 		} else {
-			let index = self.opaque_vec.len() as u32;
-			self.opaque_vec.push(shape);
+			let index = unsafe{::std::mem::transmute::<_, &mut Vec<Shape>>(self.opaque_vec.get())}.len() as u32;
+			unsafe{::std::mem::transmute::<_, &mut Vec<Shape>>(self.opaque_vec.get())}.push(shape);
 			self.opaque_ind.push(index);
 			ShapeHandle::Opaque(index)
 		}
@@ -1041,68 +947,39 @@ impl Renderer {
 			ShapeHandle::Gui(_x) => {
 				// TODO: make it obvious that there's only meant
 				// to be 1 GUI object.
-				self.gui_vec.clear();
+				unsafe{::std::mem::transmute::<_, &mut Vec<Shape>>(self.gui_vec.get())}.clear();
 			},
 		}
 	}
 
-	pub(crate) fn transform(&mut self, shape: &ShapeHandle,
-		transform: Matrix)
-	{
+	pub(crate) fn transform(&self, shape: &ShapeHandle, mat: Matrix) {
 		let uniform = TransformUniform {
-			mat4: transform.into(),
+			mat4: (self.projection * mat).into(),
 		};
 
 		match shape {
 			ShapeHandle::Opaque(x) => {
 				let x = *x as usize; // for indexing
-				self.opaque_vec[x].transform = transform;
+				(unsafe{::std::mem::transmute::<_, &mut Vec<Shape>>(self.opaque_vec.get())})[x].transform = mat;
 				ffi::copy_memory(&self.vw.connection,
-					self.opaque_vec[x].instance.uniform_memory.memory(),
+					unsafe{::std::mem::transmute::<_, &mut Vec<Shape>>(self.opaque_vec.get())}[x].instance.uniform_memory.memory(),
 					&uniform);
 			},
 			ShapeHandle::Alpha(x) => {
 				let x = *x as usize; // for indexing
-				self.alpha_vec[x].transform = transform;
+				(unsafe{::std::mem::transmute::<_, &mut Vec<Shape>>(self.alpha_vec.get())})[x].transform = mat;
 				ffi::copy_memory(&self.vw.connection,
-					self.alpha_vec[x].instance.uniform_memory.memory(),
+					unsafe{::std::mem::transmute::<_, &mut Vec<Shape>>(self.alpha_vec.get())}[x].instance.uniform_memory.memory(),
 					&uniform);
 			},
 			ShapeHandle::Gui(x) => {
 				let x = *x as usize; // for indexing
-				self.gui_vec[x].transform = transform;
+				(unsafe{::std::mem::transmute::<_, &mut Vec<Shape>>(self.gui_vec.get())})[x].transform = mat;
 				ffi::copy_memory(&self.vw.connection,
-					self.gui_vec[x].instance.uniform_memory.memory(),
+					unsafe{::std::mem::transmute::<_, &mut Vec<Shape>>(self.gui_vec.get())}[x].instance.uniform_memory.memory(),
 					&uniform);
 			},
 		}
-	}
-
-	pub fn set_camera(&mut self, xyz: Vector, rxyz: Vector) {
-		self.xyz = xyz;
-		self.rotate_xyz = rxyz;
-	}
-
-	pub fn camera(&mut self) {
-		self.camera_memory.data.mat4 = matrix!()
-			.t(-self.xyz) // Move camera
-			.r(Rotation::euler(-self.rotate_xyz)) // Rotate camera
-			.m(self.projection) // Apply projection to camera
-			.into(); // convert to f32 array
-
-		self.camera_memory.update(&self.vw.connection);
-	}
-
-	pub fn fog(&mut self, fog: (f32, f32)) -> () {
-		self.effect_memory.data.fogr = [fog.0, fog.1];
-		let rgb = (self.clear_color.0, self.clear_color.1,
-			self.clear_color.2);
-		self.fog_color(rgb.0, rgb.1, rgb.2);
-	}
-
-	fn fog_color(&mut self, r: f32, g: f32, b: f32) {
-		self.effect_memory.data.fogc = [r, g, b, 1.0];
-		self.effect_memory.update(&self.vw.connection);
 	}
 }
 

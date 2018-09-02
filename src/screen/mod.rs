@@ -11,13 +11,10 @@ use render::{Display, new_display};
 pub use render::{Shape, Gradient, Model, Texture, TexCoords};
 
 use render::{Event};
-use afi::{VFrame, PathOp};
+use afi::{VFrame, PathOp	};
 
 use Matrix;
 use Vector;
-
-// Vector Graphics Renderer.
-mod vg;
 
 #[cfg(target_arch="wasm32")] mod win {mod wasm32; pub use self::wasm32::*;}
 
@@ -25,9 +22,6 @@ mod vg;
 use self::win::{Display};
 #[cfg(target_arch="wasm32")]
 pub use self::win::{Shape, Gradient, Model, Texture, TexCoords};
-
-pub use barg::{PathOp3D};
-pub use screen::PathOp3D::{Move, Line, Quad};
 
 /// A Window to the Screen.
 pub struct Screen<Ctx> where Ctx: Default {
@@ -108,16 +102,6 @@ impl<Ctx> Screen<Ctx> where Ctx: Default {
 	/// Update the clear color of the Window.
 	pub fn clear(&mut self, color: (u8, u8, u8)) {
 		self.display.color(color)
-	}
-
-	/// Set the fog distance.
-	pub fn fog(&mut self, fog: Option<(f32, f32)>) {
-		self.display.fog(fog)
-	}
-
-	/// Set the camera position.
-	pub fn camera(&mut self, position: Vector, rotation: Vector) {
-		self.display.camera(position, rotation)
 	}
 
 	/// Upload a model to the GPU.
@@ -209,7 +193,7 @@ impl<Ctx> Screen<Ctx> where Ctx: Default {
 	}
 
 	/// Apply a matrix transform to a shape.
-	pub fn transform(&mut self, shape: &Shape, matrix: Matrix) {
+	pub fn transform(&self, shape: &Shape, matrix: Matrix) {
 		self.display.transform(shape, matrix)
 	}
 
@@ -226,7 +210,7 @@ impl<Ctx> Screen<Ctx> where Ctx: Default {
 
 	/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-	/// 2D Vector Graphics Draw Call.
+/*	/// 2D Vector Graphics Draw Call.
 	pub fn draw<I>(&mut self, shape: I, color: [u8; 4])
 		where I: IntoIterator<Item = PathOp>
 	{
@@ -244,5 +228,5 @@ impl<Ctx> Screen<Ctx> where Ctx: Default {
 		self.vframe.0.resize(rtn.0.len(), 0);
 
 		rtn
-	}
+	}*/
 }

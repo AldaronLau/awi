@@ -9,10 +9,8 @@ use super::null;
 use super::mem;
 
 use super::types::*;
-use super::FogUniform;
-use super::TransformUniform;
 use super::Style;
-use super::memory::{ Buffer, BufferBuilderType, Memory };
+use super::memory::{ Buffer, BufferBuilderType };
 use super::Gpu;
 use super::Image;
 use std::{ rc::Rc };
@@ -37,10 +35,7 @@ struct SpriteContext {
 impl Sprite {
 	/// Create a new sprite.
 	pub unsafe fn new<T>(vulkan: &Gpu, pipeline: &Style,
-		buffer_data: T,
-		camera_memory: &Memory<TransformUniform>,
-		effect_memory: Option<&Memory<FogUniform>>,
-		texture: Option<Image>, tex_count: bool)
+		buffer_data: T, texture: Option<Image>, tex_count: bool)
 		 -> Self where T: Clone
 	{
 	//	let connection = vulkan.get();
@@ -57,17 +52,9 @@ impl Sprite {
 				next: null(),
 				flags: 0,
 				max_sets: 1,
-				pool_size_count: if tex_count { 4 } else { 3 },
+				pool_size_count: if tex_count { 2 } else { 1 },
 				pool_sizes: if tex_count {
 					[VkDescriptorPoolSize { descriptor_type: 
-						VkDescriptorType::UniformBuffer,
-						descriptor_count: 1,
-					},
-					VkDescriptorPoolSize { descriptor_type: 
-						VkDescriptorType::UniformBuffer,
-						descriptor_count: 1,
-					},
-					VkDescriptorPoolSize { descriptor_type: 
 						VkDescriptorType::UniformBuffer,
 						descriptor_count: 1,
 					},
@@ -77,12 +64,6 @@ impl Sprite {
 					}].as_ptr()
 				} else {
 					[VkDescriptorPoolSize { descriptor_type: 
-						VkDescriptorType::UniformBuffer,
-						descriptor_count: 1,
-					}, VkDescriptorPoolSize { descriptor_type: 
-						VkDescriptorType::UniformBuffer,
-						descriptor_count: 1,
-					}, VkDescriptorPoolSize { descriptor_type: 
 						VkDescriptorType::UniformBuffer,
 						descriptor_count: 1,
 					}].as_ptr()
@@ -111,10 +92,10 @@ impl Sprite {
 		let device = vulkan.get().device;
 
 		txuniform(vulkan, device, desc_set, tex_count, texture.as_ref(),
-			&uniform_memory, camera_memory, effect_memory);
+			&uniform_memory);
 
 		Sprite {
-			uniform_memory: uniform_memory,
+			uniform_memory,
 			desc_set: Rc::new(SpriteContext {
 				desc_set, desc_pool, vulkan: vulkan.clone(),
 			}),
@@ -131,17 +112,9 @@ impl Sprite {
 
 unsafe fn txuniform(vulkan: &Gpu, device: VkDevice,
 	desc_set: VkDescriptorSet, hastex: bool, texture: Option<&Image>,
-	matrix_memory: &Buffer,
-	camera_memory: &Memory<TransformUniform>,
-	effect_memory: Option<&Memory<FogUniform>>)
+	memory: &Buffer)
 {
-	let mut writer = DescriptorSetWriter::new()
-		.uniform(desc_set, matrix_memory)
-		.uniform(desc_set, &camera_memory.buffer);
-
-	if let Some(memory) = effect_memory {
-		writer = writer.uniform(desc_set, &memory.buffer);
-	}
+	let mut writer = DescriptorSetWriter::new().uniform(desc_set, memory);
 
 	if hastex {
 		writer = writer.sampler(desc_set, vulkan.get().sampler,

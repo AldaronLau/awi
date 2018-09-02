@@ -64,7 +64,7 @@ pub fn new_pipeline(vulkan: &mut Gpu, render_pass: VkRenderPass,
 			s_type: VkStructureType::DescriptorSetLayoutCreateInfo,
 			next: null(),
 			flags: 0,
-			binding_count: 3 + ntextures,
+			binding_count: 1 + ntextures,
 			// TODO: consolidate
 			bindings: if ntextures == 0 {
 				[VkDescriptorSetLayoutBinding {
@@ -72,20 +72,6 @@ pub fn new_pipeline(vulkan: &mut Gpu, render_pass: VkRenderPass,
 					descriptor_type: VkDescriptorType::UniformBuffer,
 					descriptor_count: 1,
 					stage_flags: VkShaderStage::VertexAndFragment,
-					immutable_samplers: null(),
-				},
-				VkDescriptorSetLayoutBinding {
-					binding: 1,
-					descriptor_type: VkDescriptorType::UniformBuffer,
-					descriptor_count: 1,
-					stage_flags: VkShaderStage::Vertex,
-					immutable_samplers: null(),
-				},
-				VkDescriptorSetLayoutBinding {
-					binding: 2,
-					descriptor_type: VkDescriptorType::UniformBuffer,
-					descriptor_count: 1,
-					stage_flags: VkShaderStage::Fragment,
 					immutable_samplers: null(),
 				}].as_ptr()
 			} else {
@@ -98,20 +84,6 @@ pub fn new_pipeline(vulkan: &mut Gpu, render_pass: VkRenderPass,
 				},
 				VkDescriptorSetLayoutBinding {
 					binding: 1,
-					descriptor_type: VkDescriptorType::UniformBuffer,
-					descriptor_count: 1,
-					stage_flags: VkShaderStage::Vertex,
-					immutable_samplers: null(),
-				},
-				VkDescriptorSetLayoutBinding {
-					binding: 2,
-					descriptor_type: VkDescriptorType::UniformBuffer,
-					descriptor_count: 1,
-					stage_flags: VkShaderStage::Fragment,
-					immutable_samplers: null(),
-				},
-				VkDescriptorSetLayoutBinding {
-					binding: 3,
 					descriptor_type: VkDescriptorType::CombinedImageSampler,
 					descriptor_count: 1, // Texture Count
 					stage_flags: VkShaderStage::Fragment,

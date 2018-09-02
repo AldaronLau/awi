@@ -842,31 +842,6 @@ pub unsafe fn create_render_pass(connection: &Gpu) -> VkRenderPass {
 	(connection.drop_swapchain)(device, connection.swapchain, null());
 }
 
-pub unsafe fn vw_camera_new(connection: &Gpu,
-	fog_color: (f32, f32, f32, f32), range: (f32, f32))
-	 -> (Memory<TransformUniform>, Memory<FogUniform>)
-{
-	let ucamera_memory = Memory::new(connection,
-		TransformUniform {
-			mat4: [
-				1.0, 0.0, 0.0, 0.0,
-				0.0, 1.0, 0.0, 0.0,
-				0.0, 0.0, 1.0, 0.0,
-				0.0, 0.0, 0.0, 1.0
-			],
-		}
-	);
-
-	let ueffect_memory = Memory::new(connection,
-		FogUniform {
-			fogc: [fog_color.0, fog_color.1, fog_color.2, fog_color.3],
-			fogr: [range.0, range.1],
-		}
-	);
-
-	(ucamera_memory, ueffect_memory)
-}
-
 pub unsafe fn new_buffer(vulkan: &Gpu, vertices: &[f32]) -> Buffer {
 	Buffer::new(vulkan, vertices, BufferBuilderType::Vertex)
 }

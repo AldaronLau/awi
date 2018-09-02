@@ -36,10 +36,7 @@ libc = "0.2"
 # Runtime linking.
 dl_api = "0.2"
 # Pure Rust Vector Graphics Rendering
-arrayvec = { version = "0.4", default-features = false }
-ordered-float = "0.5"
-approx = { version = "0.3", default-features = false }
-barg = { path = "../barg" }
+# barg = { path = "../barg" }
 
 # Windows: Compiletime link to winapi
 [target.'cfg(target_os="windows")'.dependencies]
@@ -51,3 +48,7 @@ stdweb-derive = "0.4"
 
 [build-dependencies]
 webgl_generator = "0.1"
+
+[features]
+default = [] # ["checks"] # Un-comment for validation layers.
+checks = []

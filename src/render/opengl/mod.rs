@@ -5,6 +5,8 @@
 
 //! OpenGL implementation for adi_gpu.
 
+use std::cell::Cell;
+
 mod asi;
 
 use std::mem;
@@ -129,9 +131,9 @@ pub struct Display {
 	color: (f32, f32, f32),
 	opaque_ind: Vec<u32>,
 	alpha_ind: Vec<u32>,
-	opaque_vec: Vec<ShapeData>,
-	alpha_vec: Vec<ShapeData>,
-	gui_vec: Vec<ShapeData>,
+	opaque_vec: Cell<Vec<ShapeData>>,
+	alpha_vec: Cell<Vec<ShapeData>>,
+	gui_vec: Cell<Vec<ShapeData>>,
 	models: Vec<ModelData>,
 	texcoords: Vec<TexcoordsData>,
 	gradients: Vec<GradientData>,
@@ -211,9 +213,9 @@ pub fn new() -> Result<Box<Display>, &'static str> {
 			color: (0.0, 0.0, 0.0),
 			alpha_ind: vec![],
 			opaque_ind: vec![],
-			alpha_vec: vec![],
-			opaque_vec: vec![],
-			gui_vec: vec![],
+			alpha_vec: Cell::new(vec![]),
+			opaque_vec: Cell::new(vec![]),
+			gui_vec: Cell::new(vec![]),
 			models: vec![],
 			texcoords: vec![],
 			gradients: vec![],
@@ -233,11 +235,16 @@ pub fn new() -> Result<Box<Display>, &'static str> {
 		};
 
 		use self::base::Display;
-		display.camera(vector!(0.0, 0.0, 0.0), vector!(0.0, 0.0, 0.0));
 
 		Ok(Box::new(display))
 	} else {
 		Err("Couldn't find OpenGL!")
+	}
+}
+
+fn as_mut(slf: &Cell<Vec<ShapeData>>) -> &mut Vec<ShapeData> {
+	unsafe {
+		::std::mem::transmute(slf.as_ptr())
 	}
 }
 
@@ -262,51 +269,28 @@ impl base::Display for Display {
 		self.context.enable(Feature::DepthTest);
 
 		// sort nearest
-		base::zsort(&mut self.opaque_ind, &self.opaque_vec,
+		base::zsort(&mut self.opaque_ind, self.opaque_vec.get_mut(),
 			true, self.xyz);
-		for shape in self.opaque_vec.iter() {
+		for shape in as_mut(&self.opaque_vec).iter() {
 			draw_shape(&self.styles[shape.style], shape);
 		}
 
 		// sort farthest
-		base::zsort(&mut self.alpha_ind, &self.alpha_vec,
+		base::zsort(&mut self.alpha_ind, &self.alpha_vec.get_mut(),
 			false, self.xyz);
-		for shape in self.alpha_vec.iter() {
+		for shape in as_mut(&self.alpha_vec).iter() {
 			draw_shape(&self.styles[shape.style], shape);
 		}
 
 		// Disable Depth Testing for GUI
 		self.context.disable(Feature::DepthTest);
 
-		// Gui Elements don't want a camera.
-		for i in (&self.styles).iter() {
-			i.has_camera.set_int1(0);
-		}
-
 		// No need to sort gui elements.
-		for shape in self.gui_vec.iter() {
+		for shape in as_mut(&self.gui_vec).iter() {
 			draw_shape(&self.styles[shape.style], shape);
 		}
 
 		self.context.update()
-	}
-
-	fn camera(&mut self, xyz: Vector, rotate_xyz: Vector) {
-		// Set Camera
-		self.xyz = xyz;
-		self.rotate_xyz = rotate_xyz;
-
-		// Write To Camera Uniforms.  TODO: only before use (not here).
-		// TODO this assignment copied from vulkan implementation.  Put
-		// in the base library.
-		let cam = matrix!()
-			.t(-self.xyz) // Move camera.
-			.r(Rotation::euler(-self.rotate_xyz)) // Rotate camera.
-			.m(self.projection); // Apply projection to camera
-
-		for i in (&self.styles).iter() {
-			i.camera_uniform.set_mat4(cam.into());
-		}
 	}
 
 	fn model(&mut self, vertices: &[f32], fans: Vec<(u32, u32)>) -> Model {
@@ -325,20 +309,6 @@ impl base::Display for Display {
 		});
 
 		Model(index)
-	}
-
-	fn fog(&mut self, fog: Option<(f32, f32)>) -> () {
-		let fogc = [self.color.0, self.color.1, self.color.2, 1.0];
-		let fogr = if let Some(fog) = fog {
-			[fog.0, fog.1]
-		} else {
-			[::std::f32::MAX, 0.0]
-		};
-
-		for i in (&self.styles).iter() {
-			i.fog.set_vec4(&fogc);
-			i.range.set_vec2(&fogr);
-		}
 	}
 
 	fn texture(&mut self, wh: (u16,u16), graphic: &VFrame) -> Texture {
@@ -420,17 +390,20 @@ impl base::Display for Display {
 		};
 
 		base::new_shape(if !camera && !fog {
-			let index = self.gui_vec.len() as u32;
-			self.gui_vec.push(shape);
+			let gui_vec = self.gui_vec.get_mut();
+			let index = gui_vec.len() as u32;
+			gui_vec.push(shape);
 			base::ShapeHandle::Gui(index)
 		} else if blending {
-			let index = self.alpha_vec.len() as u32;
-			self.alpha_vec.push(shape);
+			let alpha_vec = self.alpha_vec.get_mut();
+			let index = alpha_vec.len() as u32;
+			alpha_vec.push(shape);
 			self.alpha_ind.push(index);
 			base::ShapeHandle::Alpha(index)
 		} else {
-			let index = self.opaque_vec.len() as u32;
-			self.opaque_vec.push(shape);
+			let opaque_vec = self.opaque_vec.get_mut();
+			let index = opaque_vec.len() as u32;
+			opaque_vec.push(shape);
 			self.opaque_ind.push(index);
 			base::ShapeHandle::Opaque(index)
 		})
@@ -464,17 +437,20 @@ impl base::Display for Display {
 		};
 
 		base::new_shape(if !camera && !fog {
-			let index = self.gui_vec.len() as u32;
-			self.gui_vec.push(shape);
+			let gui_vec = self.gui_vec.get_mut();
+			let index = gui_vec.len() as u32;
+			gui_vec.push(shape);
 			base::ShapeHandle::Gui(index)
 		} else if blending {
-			let index = self.alpha_vec.len() as u32;
-			self.alpha_vec.push(shape);
+			let alpha_vec = self.alpha_vec.get_mut();
+			let index = alpha_vec.len() as u32;
+			alpha_vec.push(shape);
 			self.alpha_ind.push(index);
 			base::ShapeHandle::Alpha(index)
 		} else {
-			let index = self.opaque_vec.len() as u32;
-			self.opaque_vec.push(shape);
+			let opaque_vec = self.opaque_vec.get_mut();
+			let index = opaque_vec.len() as u32;
+			opaque_vec.push(shape);
 			self.opaque_ind.push(index);
 			base::ShapeHandle::Opaque(index)
 		})
@@ -508,17 +484,20 @@ impl base::Display for Display {
 		};
 
 		base::new_shape(if !camera && !fog {
-			let index = self.gui_vec.len() as u32;
-			self.gui_vec.push(shape);
+			let gui_vec = self.gui_vec.get_mut();
+			let index = gui_vec.len() as u32;
+			gui_vec.push(shape);
 			base::ShapeHandle::Gui(index)
 		} else if blending {
-			let index = self.alpha_vec.len() as u32;
-			self.alpha_vec.push(shape);
+			let alpha_vec = self.alpha_vec.get_mut();
+			let index = alpha_vec.len() as u32;
+			alpha_vec.push(shape);
 			self.alpha_ind.push(index);
 			base::ShapeHandle::Alpha(index)
 		} else {
-			let index = self.opaque_vec.len() as u32;
-			self.opaque_vec.push(shape);
+			let opaque_vec = self.opaque_vec.get_mut();
+			let index = opaque_vec.len() as u32;
+			opaque_vec.push(shape);
 			self.opaque_ind.push(index);
 			base::ShapeHandle::Opaque(index)
 		})
@@ -552,12 +531,14 @@ impl base::Display for Display {
 		};
 
 		base::new_shape(if !camera && !fog {
-			let index = self.gui_vec.len() as u32;
-			self.gui_vec.push(shape);
+			let gui_vec = self.gui_vec.get_mut();
+			let index = gui_vec.len() as u32;
+			gui_vec.push(shape);
 			base::ShapeHandle::Gui(index)
 		} else {
-			let index = self.alpha_vec.len() as u32;
-			self.alpha_vec.push(shape);
+			let alpha_vec = self.alpha_vec.get_mut();
+			let index = alpha_vec.len() as u32;
+			alpha_vec.push(shape);
 			self.alpha_ind.push(index);
 			base::ShapeHandle::Alpha(index)
 		})
@@ -591,17 +572,20 @@ impl base::Display for Display {
 		};
 
 		base::new_shape(if !camera && !fog {
-			let index = self.gui_vec.len() as u32;
-			self.gui_vec.push(shape);
+			let gui_vec = self.gui_vec.get_mut();
+			let index = gui_vec.len() as u32;
+			gui_vec.push(shape);
 			base::ShapeHandle::Gui(index)
 		} else if blending {
-			let index = self.alpha_vec.len() as u32;
-			self.alpha_vec.push(shape);
+			let alpha_vec = self.alpha_vec.get_mut();
+			let index = alpha_vec.len() as u32;
+			alpha_vec.push(shape);
 			self.alpha_ind.push(index);
 			base::ShapeHandle::Alpha(index)
 		} else {
-			let index = self.opaque_vec.len() as u32;
-			self.opaque_vec.push(shape);
+			let opaque_vec = self.opaque_vec.get_mut();
+			let index = opaque_vec.len() as u32;
+			opaque_vec.push(shape);
 			self.opaque_ind.push(index);
 			base::ShapeHandle::Opaque(index)
 		})
@@ -642,17 +626,20 @@ impl base::Display for Display {
 		};
 
 		base::new_shape(if !camera && !fog {
-			let index = self.gui_vec.len() as u32;
-			self.gui_vec.push(shape);
+			let gui_vec = self.gui_vec.get_mut();
+			let index = gui_vec.len() as u32;
+			gui_vec.push(shape);
 			base::ShapeHandle::Gui(index)
 		} else if blending {
-			let index = self.alpha_vec.len() as u32;
-			self.alpha_vec.push(shape);
+			let alpha_vec = self.alpha_vec.get_mut();
+			let index = alpha_vec.len() as u32;
+			alpha_vec.push(shape);
 			self.alpha_ind.push(index);
 			base::ShapeHandle::Alpha(index)
 		} else {
-			let index = self.opaque_vec.len() as u32;
-			self.opaque_vec.push(shape);
+			let opaque_vec = self.opaque_vec.get_mut();
+			let index = opaque_vec.len() as u32;
+			opaque_vec.push(shape);
 			self.opaque_ind.push(index);
 			base::ShapeHandle::Opaque(index)
 		})
@@ -674,25 +661,25 @@ impl base::Display for Display {
 			ShapeHandle::Gui(_x) => {
 				// TODO: make it obvious that there's only meant
 				// to be 1 GUI object.
-				self.gui_vec.clear();
+				self.gui_vec.get_mut().clear();
 			},
 		}
 	}
 
-	fn transform(&mut self, shape: &Shape, transform: Matrix) {
+	fn transform(&self, shape: &Shape, transform: Matrix) {
 		// TODO: put in base, some is copy from vulkan implementation.
 		match base::get_shape(shape) {
 			ShapeHandle::Opaque(x) => {
 				let x = x as usize; // for indexing
-				self.opaque_vec[x].transform = transform;
+				as_mut(&self.opaque_vec)[x].transform = transform;
 			},
 			ShapeHandle::Alpha(x) => {
 				let x = x as usize; // for indexing
-				self.alpha_vec[x].transform = transform;
+				as_mut(&self.alpha_vec)[x].transform = transform;
 			},
 			ShapeHandle::Gui(x) => {
 				let x = x as usize; // for indexing
-				self.gui_vec[x].transform = transform;
+				as_mut(&self.gui_vec)[x].transform = transform;
 			},
 		}
 	}
@@ -705,7 +692,6 @@ impl base::Display for Display {
 		self.context.viewport(wh.0, wh.1);
 
 		self.projection = super::base::projection(self.ar, 0.5 * PI);
-		self.camera(xyz, rotate_xyz);
 	}
 
 	fn wh(&self) -> (u16, u16) {

@@ -50,21 +50,8 @@ impl base::Display for Display {
 		self.renderer.update()
 	}
 
-	fn camera(&mut self, xyz: Vector, rotate_xyz: Vector) {
-		self.renderer.set_camera(xyz, rotate_xyz);
-		self.renderer.camera();
-	}
-
 	fn model(&mut self, vertices: &[f32], fans: Vec<(u32, u32)>) -> Model {
 		Model(self.renderer.model(vertices, fans))
-	}
-
-	fn fog(&mut self, fog: Option<(f32, f32)>) -> () {
-		if let Some(fog) = fog {
-			self.renderer.fog(fog);
-		} else {
-			self.renderer.fog((::std::f32::MAX, 0.0));
-		}
 	}
 
 	fn texture(&mut self, wh: (u16,u16), graphic: &VFrame) -> Texture {
@@ -154,7 +141,7 @@ impl base::Display for Display {
 		self.renderer.drop_shape(get_shape(&shape));
 	}
 
-	fn transform(&mut self, shape: &Shape, transform: Matrix) {
+	fn transform(&self, shape: &Shape, transform: Matrix) {
 		self.renderer.transform(&base::get_shape(shape), transform);
 	}
 

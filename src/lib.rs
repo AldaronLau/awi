@@ -11,10 +11,10 @@
        html_favicon_url = "https://plopgrizzly.com/images/awi.png")]
 
 #[macro_use] extern crate ami;
-extern crate barg;
-#[macro_use] extern crate approx;
-extern crate arrayvec;
-extern crate ordered_float;
+// extern crate barg;
+// #[macro_use] extern crate approx;
+// extern crate arrayvec;
+// extern crate ordered_float;
 extern crate stick;
 pub extern crate afi;
 #[cfg(target_os="windows")] extern crate winapi;

@@ -24,23 +24,11 @@ pub trait Display {
 	/// * `color`: The background color for the display.
 	fn color(&mut self, color: (u8, u8, u8)) -> ();
 
-	/// Set the fog for the display.
-	///
-	/// * `fog`: `None` for no fog, otherwise set fog begin distance and fog
-	///	end distance.
-	fn fog(&mut self, fog: Option<(f32, f32)>) -> ();
-
 	/// Get input, if there's any.
 	fn input(&mut self) -> Option<Event>;
 
 	/// Update the `Display`.
 	fn update(&mut self) -> f32;
-
-	/// Move the camera.
-	///
-	/// * `position`: position of the camera.
-	/// * `rotation`: rotation of the camera.
-	fn camera(&mut self, position: Vector, rotation: Vector) -> ();
 
 	/// Create a new `Model` for this `Display`.
 	fn model(&mut self, vertices: &[f32], fans: Vec<(u32, u32)>) -> Model;
@@ -104,7 +92,7 @@ pub trait Display {
 	fn drop_shape(&mut self, shape: &Shape);
 
 	/// Transform the shape.
-	fn transform(&mut self, shape: &Shape, transform: Matrix);
+	fn transform(&self, shape: &Shape, transform: Matrix);
 
 	/// Resize the display.
 	fn resize(&mut self, wh: (u16, u16)) -> ();
