@@ -91,7 +91,7 @@ impl<Ctx> Screen<Ctx> where Ctx: Default {
 
 	/// Exit
 	pub fn exit(&mut self) {
-		self.running = false;
+		::std::process::exit(0);
 	}
 
 	/// Switch the run function

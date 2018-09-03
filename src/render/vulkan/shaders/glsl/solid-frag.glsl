@@ -6,10 +6,10 @@ layout (binding = 0) uniform UniformBuffer {
 	vec4 color;
 } uniforms;
 
-layout (location = 0) in vec4 in_color;
+// layout (location = 0) in vec4 in_color;
 
 layout (location = 0) out vec4 frag_color;
 
 void main() {
-	frag_color = in_color;
+	frag_color = uniforms.color;
 }

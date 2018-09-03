@@ -106,7 +106,6 @@ pub trait Display {
 pub(crate) enum ShapeHandle {
 	Alpha(u32),
 	Opaque(u32),
-	Gui(u32),
 }
 
 /// A renderable object that exists on the `Display`.

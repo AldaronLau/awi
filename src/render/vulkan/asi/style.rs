@@ -64,7 +64,11 @@ pub fn new_pipeline(vulkan: &mut Gpu, render_pass: VkRenderPass,
 			s_type: VkStructureType::DescriptorSetLayoutCreateInfo,
 			next: null(),
 			flags: 0,
-			binding_count: 1 + ntextures,
+			binding_count: if ntextures == ::std::u32::MAX {
+				1
+			} else {
+				1 + ntextures
+			},
 			// TODO: consolidate
 			bindings: if ntextures == 0 {
 				[VkDescriptorSetLayoutBinding {
@@ -72,6 +76,14 @@ pub fn new_pipeline(vulkan: &mut Gpu, render_pass: VkRenderPass,
 					descriptor_type: VkDescriptorType::UniformBuffer,
 					descriptor_count: 1,
 					stage_flags: VkShaderStage::VertexAndFragment,
+					immutable_samplers: null(),
+				}].as_ptr()
+			} else if ntextures == ::std::u32::MAX {
+				[VkDescriptorSetLayoutBinding {
+					binding: 0,
+					descriptor_type: VkDescriptorType::CombinedImageSampler,
+					descriptor_count: 1, // Texture Count
+					stage_flags: VkShaderStage::Fragment,
 					immutable_samplers: null(),
 				}].as_ptr()
 			} else {

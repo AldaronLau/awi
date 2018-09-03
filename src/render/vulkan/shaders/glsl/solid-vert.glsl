@@ -8,10 +8,9 @@ layout (binding = 0) uniform UniformBuffer {
 
 layout (location = 0) in vec4 pos;
 
-layout (location = 0) out vec4 inColor;
-layout (location = 1) out float z;
+// layout (location = 0) out vec4 inColor;
 
 void main() {
-	inColor = uniforms.color;
+//	inColor = uniforms.color;
 	gl_Position = uniforms.transform * vec4(pos.xyz, 1.0);
 }

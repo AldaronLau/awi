@@ -389,12 +389,7 @@ impl base::Display for Display {
 			fans: self.models[model.0].fans.clone(),
 		};
 
-		base::new_shape(if !camera && !fog {
-			let gui_vec = self.gui_vec.get_mut();
-			let index = gui_vec.len() as u32;
-			gui_vec.push(shape);
-			base::ShapeHandle::Gui(index)
-		} else if blending {
+		base::new_shape(if blending {
 			let alpha_vec = self.alpha_vec.get_mut();
 			let index = alpha_vec.len() as u32;
 			alpha_vec.push(shape);
@@ -436,12 +431,7 @@ impl base::Display for Display {
 			fans: self.models[model.0].fans.clone(),
 		};
 
-		base::new_shape(if !camera && !fog {
-			let gui_vec = self.gui_vec.get_mut();
-			let index = gui_vec.len() as u32;
-			gui_vec.push(shape);
-			base::ShapeHandle::Gui(index)
-		} else if blending {
+		base::new_shape(if blending {
 			let alpha_vec = self.alpha_vec.get_mut();
 			let index = alpha_vec.len() as u32;
 			alpha_vec.push(shape);
@@ -483,12 +473,7 @@ impl base::Display for Display {
 			fans: self.models[model.0].fans.clone(),
 		};
 
-		base::new_shape(if !camera && !fog {
-			let gui_vec = self.gui_vec.get_mut();
-			let index = gui_vec.len() as u32;
-			gui_vec.push(shape);
-			base::ShapeHandle::Gui(index)
-		} else if blending {
+		base::new_shape(if blending {
 			let alpha_vec = self.alpha_vec.get_mut();
 			let index = alpha_vec.len() as u32;
 			alpha_vec.push(shape);
@@ -530,12 +515,7 @@ impl base::Display for Display {
 			fans: self.models[model.0].fans.clone(),
 		};
 
-		base::new_shape(if !camera && !fog {
-			let gui_vec = self.gui_vec.get_mut();
-			let index = gui_vec.len() as u32;
-			gui_vec.push(shape);
-			base::ShapeHandle::Gui(index)
-		} else {
+		base::new_shape({
 			let alpha_vec = self.alpha_vec.get_mut();
 			let index = alpha_vec.len() as u32;
 			alpha_vec.push(shape);
@@ -571,12 +551,7 @@ impl base::Display for Display {
 			fans: self.models[model.0].fans.clone(),
 		};
 
-		base::new_shape(if !camera && !fog {
-			let gui_vec = self.gui_vec.get_mut();
-			let index = gui_vec.len() as u32;
-			gui_vec.push(shape);
-			base::ShapeHandle::Gui(index)
-		} else if blending {
+		base::new_shape(if blending {
 			let alpha_vec = self.alpha_vec.get_mut();
 			let index = alpha_vec.len() as u32;
 			alpha_vec.push(shape);
@@ -625,12 +600,7 @@ impl base::Display for Display {
 			fans: self.models[model.0].fans.clone(),
 		};
 
-		base::new_shape(if !camera && !fog {
-			let gui_vec = self.gui_vec.get_mut();
-			let index = gui_vec.len() as u32;
-			gui_vec.push(shape);
-			base::ShapeHandle::Gui(index)
-		} else if blending {
+		base::new_shape(if blending {
 			let alpha_vec = self.alpha_vec.get_mut();
 			let index = alpha_vec.len() as u32;
 			alpha_vec.push(shape);
@@ -652,17 +622,12 @@ impl base::Display for Display {
 				let index = self.opaque_ind.iter()
 					.position(|y| *y == x).unwrap();
 				self.opaque_ind.remove(index);
-			},
+			}
 			ShapeHandle::Alpha(x) => {
 				let index = self.alpha_ind.iter()
 					.position(|y| *y == x).unwrap();
 				self.alpha_ind.remove(index);
-			},
-			ShapeHandle::Gui(_x) => {
-				// TODO: make it obvious that there's only meant
-				// to be 1 GUI object.
-				self.gui_vec.get_mut().clear();
-			},
+			}
 		}
 	}
 
@@ -672,15 +637,11 @@ impl base::Display for Display {
 			ShapeHandle::Opaque(x) => {
 				let x = x as usize; // for indexing
 				as_mut(&self.opaque_vec)[x].transform = transform;
-			},
+			}
 			ShapeHandle::Alpha(x) => {
 				let x = x as usize; // for indexing
 				as_mut(&self.alpha_vec)[x].transform = transform;
-			},
-			ShapeHandle::Gui(x) => {
-				let x = x as usize; // for indexing
-				as_mut(&self.gui_vec)[x].transform = transform;
-			},
+			}
 		}
 	}
 

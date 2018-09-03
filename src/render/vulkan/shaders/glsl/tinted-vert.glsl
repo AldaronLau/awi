@@ -11,10 +11,10 @@ layout (location = 0) in vec4 pos;
 layout (location = 1) in vec4 texpos;
 
 layout (location = 0) out vec4 texcoord;
-layout (location = 1) out vec4 tint;
+// layout (location = 1) out vec4 tint;
 
 void main() {
 	texcoord = texpos;
-	tint = uniforms.color;
+//	tint = uniforms.color;
 	gl_Position = uniforms.transform * vec4(pos.xyz, 1.0);
 }

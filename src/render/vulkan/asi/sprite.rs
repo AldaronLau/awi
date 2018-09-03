@@ -35,7 +35,8 @@ struct SpriteContext {
 impl Sprite {
 	/// Create a new sprite.
 	pub unsafe fn new<T>(vulkan: &Gpu, pipeline: &Style,
-		buffer_data: T, texture: Option<Image>, tex_count: bool)
+		buffer_data: T, texture: Option<Image>, tex_count: bool,
+		gui: bool)
 		 -> Self where T: Clone
 	{
 	//	let connection = vulkan.get();
@@ -52,8 +53,19 @@ impl Sprite {
 				next: null(),
 				flags: 0,
 				max_sets: 1,
-				pool_size_count: if tex_count { 2 } else { 1 },
-				pool_sizes: if tex_count {
+				pool_size_count: if gui {
+					1
+				} else if tex_count {
+					2
+				} else {
+					1
+				},
+				pool_sizes: if gui {
+					[VkDescriptorPoolSize { descriptor_type: 
+						VkDescriptorType::CombinedImageSampler,
+						descriptor_count: 1,
+					}].as_ptr()
+				} else if tex_count {
 					[VkDescriptorPoolSize { descriptor_type: 
 						VkDescriptorType::UniformBuffer,
 						descriptor_count: 1,
@@ -86,13 +98,17 @@ impl Sprite {
 		).unwrap();
 
 		// Allocate memory for uniform buffer.
-		let uniform_memory = Buffer::new(vulkan, &[buffer_data],
-			BufferBuilderType::Uniform);
+		let uniform_memory = if gui {
+			::std::mem::uninitialized()
+		} else {
+			Buffer::new(vulkan, &[buffer_data],
+				BufferBuilderType::Uniform)
+		};
 
 		let device = vulkan.get().device;
 
 		txuniform(vulkan, device, desc_set, tex_count, texture.as_ref(),
-			&uniform_memory);
+			if gui { None } else { Some(&uniform_memory) });
 
 		Sprite {
 			uniform_memory,
@@ -112,9 +128,13 @@ impl Sprite {
 
 unsafe fn txuniform(vulkan: &Gpu, device: VkDevice,
 	desc_set: VkDescriptorSet, hastex: bool, texture: Option<&Image>,
-	memory: &Buffer)
+	memory: Option<&Buffer>)
 {
-	let mut writer = DescriptorSetWriter::new().uniform(desc_set, memory);
+	let mut writer = DescriptorSetWriter::new();
+
+	if let Some(memory) = memory {
+		writer = writer.uniform(desc_set, memory);
+	}
 
 	if hastex {
 		writer = writer.sampler(desc_set, vulkan.get().sampler,

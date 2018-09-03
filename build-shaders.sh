@@ -39,6 +39,11 @@ glslangValidator $SRC/complex-vert.glsl -V -o $OUT_UNOPTIMIZED/complex-vert.spv 
 $SPIRV_OPT $OUT_UNOPTIMIZED/complex-frag.spv -o $OUT_OPTIMIZED/complex-frag.spv
 $SPIRV_OPT $OUT_UNOPTIMIZED/complex-vert.spv -o $OUT_OPTIMIZED/complex-vert.spv
 
+glslangValidator $SRC/gui-frag.glsl -V -o $OUT_UNOPTIMIZED/gui-frag.spv -S frag
+glslangValidator $SRC/gui-vert.glsl -V -o $OUT_UNOPTIMIZED/gui-vert.spv -S vert
+$SPIRV_OPT $OUT_UNOPTIMIZED/gui-frag.spv -o $OUT_OPTIMIZED/gui-frag.spv
+$SPIRV_OPT $OUT_UNOPTIMIZED/gui-vert.spv -o $OUT_OPTIMIZED/gui-vert.spv
+
 spirv-remap --map all --dce all --strip-all --input $OUT_OPTIMIZED/*.spv --output $OUT_RELEASE/
 
 cp $OUT_RELEASE/* src/render/vulkan/shaders/res/
