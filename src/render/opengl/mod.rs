@@ -658,6 +658,10 @@ impl base::Display for Display {
 	fn wh(&self) -> (u16, u16) {
 		self.window.wh()
 	}
+
+	fn draw(&self, _writer: &Fn(u16, u16) -> [u8; 4]) {
+		// TODO
+	}
 }
 
 fn draw_shape(style: &Style, shape: &ShapeData) {

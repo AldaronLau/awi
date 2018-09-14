@@ -163,12 +163,12 @@ fn swapchain_delete(vw: &mut Vw) {
 	}
 }
 
-fn new_texture(vw: &mut Vw, width: u16, height: u16) -> Texture {
+fn new_texture(vw: &Vw, width: u16, height: u16) -> Texture {
 //	let mut format_props = unsafe { mem::uninitialized() };
 	let staged = !vw.connection.sampled();
 
 	let mappable_image = super::asi::Image::new(
-		&mut vw.connection, width as u32, height as u32,
+		&vw.connection, width as u32, height as u32,
 		VkFormat::R8g8b8a8Srgb, // Because VkColorSpace is always Srgb
 		VkImageTiling::Linear,
 		if staged { VkImageUsage::TransferSrcBit }
@@ -186,7 +186,7 @@ fn new_texture(vw: &mut Vw, width: u16, height: u16) -> Texture {
 
 	let image = if staged {
 		Some(super::asi::Image::new(
-			&mut vw.connection, width as u32, height as u32,
+			&vw.connection, width as u32, height as u32,
 			VkFormat::R8g8b8a8Unorm,
 			VkImageTiling::Optimal,
 			VkImageUsage::TransferDstAndUsage,
@@ -202,13 +202,14 @@ fn new_texture(vw: &mut Vw, width: u16, height: u16) -> Texture {
 	}
 }
 
-fn set_texture(vw: &mut Vw, texture: &mut Texture, rgba: &[u8]) {
-	ffi::copy_memory_pitched(&mut vw.connection,
+fn set_texture(vw: &Vw, texture: &mut Texture, writer: &Fn(u16, u16) -> [u8; 4])
+{
+	ffi::copy_memory_pitched(&vw.connection,
 		texture.image
 			.as_ref()
 			.unwrap_or(&texture.mappable_image)
 			.memory(),
-		rgba, texture.w as usize, texture.h as usize,
+		writer, texture.w as usize, texture.h as usize,
 		texture.pitch as usize);
 
 	if texture.staged {
@@ -216,7 +217,7 @@ fn set_texture(vw: &mut Vw, texture: &mut Texture, rgba: &[u8]) {
 
 		// Copy data from linear image to optimal image.
 		unsafe {
-			super::asi::copy_image(&mut vw.connection,
+			super::asi::copy_image(&vw.connection,
 				&texture.mappable_image,
 				texture.image.as_ref().unwrap(),
 				texture.w, texture.h
@@ -291,7 +292,7 @@ pub struct Renderer {
 	texcoords: Vec<TexCoords>,
 	gradients: Vec<Gradient>,
 	textures: Vec<Texture>,
-	gui_texture: Texture,
+	gui_texture: UnsafeCell<Texture>,
 	style_solid: Style,
 	style_nasolid: Style,
 	style_texture: Style,
@@ -311,6 +312,22 @@ pub struct Renderer {
 }
 
 impl Renderer {
+	pub(crate) fn draw(&self, wh: (u16, u16),
+		writer: &Fn(u16, u16) -> [u8; 4])
+	{
+/*		if wh != (unsafe {(*self.gui_texture.get()).w},
+			unsafe {(*self.gui_texture.get()).h})
+		{
+			unsafe {
+				*self.gui_texture.get() =
+					new_texture(&self.vw, wh.0, wh.1);
+			}
+		}*/
+
+		set_texture(&self.vw, unsafe { &mut *self.gui_texture.get() },
+			writer);
+	}
+
 	pub(crate) fn new(rgb: Vector) -> Result<(Renderer, ::Window), String> {
 		let (mut vw, window) = Vw::new(rgb)?;
 
@@ -397,8 +414,7 @@ impl Renderer {
 		let w = wh.0 as usize;
 		let h = wh.1 as usize;
 		let mut gui_texture = new_texture(&mut vw, wh.0, wh.1);
-		set_texture(&mut vw, &mut gui_texture,
-			vec![0; w * h * 4].as_slice());
+		set_texture(&mut vw, &mut gui_texture, &|_x, _y| { [0; 4] });
 
 		let instance = unsafe {
 			Sprite::new(
@@ -416,10 +432,10 @@ impl Renderer {
 		let shape = unsafe {
 			super::asi::new_buffer(&vw.connection,
 				&[
-					0.0, 0.0, 0.0, 1.0,
-					0.0, 1.0, 0.0, 1.0,
+					-1.0, -1.0, 0.0, 1.0,
+					-1.0, 1.0, 0.0, 1.0,
 					1.0, 1.0, 0.0, 1.0,
-					1.0, 0.0, 0.0, 1.0,
+					1.0, -1.0, 0.0, 1.0,
 				])
 		};
 
@@ -441,7 +457,7 @@ impl Renderer {
 				texcoords.buffer(),
 				unsafe { mem::uninitialized() }
 			],
-			fans: vec![(0, 3)], // make a rectangle (4 vertices)
+			fans: vec![(0, 4)], // make a rectangle (4 vertices)
 			transform: unsafe { ::std::mem::uninitialized() },
 		};
 
@@ -460,7 +476,7 @@ impl Renderer {
 			models: Vec::new(),
 			texcoords: Vec::new(),
 			textures: Vec::new(),
-			gui_texture,
+			gui_texture: UnsafeCell::new(gui_texture),
 			style_solid, style_nasolid,
 			style_texture, style_natexture,
 			style_gradient, style_nagradient,
@@ -573,6 +589,8 @@ impl Renderer {
 		self.vw.render_pass = render_pass;
 
 		self.projection = super::base::projection(self.ar, 0.5 * PI);
+
+		println!("YAA");
 	}
 
 	pub fn texture(&mut self, width: u16, height: u16, rgba: &[u8])
@@ -580,7 +598,14 @@ impl Renderer {
 	{
 		let mut texture = new_texture(&mut self.vw, width, height);
 
-		set_texture(&mut self.vw, &mut texture, rgba);
+		set_texture(&mut self.vw, &mut texture, &|x, y| {
+			let r = rgba[(width as usize * y as usize + x as usize) * 4 + 0];
+			let g = rgba[(width as usize * y as usize + x as usize) * 4 + 1];
+			let b = rgba[(width as usize * y as usize + x as usize) * 4 + 2];
+			let a = rgba[(width as usize * y as usize + x as usize) * 4 + 3];
+
+			[r, g, b, a]
+		});
 
 		let a = self.textures.len();
 		self.textures.push(texture);
@@ -588,7 +613,15 @@ impl Renderer {
 	}
 
 	pub fn set_texture(&mut self, texture: usize, rgba: &[u8]) {
-		set_texture(&mut self.vw, &mut self.textures[texture], rgba);
+		let width = self.textures[texture].w;
+		set_texture(&mut self.vw, &mut self.textures[texture], &|x, y| {
+			let r = rgba[(width as usize * y as usize + x as usize) * 4 + 0];
+			let g = rgba[(width as usize * y as usize + x as usize) * 4 + 1];
+			let b = rgba[(width as usize * y as usize + x as usize) * 4 + 2];
+			let a = rgba[(width as usize * y as usize + x as usize) * 4 + 3];
+
+			[r, g, b, a]
+		});
 	}
 
 	pub fn resize_texture(&mut self, texture_id: usize, width: u16,
@@ -596,7 +629,14 @@ impl Renderer {
 	{
 		println!("RESIZE TX");
 		let mut texture = new_texture(&mut self.vw, width, height);
-		set_texture(&mut self.vw, &mut texture, rgba);
+		set_texture(&mut self.vw, &mut texture, &|x, y| {
+			let r = rgba[(width as usize * y as usize + x as usize) * 4 + 0];
+			let g = rgba[(width as usize * y as usize + x as usize) * 4 + 1];
+			let b = rgba[(width as usize * y as usize + x as usize) * 4 + 2];
+			let a = rgba[(width as usize * y as usize + x as usize) * 4 + 3];
+
+			[r, g, b, a]
+		});
 		self.textures[texture_id] = texture;
 	}
 

@@ -11,7 +11,7 @@ use render::{Display, new_display};
 pub use render::{Shape, Gradient, Model, Texture, TexCoords};
 
 use render::{Event};
-use afi::{VFrame, PathOp	};
+use afi::{VFrame, PathOp};
 
 use Matrix;
 use Vector;
@@ -49,7 +49,7 @@ pub enum ScreenError {
 }
 
 impl<Ctx> Screen<Ctx> where Ctx: Default {
-	/// Start rendering to screen.
+	/// Start the program.
 	pub fn start(run: fn(&mut Screen<Ctx>, Event, f32))
 		-> Result<(), ScreenError>
 	{
@@ -69,7 +69,7 @@ impl<Ctx> Screen<Ctx> where Ctx: Default {
 	}
 
 	/// Open a new Window to the Screen.
-	pub fn new(run: fn(&mut Screen<Ctx>, Event, f32)) -> Self {
+	fn new(run: fn(&mut Screen<Ctx>, Event, f32)) -> Self {
 		let mut screen = Screen {
 			ctx: Ctx::default(),
 			vframe: VFrame(vec![]),
@@ -89,8 +89,8 @@ impl<Ctx> Screen<Ctx> where Ctx: Default {
 		screen
 	}
 
-	/// Exit
-	pub fn exit(&mut self) {
+	/// Stop the program.
+	pub fn stop(&mut self) {
 		::std::process::exit(0);
 	}
 
@@ -208,25 +208,8 @@ impl<Ctx> Screen<Ctx> where Ctx: Default {
 		self.display.wh()
 	}
 
-	/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-
-/*	/// 2D Vector Graphics Draw Call.
-	pub fn draw<I>(&mut self, shape: I, color: [u8; 4])
-		where I: IntoIterator<Item = PathOp>
-	{
-		let wh = self.wh();
-		vg::draw(&mut self.vframe, wh, shape, color);
+	/// Update 2D overlay with writer function.
+	pub fn draw(&self, writer: &Fn(u16, u16) -> [u8; 4]) {
+		self.display.draw(writer)
 	}
-
-	// TODO: Make it actually update the overlay texture.
-	/// Get the VFrame for rendered Vector Graphics.
-	pub fn draw_update(&mut self) -> VFrame {
-		// TODO: Don't clone - is slow
-		let rtn = self.vframe.clone();
-
-		self.vframe.0.clear();
-		self.vframe.0.resize(rtn.0.len(), 0);
-
-		rtn
-	}*/
 }

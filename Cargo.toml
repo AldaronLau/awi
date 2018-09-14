@@ -31,7 +31,7 @@ categories = ["gui", "hardware-support", "os", "rendering"]
 afi = { path = "../afi"} # "0.7"
 stick = "0.4"
 # Vec3s and Mat4s
-ami = { path = "../ami" } # "0.12"
+ami = "0.13"
 libc = "0.2"
 # Runtime linking.
 dl_api = "0.2"
@@ -45,9 +45,6 @@ winapi = { version = "0.3", features = ["winuser", "libloaderapi", "winerror", "
 [target.'cfg(target_arch="wasm32")'.dependencies]
 stdweb = "0.4"
 stdweb-derive = "0.4"
-
-[build-dependencies]
-webgl_generator = "0.1"
 
 [features]
 default = [] # ["checks"] # Un-comment for validation layers.

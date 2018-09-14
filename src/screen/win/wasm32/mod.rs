@@ -218,4 +218,8 @@ impl Display {
 	pub fn wh(&self) -> (u16, u16) {
 		unsafe { (WIDTH, HEIGHT) }
 	}
+
+	pub fn draw<F: FnMut(&mut [u8])>(&mut self, _write: &mut F) {
+		// TODO
+	}
 }

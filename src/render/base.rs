@@ -99,6 +99,9 @@ pub trait Display {
 
 	/// Get the width and height of the window, as a tuple.
 	fn wh(&self) -> (u16, u16);
+
+	// 
+	fn draw(&self, writer: &Fn(u16, u16) -> [u8; 4]) -> ();
 }
 
 /// Handle for shape.

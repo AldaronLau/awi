@@ -27,7 +27,8 @@ pub fn copy_memory<T>(connection: &Gpu, vk_memory: VkDeviceMemory,
 }
 
 pub fn copy_memory_pitched(connection: &Gpu, vk_memory: VkDeviceMemory,
-	data: &[u8], width: usize, height: usize, pitch: usize)
+	writer: &Fn(u16, u16) -> [u8; 4], width: usize, height: usize,
+	pitch: usize)
 {
 	let mapped : *mut u8 = unsafe {
 		asi::map_memory(connection, vk_memory, !0)
@@ -39,11 +40,13 @@ pub fn copy_memory_pitched(connection: &Gpu, vk_memory: VkDeviceMemory,
 
 	for i in 0..height {
 		for j in 0..width {
+			let pixel = writer(j as u16, i as u16);
+
 			for k in 0..4 {
 				unsafe {
 					*(mapped.offset((i * pitch + j * 4 + k)
 							as isize))
-						= data[(i * width + j) * 4 + k];
+						= pixel[k];
 				}
 			}
 		}

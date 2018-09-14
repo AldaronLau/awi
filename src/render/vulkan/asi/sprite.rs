@@ -23,7 +23,7 @@ pub struct Sprite {
 	pub pipeline: VkPipeline,
 	pub pipeline_layout: VkPipelineLayout,
 	#[allow(unused)] // To keep in scope, preventing segfault.
-	texture: Option<Image>,
+	pub texture: Option<Image>,
 }
 
 struct SpriteContext {

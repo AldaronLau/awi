@@ -152,4 +152,8 @@ impl base::Display for Display {
 	fn wh(&self) -> (u16, u16) {
 		self.window.wh()
 	}
+
+	fn draw(&self, writer: &Fn(u16, u16) -> [u8; 4]) {
+		self.renderer.draw(self.window.wh(), writer)
+	}
 }
