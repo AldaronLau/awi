@@ -1,7 +1,9 @@
-[![Plop Grizzly](https://plopgrizzly.com/images/logo-bar.png)](https://plopgrizzly.com)
-
 # [Aldaron's Window Interface](https://crates.io/crates/awi)
+This project has been discontinued, and replaced with the [window](https://crates.io/crates/window) crate.
+
 Interface through a window to a device.
+
+----
 
 This project is part of [ADI](https://crates.io/crates/adi).
 
