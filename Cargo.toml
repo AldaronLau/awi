@@ -14,7 +14,7 @@
 
 [package]
 name = "awi"
-version = "0.9.0"
+version = "0.9.1"
 license = "MIT OR BSL-1.0"
 documentation = "https://docs.rs/awi"
 homepage = "https://github.com/AldaronLau/awi"
@@ -23,6 +23,9 @@ readme = "README.md"
 description = "Create a window and handle it's input."
 keywords = ["window", "graphics", "interface", "native", "ffi"]
 categories = ["gui", "hardware-support", "os", "rendering"]
+
+[badges.maintenance]
+status = "deprecated"
 
 [dependencies]
 afi = "=0.8.0-pre0"
