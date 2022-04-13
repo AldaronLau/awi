@@ -14,21 +14,18 @@
 
 [package]
 name = "awi"
-version = "0.8.0"
-authors = [
-	"Jeron A. Lau <jeron.lau@plopgrizzly.com>"
-]
-license = "MIT / BSL-1.0"
+version = "0.9.0"
+license = "MIT OR BSL-1.0"
 documentation = "https://docs.rs/awi"
-homepage = "https://gitlab.com/plopgrizzly/adi/"
-repository = "https://gitlab.com/plopgrizzly/adi/awi"
+homepage = "https://github.com/AldaronLau/awi"
+repository = "https://github.com/AldaronLau/awi"
 readme = "README.md"
 description = "Create a window and handle it's input."
 keywords = ["window", "graphics", "interface", "native", "ffi"]
 categories = ["gui", "hardware-support", "os", "rendering"]
 
 [dependencies]
-afi = { path = "../afi"} # "0.7"
+afi = "=0.8.0-pre0"
 stick = "0.4"
 # Vec3s and Mat4s
 ami = "0.13"
